@@ -1,0 +1,7 @@
+# file: roles/install.openshift/tasks/main.yml
+---
+
+- include: subscr.yml
+- include: rhel.yml
+- include: atomic.yml
+- include: install.yml

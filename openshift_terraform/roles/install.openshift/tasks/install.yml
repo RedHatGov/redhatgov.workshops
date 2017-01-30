@@ -1,0 +1,27 @@
+---
+
+- name: Curl get pip
+  become: yes
+  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir=/home/ec2-user
+  tags:
+   - openshift
+
+- name: Python install pip
+  become: yes
+  command: python /home/ec2-user/get-pip.py chdir=/home/ec2-user
+  tags:
+   - openshift
+
+- name: Install passlib
+  become: yes
+  pip: name=passlib state=present
+  tags:
+   - openshift
+
+- name: Copy over key pair
+  copy: dest="/home/ec2-user/.ssh/{{ ec2_keypair }}"  mode=0400  src="{{ terraform_working_dir }}/{{ ec2_keypair }}"
+
+- name: Run ansible-installer (advanced method)
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/ec2-user
+  tags:
+   - ansible-installer
