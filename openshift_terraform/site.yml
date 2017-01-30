@@ -1,22 +1,49 @@
 # file: site.yml
 ---
-# - name: Provision AWS Nodes with Terraform
-#   hosts: local_target
-#   vars:
-#   roles:
-#   - { role: aws.infra.terraform, tags: ["terraform"] }
 
+#---------------------------------------------------
+# Terraform providers
+#---------------------------------------------------
+- name: Terraform AWS provider
+  hosts: local_target
+  roles:
+    - { role: aws.infra.terraform, tags: ["terraform"], when: openshift_cloudprovider_kind == 'aws' }
 
-- name: Install & Configure nodes default settings and packages
+#---------------------------------------------------
+# OpenShift masters
+#---------------------------------------------------
+- name: Prepare RHEL masters
+  hosts: masters
+  become: yes
+  roles:
+    - { role: install.openshift, tags: ["rhel", "subscription"], when: ec2_master_username == 'ec2-user' }
+
+- name: Prepare Atmic Host masters
+  hosts: masters
+  become: yes
+  roles:
+    - { role: install.openshift, tags: ["atomic", "subscription"], when: ec2_master_username == 'cloud-user' }
+
+#---------------------------------------------------
+# OpenShift nodes
+#---------------------------------------------------
+- name: Prepare RHEL nodes
   hosts: nodes
   become: yes
   roles:
-  - { role: install.openshift, tags: ["rhel"] }
+    - { role: install.openshift, tags: ["rhel", "subscription"], when: ec2_node_username == 'ec2-user' }
 
-
-- name: Install OpenShift with Ansible Installer
-  remote_user: ec2-user
-  hosts: masters
-  tasks: []
+- name: Prepare Atmic Host nodes
+  hosts: nodes
+  become: yes
   roles:
-  - { role: install.openshift, tags: ["openshift"] }
+    - { role: install.openshift, tags: ["atomic", "subscription"], when: ec2_node_username == 'cloud-user' }
+
+#---------------------------------------------------
+# Ansible
+#---------------------------------------------------
+- name: Advanced installation
+  remote_user: "{{ ec2_master_username }}"
+  hosts: masters
+  roles:
+    - { role: install.openshift, tags: ["ansible-installer"] }

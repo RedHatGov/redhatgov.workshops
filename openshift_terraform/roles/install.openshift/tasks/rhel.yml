@@ -1,6 +1,7 @@
+# file: roles/install.openshift/tasks/rhel.yml
 ---
 
-- name: Install pre requisites
+- name: Install pre-requisites
   yum: name={{ item }} state=present
   with_items:
       - wget
@@ -31,7 +32,7 @@
   with_items:
       - atomic-openshift-excluder
       - atomic-openshift-docker-excluder
-  when: {{ openshift_release|int }} >= 3.4
+  when: openshift_release >= 3.4
   tags:
     - rhel
 
@@ -39,11 +40,6 @@
   yum: name=docker state=present
   tags:
     - rhel
-
-# - name: Enable insecure registry
-#   lineinfile: dest=/etc/sysconfig/docker state=present line='OPTIONS=--insecure-registry 172.30.0.0/16' regexp="^#?OPTIONS"
-#   tags:
-#     - rhel
 
 - name: Eanble insecure registry
   command: sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16 --log-opt max-size=1M --log-opt max-file=3"' /etc/sysconfig/docker
@@ -59,13 +55,3 @@
   service: name=docker state=started enabled=yes
   tags:
     - rhel
-
-- name: get EC2 Facts
-  action: ec2_facts
-
-- debug: var=hostvars
-
-- name: Template the inventory file to nodes
-  template: dest=/home/ec2-user/inventory_ose  src=inventory_ose.j2
-  tags:
-   - rhel

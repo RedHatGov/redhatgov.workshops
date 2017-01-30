@@ -1,11 +1,12 @@
+# file: roles/install.openshift/tasks/subscr.yml
 ---
 
-- name: Disable all amz rhel repos
+- name: Disable all Amazon rhel repos
   command: /usr/bin/yum-config-manager --disable *
   tags:
     - rhel
 
-- name: Disable amz yum plugin
+- name: Disable Amazon yum plugin
   lineinfile: dest=/etc/yum/pluginconf.d/amazon-id.conf regexp='^enabled' line='enabled = 0' state=present
   tags:
     - rhel
@@ -50,22 +51,22 @@
   tags:
     - rhel
 
-- name: Import keys
+- name: Import GPG keys
   rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
   tags:
     - rhel
 
-- name: Subscribe using Customer Portal Activation Key
+- name: Subscribe using customer portal activation key
   redhat_subscription: state=present activationkey='{{ activationkey }}' org_id='{{ org_id }}'
   tags:
     - subscription
 
-- name: disable all repos by default
+- name: Disable all repos by default
   shell: subscription-manager repos --disable="*"
   tags:
     - subscription
 
-- name: Enable the requisite rhel7 repos
+- name: Enable the pre-requisites repos
   shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="rhel-7-server-ose-"{{ openshift_release }}"-rpms"
   tags:
     - subscription

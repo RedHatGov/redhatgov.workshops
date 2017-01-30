@@ -30,15 +30,15 @@ ec2_route: "ose-public-route"
 # Master EC2 instances
 #####################################################
 ec2_master_instance_type: "m4.xlarge"
-ec2_master_image: "ami-b63769a1"
-ec2_master_ansible_user: "ec2-user"
+ec2_master_image: "ami-b63769a1" # RHEL7
+ec2_master_username: "ec2-user"
 os_master_root_vol_size: "40"
 os_master_root_vol_type: "gp2"
 
 #####################################################
 # Etcd EC2 instances
 #####################################################
-# ec2_etcd_instance_type: "m4.xlarge"
+# ec2_etcd_instance_type: "m4.large"
 # ec2_etcd_image: "ami-2051294a"
 # os_etcd_root_vol_size: "20"
 # os_etcd_root_vol_type: "standard"
@@ -48,15 +48,15 @@ os_master_root_vol_type: "gp2"
 #####################################################
 # Infra EC2 instances
 #####################################################
-# ec2_infra_instance_type: "m4.xlarge"
+# ec2_infra_instance_type: "m4.large"
 # ec2_infra_image: "ami-2051294a"
 
 #####################################################
 # Node EC2 instances
 #####################################################
-ec2_node_instance_type: "m4.xlarge"
-ec2_node_image: "ami-b63769a1"
-ec2_node_ansible_user: "ec2-user"
+ec2_node_instance_type: "m4.large"
+ec2_node_image: "ami-261f5a4c" # RHEL Atomic Host
+ec2_node_username: "cloud-user"
 ec2_node_count: "2"
 os_node_root_vol_size: "15"
 os_node_root_vol_type: "gp2"
@@ -71,7 +71,7 @@ org_id: "${INSERT_VALUE_HERE}"
 # OpenShift cluster
 #####################################################
 openshift_release: "3.4"
-openshift_cloudprovider_kind: "${INSERT_VALUE_HERE}"
+openshift_cloudprovider_kind: "aws"
 cluster_admin_username: "${INSERT_VALUE_HERE}"
 cluster_admin_password: "${INSERT_VALUE_HERE}"
 

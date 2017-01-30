@@ -1,25 +1,43 @@
+# file: roles/install.openshift/tasks/install.yml
 ---
+
+- name: Get EC2 Facts
+  action: ec2_facts
+  tags:
+   - ansible-installer
+
+- name: Debug hostvars
+  debug: var=hostvars
+  tags:
+   - ansible-installer
+
+- name: Template the inventory file to nodes
+  template: dest=/home/ec2-user/inventory_ose  src=inventory_ose.j2
+  tags:
+   - ansible-installer
 
 - name: Curl get pip
   become: yes
   command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir=/home/ec2-user
+  - ansible-installer
   tags:
-   - openshift
 
 - name: Python install pip
   become: yes
   command: python /home/ec2-user/get-pip.py chdir=/home/ec2-user
   tags:
-   - openshift
+   - ansible-installer
 
 - name: Install passlib
   become: yes
   pip: name=passlib state=present
   tags:
-   - openshift
+   - ansible-installer
 
 - name: Copy over key pair
   copy: dest="/home/ec2-user/.ssh/{{ ec2_keypair }}"  mode=0400  src="{{ terraform_working_dir }}/{{ ec2_keypair }}"
+  tags:
+   - ansible-installer
 
 - name: Run ansible-installer (advanced method)
   shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/ec2-user

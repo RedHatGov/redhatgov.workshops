@@ -1,8 +1,8 @@
 # file: roles/aws.infra.terraform/tasks/terraform.yml
-
 ---
+
 #---------------------------------------------------
-#  SSH Key
+# SSH Key
 #---------------------------------------------------
 - name: Check for existing key and remove
   ec2_key: name="{{ ec2_keypair }}" region="{{ region }}" state=absent
@@ -32,7 +32,7 @@
     - tf_create
 
 #---------------------------------------------------
-#  Terraform.io
+# Terraform.io
 #---------------------------------------------------
 - name: Template Terraform files locally to run
   template: dest="{{ terraform_working_dir }}/aws.tf"  src=aws.tf.j2

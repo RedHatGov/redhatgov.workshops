@@ -93,7 +93,6 @@ resource "aws_route53_record" "master" {
 }
 
 resource "aws_route53_record" "nodes" {
-  # same number of records as instances
   count = "{{ ec2_node_count }}"
   zone_id = "{{ zone_id }}"
   name = "node.${count.index}.ose.{{ domain_name }}"
@@ -125,26 +124,27 @@ resource "aws_instance" "ose-master" {
 	  }
     connection {
       type        = "ssh"
-      user        = "ec2-user"
+      user        = "{{ ec2_master_username }}"
       private_key = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
     }
     provisioner "file" {
       source      = "{{ terraform_working_dir }}/{{ ec2_keypair }}"
       destination = "~/.ssh/{{ ec2_keypair }}"
     }
-    provisioner "remote-exec" {
-      inline = [
-        "sudo chmod 400 ~/.ssh/{{ ec2_keypair }}",
-        "sudo echo -e 'preserve_hostname: true' | sudo tee --append /etc/cloud/cloud.cfg > /dev/null",
-        "sudo echo -e 'master.ose.{{ domain_name }}' | sudo tee /etc/hostname > /dev/null",
-        "sudo echo -e 'HOSTNAME=master.ose.{{ domain_name }}' | sudo tee --append  /etc/sysconfig/network > /dev/null",
-        "sudo echo -e '${aws_instance.ose-master.public_ip} master.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
-        "sudo sed 's/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4/127.0.0.1 master.ose.{{ domain_name }} localhost.localdomain localhost4 localhost4.localdomain4/w output' /etc/hosts"
-        ]
-    }
+# [TODO]: Replace with Ansible task, otherwise empty remote-exec provisioner fails after long timeout (https://github.com/hashicorp/terraform/issues/10144).
+#    provisioner "remote-exec" {
+#      inline = [
+#        "sudo chmod 400 ~/.ssh/{{ ec2_keypair }}",
+#        "sudo echo -e 'preserve_hostname: true' | sudo tee --append /etc/cloud/cloud.cfg > /dev/null",
+#        "sudo echo -e 'master.ose.{{ domain_name }}' | sudo tee /etc/hostname > /dev/null",
+#        "sudo echo -e 'HOSTNAME=master.ose.{{ domain_name }}' | sudo tee --append  /etc/sysconfig/network > /dev/null",
+#        "sudo echo -e '${aws_instance.ose-master.public_ip} master.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
+#        "sudo sed 's/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4/127.0.0.1 master.ose.{{ domain_name }} localhost.localdomain localhost4 localhost4.localdomain4/w output' /etc/hosts"
+#        ]
+#    }
     tags {
         Name    = "master"
-        sshUser = "ec2-user"
+        sshUser = "{{ ec2_master_username }}"
         role    = "masters"
     }
 }
@@ -162,28 +162,28 @@ resource "aws_instance" "ose-node" {
 	  }
     connection {
       type        = "ssh"
-      user        = "ec2-user"
+      user        = "{{ ec2_node_username }}"
       private_key = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
-
     }
     provisioner "file" {
         source      = "{{ terraform_working_dir }}/{{ ec2_keypair }}"
         destination = "~/.ssh/{{ ec2_keypair }}"
     }
-    provisioner "remote-exec" {
-      inline = [
-        "sudo chmod 400 ~/.ssh/{{ ec2_keypair }}",
-        "sudo echo -e 'preserve_hostname: true' | sudo tee --append /etc/cloud/cloud.cfg > /dev/null",
-        "sudo echo -e 'node.${count.index}.ose.{{ domain_name }}' | sudo tee /etc/hostname > /dev/null",
-        "sudo echo -e 'HOSTNAME=node.${count.index}.ose.{{ domain_name }}' | sudo tee --append  /etc/sysconfig/network > /dev/null",
-        "sudo echo -e '${aws_instance.ose-master.public_ip} master.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
-        "sudo echo -e '${self.public_ip} node.${count.index}.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
-        "sudo sed 's/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4/127.0.0.1 node.${count.index}.ose.{{ domain_name }} localhost.localdomain localhost4 localhost4.localdomain4/w output' /etc/hosts"
-        ]
-    }
+# [TODO]: Replace with Ansible task, otherwise empty remote-exec provisioner fails after long timeout (https://github.com/hashicorp/terraform/issues/10144).
+#    provisioner "remote-exec" {
+#      inline = [
+#        "sudo chmod 400 ~/.ssh/{{ ec2_keypair }}",
+#        "sudo echo -e 'preserve_hostname: true' | sudo tee --append /etc/cloud/cloud.cfg > /dev/null",
+#        "sudo echo -e 'node.${count.index}.ose.{{ domain_name }}' | sudo tee /etc/hostname > /dev/null",
+#        "sudo echo -e 'HOSTNAME=node.${count.index}.ose.{{ domain_name }}' | sudo tee --append  /etc/sysconfig/network > /dev/null",
+#        "sudo echo -e '${aws_instance.ose-master.public_ip} master.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
+#        "sudo echo -e '${self.public_ip} node.${count.index}.ose.{{ domain_name }}' | sudo tee --append /etc/hosts > /dev/null",
+#        "sudo sed 's/127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4/127.0.0.1 node.${count.index}.ose.{{ domain_name }} localhost.localdomain localhost4 localhost4.localdomain4/w output' /etc/hosts"
+#        ]
+#    }
     tags {
         Name    = "node-${count.index}"
-        sshUser = "ec2-user"
+        sshUser = "{{ ec2_node_username }}"
         role    = "nodes"
     }
 }
