@@ -1,0 +1,11 @@
+# file: roles/install.openshift/vars/main.yml
+---
+
+# Iterate through nodes in inventory file under [nodes]
+# for templating the inventory files to the Master
+inventory_ose_nodes: "{{ groups['nodes'] }}"
+
+# RHEL Subscription Info:
+# username: ""
+# password: ""
+# pool_id: ""

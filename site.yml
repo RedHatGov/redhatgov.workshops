@@ -1,0 +1,22 @@
+# file: site.yml
+---
+# - name: Provision AWS Nodes with Terraform
+#   hosts: local_target
+#   vars:
+#   roles:
+#   - { role: aws.infra.terraform, tags: ["terraform"] }
+
+
+- name: Install & Configure nodes default settings and packages
+  hosts: nodes
+  become: yes
+  roles:
+  - { role: install.openshift, tags: ["rhel"] }
+
+
+- name: Install OpenShift with Ansible Installer
+  remote_user: ec2-user
+  hosts: masters
+  tasks: []
+  roles:
+  - { role: install.openshift, tags: ["openshift"] }

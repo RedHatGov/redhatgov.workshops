@@ -1,0 +1,71 @@
+---
+
+- name: Install pre requisites
+  yum: name={{ item }} state=present
+  with_items:
+      - wget
+      - vim
+      - git
+      - unzip
+      - net-tools
+      - bind-utils
+      - httpd-tools
+      - bridge-utils
+      - bash-completion
+      - iptables-services
+  tags:
+    - rhel
+
+- name: Update all yum packages
+  yum: name=* state=latest
+  tags:
+    - rhel
+
+- name: Install atomic-openshift-utils
+  yum: name=atomic-openshift-utils state=present
+  tags:
+    - rhel
+
+- name: Install *-excluder packages
+  yum: name={{ item }} state=present
+  with_items:
+      - atomic-openshift-excluder
+      - atomic-openshift-docker-excluder
+  when: {{ openshift_release|int }} >= 3.4
+  tags:
+    - rhel
+
+- name: Install Docker
+  yum: name=docker state=present
+  tags:
+    - rhel
+
+# - name: Enable insecure registry
+#   lineinfile: dest=/etc/sysconfig/docker state=present line='OPTIONS=--insecure-registry 172.30.0.0/16' regexp="^#?OPTIONS"
+#   tags:
+#     - rhel
+
+- name: Eanble insecure registry
+  command: sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16 --log-opt max-size=1M --log-opt max-file=3"' /etc/sysconfig/docker
+  tags:
+    - rhel
+
+- name: Setup docker-storage-setup
+  command: echo -e "DEVS=/dev/xvdb\nVG=docker-vg" >> /etc/sysconfig/docker-storage-setup
+  tags:
+    - rhel
+
+- name: Start docker
+  service: name=docker state=started enabled=yes
+  tags:
+    - rhel
+
+- name: get EC2 Facts
+  action: ec2_facts
+
+- debug: var=hostvars
+
+- name: Template the inventory file to nodes
+  template: dest=/home/ec2-user/inventory_ose  src=inventory_ose.j2
+  tags:
+   - rhel

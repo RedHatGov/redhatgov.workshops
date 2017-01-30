@@ -1,0 +1,87 @@
+# file: group_vars/all
+
+#####################################################
+# AWS configuration
+#####################################################
+aws_access_key_id: "${INSERT_VALUE_HERE}"
+aws_secret_access_key: "${INSERT_VALUE_HERE}"
+domain_name: "${INSERT_VALUE_HERE}"
+zone_id: "${INSERT_VALUE_HERE}"
+region: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# Terraform configuration
+#####################################################
+terraform_working_dir: "{{ lookup('env','PWD') }}/.terraform"
+
+#####################################################
+# All EC2 instances
+#####################################################
+# ec2_assign_public_ip: "true"
+# ec2_instance_type: "m4.xlarge"
+# ec2_image: "ami-b63769a1"
+ec2_keypair: "libra"
+ec2_security_group: "ose-sg"
+ec2_vpc: "ose-vpc"
+ec2_vpc_subnet: "ose-public-subnet"
+ec2_route: "ose-public-route"
+
+#####################################################
+# Master EC2 instances
+#####################################################
+ec2_master_instance_type: "m4.xlarge"
+ec2_master_image: "ami-b63769a1"
+ec2_master_ansible_user: "ec2-user"
+os_master_root_vol_size: "40"
+os_master_root_vol_type: "gp2"
+
+#####################################################
+# Etcd EC2 instances
+#####################################################
+# ec2_etcd_instance_type: "m4.xlarge"
+# ec2_etcd_image: "ami-2051294a"
+# os_etcd_root_vol_size: "20"
+# os_etcd_root_vol_type: "standard"
+# os_etcd_vol_size: "20"
+# os_etcd_vol_type: "standard"
+
+#####################################################
+# Infra EC2 instances
+#####################################################
+# ec2_infra_instance_type: "m4.xlarge"
+# ec2_infra_image: "ami-2051294a"
+
+#####################################################
+# Node EC2 instances
+#####################################################
+ec2_node_instance_type: "m4.xlarge"
+ec2_node_image: "ami-b63769a1"
+ec2_node_ansible_user: "ec2-user"
+ec2_node_count: "2"
+os_node_root_vol_size: "15"
+os_node_root_vol_type: "gp2"
+
+#####################################################
+# RHEL subscription
+#####################################################
+activationkey: "${INSERT_VALUE_HERE}"
+org_id: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# OpenShift cluster
+#####################################################
+openshift_release: "3.4"
+openshift_cloudprovider_kind: "${INSERT_VALUE_HERE}"
+cluster_admin_username: "${INSERT_VALUE_HERE}"
+cluster_admin_password: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# Docker configuration
+#####################################################
+# os_docker_vol_size: "50"
+# os_docker_vol_ephemeral: "false"
+
+#####################################################
+# Ansible configuration
+#####################################################
+ansible_ssh_private_key_file: "{{ terraform_working_dir }}/{{ ec2_keypair }}"

@@ -1,0 +1,4 @@
+# file: host_vars/db-bos-1.example.com
+#
+# ipv4_addr: 1.2.3.4
+# ipv4_gateway: 9.8.7.6

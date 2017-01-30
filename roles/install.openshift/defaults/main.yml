@@ -1,0 +1,4 @@
+# file: roles/install.openshift/defaults/main.yml
+---
+#
+# foo: default

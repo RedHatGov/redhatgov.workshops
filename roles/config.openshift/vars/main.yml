@@ -1,0 +1,4 @@
+# file: roles/config.openshift/vars/main.yml
+---
+
+inventory_ose_nodes: "{{ groups['masters'] }}"
