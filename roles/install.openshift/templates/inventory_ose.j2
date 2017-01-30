@@ -6,7 +6,7 @@ nodes
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
 # SSH user, this user should allow ssh based auth without requiring a password
-ansible_ssh_user=ec2-user
+ansible_ssh_user={{ ec2_master_username }}
 ansible_become=true
 
 # If ansible_ssh_user is not root, ansible_sudo must be set to true
@@ -29,7 +29,7 @@ openshift_cloudprovider_aws_secret_key= {{ aws_secret_access_key }}
 
 # Host group for masters
 [masters]
-{% for host in inventory_ose_nodes %}
+{% for host in inventory_ose_masters %}
 {% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
 {{ hostvars[host]['inventory_hostname'] }}  openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true ansible_connection=local ansible_become=yes
 {% endif %}
@@ -37,7 +37,7 @@ openshift_cloudprovider_aws_secret_key= {{ aws_secret_access_key }}
 
 # Host group for nodes, includes region info
 [nodes]
-{% for host in inventory_ose_nodes %}
+{% for host in inventory_ose_masters %}
 {% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
 {{ hostvars[host]['inventory_hostname'] }}  openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true ansible_connection=local ansible_become=yes
 {% endif %}

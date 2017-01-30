@@ -1,1 +1,22 @@
+# file: roles/install.openshift/tasks/atomic.yml
 ---
+
+- name: Upgrade the atomic host platform to the latest version (atomic host upgrade)
+  shell: atomic host upgrade
+  tags:
+    - atomic
+
+- name: Reboot the host
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  sudo: true
+  ignore_errors: true
+  tags:
+    - atomic
+
+- name: Waiting for server to come back
+  local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
+  sudo: false
+  tags:
+    - atomic

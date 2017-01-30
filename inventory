@@ -1,15 +1,13 @@
 # file: inventory
 
-ansible_ssh_user=ec2-user
 ansible_become=yes
 
 [local_target]
 localhost ansible_connection=local ansible_python_interpreter='/usr/bin/env python'
 
 [masters]
-master.ose.redhat-fierce.io ansible_user=ec2-user
+master.ose.naps-redhat.com ansible_user=ec2-user
 
 [nodes]
-master.ose.redhat-fierce.io ansible_user=ec2-user
-node.0.ose.redhat-fierce.io ansible_user=ec2-user
-node.1.ose.redhat-fierce.io ansible_user=ec2-user
+node.0.ose.naps-redhat.com ansible_user=cloud-user
+node.1.ose.naps-redhat.com ansible_user=cloud-user
