@@ -1,47 +1,63 @@
 # file: roles/install.openshift/tasks/install.yml
 ---
 
-# - name: Gather facts
-#   action: ec2_facts
-#   register: ec2_facts
-#   when: openshift_cloudprovider_kind == "aws"
-#   tags:
-#    - ansible-installer
-#
-# - name: Debug hostvars
-#   debug: var=hostvars
-#   tags:
-#    - ansible-installer
-
-- name: Template inventory file to master
-  template: dest=/home/{{ ansible_user }}/inventory_ose  src=inventory_ose.j2
-  tags:
-   - ansible-installer
-
 - name: Curl get pip
   become: yes
   command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir=/home/{{ ansible_user }}
   tags:
-    - ansible-installer
+    - advanced
 
 - name: Python install pip
   become: yes
   command: python /home/ec2-user/get-pip.py chdir=/home/{{ ansible_user }}
   tags:
-   - ansible-installer
+   - advanced
 
 - name: Install passlib
   become: yes
   pip: name=passlib state=present
   tags:
-   - ansible-installer
+   - advanced
 
 - name: Copy over key pair
-  copy: dest="/home/ec2-user/.ssh/{{ ec2_keypair }}"  mode=0400  src="{{ terraform_working_dir }}/{{ ec2_keypair }}"
+  copy: dest="/home/{{ ansible_user }}/.ssh/{{ ec2_keypair }}"  mode=0400  src="{{ terraform_working_dir }}/{{ ec2_keypair }}"
   tags:
-   - ansible-installer
+   - advanced
 
-- name: Run ansible-installer (advanced method)
-  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ansible_user }}
+- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
+  file:
+    path: /home/{{ ansible_user }}/.ssh/config
+    state: touch
+    mode: "u=rw,g=r,o=r"
   tags:
-   - ansible-installer
+   - advanced
+
+- name: Insert/update "Host" configuration block in ~/.ssh/config
+  blockinfile:
+    dest: /home/{{ ansible_user }}/.ssh/config
+    block: |
+      Host *
+      IdentityFile ~/.ssh/libra
+  tags:
+   - advanced
+
+- name: Touch the same file, but add/remove some permissions
+  file:
+    path: /home/{{ ansible_user }}/.ssh/config
+    state: touch
+    mode: 0400
+  tags:
+   - advanced
+
+# - name: Debug enable ssh-agent
+#  shell: echo "ssh-agent = $(ssh-agent)"
+
+- name: Enable ssh-agent
+  shell: eval $(ssh-agent)
+  tags:
+    - advanced
+
+- name: Run advanced (advanced method)
+  shell: ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ansible_user }}
+  tags:
+   - advanced

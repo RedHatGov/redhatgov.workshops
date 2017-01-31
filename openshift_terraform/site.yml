@@ -2,57 +2,26 @@
 ---
 
 #---------------------------------------------------
-# Terraform providers
+# Terraform Providers
 #---------------------------------------------------
-- name: Terraform AWS provider
+- name: Terraform AWS Provider
   hosts: local_target
   roles:
     - { role: aws.infra.terraform, tags: ["terraform"], when: openshift_cloudprovider_kind == "aws" }
 
 #---------------------------------------------------
-# Intranet
+# OpenShift Pre- Installation
 #---------------------------------------------------
-- name: Modify master hosts file
+- name: OpenShift Pre- Installation
   hosts: masters, nodes
   become: yes
   roles:
-    - { role: install.openshift, tags: ["intranet"] }
-
-# ---------------------------------------------------
-# OpenShift master hosts
-# ---------------------------------------------------
-- name: Prepare RHEL masters
-  hosts: masters
-  become: yes
-  roles:
-    - { role: install.openshift, tags: ["rhel", "subscription"], when: ec2_master_username == 'ec2-user' }
-
-- name: Prepare Atmic Host masters
-  hosts: masters
-  become: yes
-  roles:
-    - { role: install.openshift, tags: ["atomic", "subscription"], when: ec2_master_username == 'cloud-user' }
+    - { role: prereq.openshift, tags: ["atomic", "network", "rhel"] }
 
 #---------------------------------------------------
-# OpenShift node hosts
+# OpenShift Advanced Installation
 #---------------------------------------------------
-- name: Prepare RHEL nodes
-  hosts: nodes
-  become: yes
-  roles:
-    - { role: install.openshift, tags: ["rhel", "subscription"], when: ec2_node_username == 'ec2-user' }
-
-- name: Prepare Atmic Host nodes
-  hosts: nodes
-  become: yes
-  roles:
-    - { role: install.openshift, tags: ["atomic", "subscription"], when: ec2_node_username == 'cloud-user' }
-
-#---------------------------------------------------
-# Ansible
-#---------------------------------------------------
-- name: Advanced installation
-  remote_user: "{{ ec2_master_username }}"
+- name: OpenShift Advanced Installation
   hosts: masters
   roles:
-    - { role: install.openshift, tags: ["ansible-installer"] }
+    - { role: install.openshift, tags: ["advanced"] }
