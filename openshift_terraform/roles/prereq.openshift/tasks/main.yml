@@ -1,0 +1,10 @@
+# file: roles/prereq.openshift/tasks/main.yml
+---
+
+- include: hosts.yml
+
+- include: rhel.yml
+  when: ansible_user == "ec2-user"
+
+- include: atomic.yml
+  when: ansible_user == "cloud-user"
