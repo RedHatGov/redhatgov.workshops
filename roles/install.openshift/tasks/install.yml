@@ -21,8 +21,8 @@
 - name: Curl get pip
   become: yes
   command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir=/home/{{ ansible_user }}
-  - ansible-installer
   tags:
+    - ansible-installer
 
 - name: Python install pip
   become: yes
@@ -42,6 +42,6 @@
    - ansible-installer
 
 - name: Run ansible-installer (advanced method)
-  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/ec2-user
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ansible_user }}
   tags:
    - ansible-installer
