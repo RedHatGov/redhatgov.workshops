@@ -7,11 +7,20 @@
 - name: Terraform AWS provider
   hosts: local_target
   roles:
-    - { role: aws.infra.terraform, tags: ["terraform"], when: openshift_cloudprovider_kind == 'aws' }
+    - { role: aws.infra.terraform, tags: ["terraform"], when: openshift_cloudprovider_kind == "aws" }
 
 #---------------------------------------------------
-# OpenShift masters
+# Intranet
 #---------------------------------------------------
+- name: Modify master hosts file
+  hosts: masters, nodes
+  become: yes
+  roles:
+    - { role: install.openshift, tags: ["intranet"] }
+
+# ---------------------------------------------------
+# OpenShift master hosts
+# ---------------------------------------------------
 - name: Prepare RHEL masters
   hosts: masters
   become: yes
@@ -25,7 +34,7 @@
     - { role: install.openshift, tags: ["atomic", "subscription"], when: ec2_master_username == 'cloud-user' }
 
 #---------------------------------------------------
-# OpenShift nodes
+# OpenShift node hosts
 #---------------------------------------------------
 - name: Prepare RHEL nodes
   hosts: nodes
