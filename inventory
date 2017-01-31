@@ -10,5 +10,5 @@ localhost ansible_connection=local ansible_python_interpreter='/usr/bin/env pyth
 master.ose.naps-redhat.com ansible_user=ec2-user
 
 [nodes]
-node.0.ose.naps-redhat.com ansible_user=cloud-user
-node.1.ose.naps-redhat.com ansible_user=cloud-user
+node.0.ose.naps-redhat.com ansible_user=ec2-user
+node.1.ose.naps-redhat.com ansible_user=ec2-user
