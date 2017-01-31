@@ -1,6 +1,56 @@
 # file: roles/install.openshift/tasks/rhel.yml
 ---
 
+- name: Disable Amazon yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/amazon-id.conf regexp='^enabled' line='enabled = 0' state=present
+  tags:
+    - rhel
+
+- name: Disable rhui-lb yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/rhui-lb.conf regexp='^enabled' line='enabled = 0' state=present
+  tags:
+    - rhel
+
+- name: Enable product-id yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/product-id.conf regexp='^enabled' line='enabled = 1' state=present
+  tags:
+    - rhel
+
+- name: Enable subscription manager yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/subscription-manager.conf regexp='^enabled' line='enabled = 1' state=present
+  tags:
+    - rhel
+
+- name: Add subscription DNS to etc hosts (1)
+  lineinfile: dest=/etc/hosts state=present insertafter=EOF line='209.132.183.44   xmlrpc.rhn.redhat.com'
+  tags:
+    - rhel
+
+- name: Add subscription DNS to etc hosts (2)
+  lineinfile: dest=/etc/hosts state=present insertafter=EOF line='23.204.148.218   content-xmlrpc.rhn.redhat.com'
+  tags:
+    - rhel
+
+- name: Add subscription DNS to etc hosts (3)
+  lineinfile: dest=/etc/hosts state=present insertafter=EOF line='209.132.183.49   subscription.rhn.redhat.com'
+  tags:
+    - rhel
+
+- name: Add RH docker registry to etc hosts (4)
+  lineinfile: dest=/etc/hosts state=present insertafter=EOF line='209.132.182.63   registry.access.redhat.com'
+  tags:
+    - rhel
+
+- name: Add jboss.org mvn repository to etc hosts (5)
+  lineinfile: dest=/etc/hosts state=present insertafter=EOF line='209.132.182.33   repository.jboss.org'
+  tags:
+    - rhel
+
+- name: Import GPG keys
+  rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+  tags:
+    - rhel
+
 - name: Install pre-requisites
   yum: name={{ item }} state=present
   with_items:
