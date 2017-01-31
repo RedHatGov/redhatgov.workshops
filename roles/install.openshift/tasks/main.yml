@@ -1,15 +1,4 @@
 # file: roles/install.openshift/tasks/main.yml
 ---
 
-- include: hosts.yml
-
-- include: subscr.yml
-
-- include: rhel.yml
-  when: ansible_user == "ec2-user"
-
-- include: atomic.yml
-  when: ansible_user == "cloud-user"
-
 - include: install.yml
-  when: "'master' in inventory_hostname"
