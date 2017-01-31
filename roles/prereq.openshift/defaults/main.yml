@@ -1,0 +1,4 @@
+# file: roles/prereq.openshift/defaults/main.yml
+---
+#
+# foo: default
