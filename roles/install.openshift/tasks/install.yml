@@ -58,12 +58,13 @@
     - advanced
 
 - name: Run advanced installation method
-  shell: ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ansible_user }}
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ansible_user }}
   tags:
    - advanced
 
-- name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed
-  command: atomic-openshift-excluder exclude
-  when: openshift_release >= 3.4
-  tags:
-  - rhel
+# [TODO]: Apply to masters and nodes
+# - name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed
+#   command: atomic-openshift-excluder exclude
+#   when: openshift_release >= 3.4
+#   tags:
+#   - rhel
