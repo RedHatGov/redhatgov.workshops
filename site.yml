@@ -25,3 +25,12 @@
   hosts: masters
   roles:
     - { role: install.openshift, tags: ["advanced"] }
+
+#---------------------------------------------------
+# Configure OpenShift Cluster
+#---------------------------------------------------
+- name: Configure OpenShift Cluster
+  hosts: masters
+  become: yes
+  roles:
+    - { role: config.openshift, tags: ["administration"] }
