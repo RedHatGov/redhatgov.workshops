@@ -58,7 +58,7 @@
     - advanced
 
 - name: Run advanced (advanced method)
-  shell: ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ansible_user }}
+  shell: ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ansible_user }}
   tags:
    - advanced
 
