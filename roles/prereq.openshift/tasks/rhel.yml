@@ -46,6 +46,7 @@
 
 - name: Move existing entitlements to backup location
   command: mv /etc/pki/entitlement/*.pem /etc/pki/entitlement/backup
+  ignore_errors: yes
   tags:
     - rhel
 
