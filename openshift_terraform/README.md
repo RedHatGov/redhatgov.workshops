@@ -30,7 +30,7 @@ yum install ansible
 ## Provision
 
 ```
-ansible-playbook -vvv -i inventory site.yml
+ansible-playbook -i inventory site.yml
 ```
 
 ## Destroy the cluster & provider resources
