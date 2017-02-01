@@ -36,20 +36,6 @@
   tags:
     - rhel
 
-- name: Back up the existing pem files (https://access.redhat.com/solutions/1584403)
-  file:
-    path: /etc/pki/entitlement/backup
-    state: directory
-    mode: "u=rwx,g=rx,o=x"
-  tags:
-    - rhel
-
-- name: Move existing entitlements to backup location
-  command: mv /etc/pki/entitlement/*.pem /etc/pki/entitlement/backup
-  ignore_errors: yes
-  tags:
-    - rhel
-
 - name: Subscribe using customer portal activation key
   redhat_subscription: state=present activationkey='{{ activationkey }}' org_id='{{ org_id }}'
   tags:
@@ -104,6 +90,12 @@
   when: openshift_release >= 3.4
   tags:
     - rhel
+
+- name: Remove atomic-openshift packages in the host’s /etc/yum.conf file when installing
+  command: atomic-openshift-excluder unexclude
+  when: openshift_release >= 3.4
+  tags:
+  - rhel
 
 - name: Install Docker
   yum: name=docker state=present
