@@ -110,11 +110,20 @@ resource "aws_route53_record" "wildcard" {
 }
 
 #----------------------------------------------
+# Cloud-init configuration
+#----------------------------------------------
+# Template for initial configuration bash script
+data "template_file" "init" {
+    template = "${file("init.tpl")}"
+}
+
+#----------------------------------------------
 # AMI
 #----------------------------------------------
 resource "aws_instance" "ose-master" {
     ami               = "{{ ec2_master_image }}"
     instance_type     = "{{ ec2_master_instance_type }}"
+    user_data         = "${data.template_file.init.rendered}"
     subnet_id         = "${aws_subnet.public.id}"
     key_name          = "{{ ec2_keypair }}"
     security_groups   = [ "${aws_security_group.ose-sg.id}" ]
@@ -124,7 +133,7 @@ resource "aws_instance" "ose-master" {
 	  }
     connection {
       type        = "ssh"
-      user        = "{{ ec2_master_username }}"
+      user        = "{{ ec2_default_user }}"
       private_key = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
     }
     provisioner "file" {
@@ -133,7 +142,7 @@ resource "aws_instance" "ose-master" {
     }
     tags {
         Name    = "master"
-        sshUser = "{{ ec2_master_username }}"
+        sshUser = "{{ ec2_default_user }}"
         role    = "masters"
     }
 }
@@ -142,6 +151,7 @@ resource "aws_instance" "ose-node" {
     count             = "{{ ec2_node_count }}"
     ami               = "{{ ec2_node_image }}"
     instance_type     = "{{ ec2_node_instance_type }}"
+    user_data         = "${data.template_file.init.rendered}"
     subnet_id         = "${aws_subnet.public.id}"
     key_name          = "{{ ec2_keypair }}"
     security_groups   = [ "${aws_security_group.ose-sg.id}" ]
@@ -151,7 +161,7 @@ resource "aws_instance" "ose-node" {
 	  }
     connection {
       type        = "ssh"
-      user        = "{{ ec2_node_username }}"
+      user        = "{{ ec2_default_user }}"
       private_key = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
     }
     provisioner "file" {
@@ -160,7 +170,7 @@ resource "aws_instance" "ose-node" {
     }
     tags {
         Name    = "node-${count.index}"
-        sshUser = "{{ ec2_node_username }}"
+        sshUser = "{{ ec2_default_user }}"
         role    = "nodes"
     }
 }
