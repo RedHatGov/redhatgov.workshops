@@ -65,6 +65,7 @@
 # [TODO]: Apply to masters and nodes
 # - name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed
 #   command: atomic-openshift-excluder exclude
+#   become: yes
 #   when: openshift_release >= 3.4
 #   tags:
 #   - rhel
