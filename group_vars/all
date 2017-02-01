@@ -7,7 +7,7 @@ aws_access_key_id: "${INSERT_VALUE_HERE}"
 aws_secret_access_key: "${INSERT_VALUE_HERE}"
 domain_name: "${INSERT_VALUE_HERE}"
 zone_id: "${INSERT_VALUE_HERE}"
-region: "${INSERT_VALUE_HERE}"
+region: "us-east-1"
 
 #####################################################
 # Terraform configuration
