@@ -34,8 +34,13 @@
 #---------------------------------------------------
 # Terraform.io
 #---------------------------------------------------
-- name: Template Terraform files locally to run
+- name: Move 'aws.tf' to local '.terraform' directory
   template: dest="{{ terraform_working_dir }}/aws.tf"  src=aws.tf.j2
+  tags:
+    - tf_create
+
+- name: Move 'init.tpl' to local '.terraform' directory
+  template: dest="{{ terraform_working_dir }}/init.tpl"  src=init.tpl
   tags:
     - tf_create
 
