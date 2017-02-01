@@ -46,7 +46,7 @@
 
 - debug: var=hostvars
 
-- name: Template inventory file
-  template: dest=/home/{{ ansible_user }}/inventory_ose  src=inventory_ose.j2
+- name: Template inventory file to host
+  template: dest=/home/{{ ec2_default_user }}/inventory_ose  src=inventory_ose_atomic.j2
   tags:
    - atomic
