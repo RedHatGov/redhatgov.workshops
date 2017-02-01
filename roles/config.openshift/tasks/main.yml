@@ -1,4 +1,4 @@
 # file: roles/config.openshift/tasks/main.yml
 ---
 
-- include: cluster.yml
+- include: oadm.yml
