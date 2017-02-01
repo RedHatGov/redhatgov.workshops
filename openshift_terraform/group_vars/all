@@ -1,7 +1,7 @@
 # file: group_vars/all
 
 #####################################################
-# AWS configuration
+# AWS Keys
 #####################################################
 aws_access_key_id: "${INSERT_VALUE_HERE}"
 aws_secret_access_key: "${INSERT_VALUE_HERE}"
@@ -25,13 +25,13 @@ ec2_security_group: "ose-sg"
 ec2_vpc: "ose-vpc"
 ec2_vpc_subnet: "ose-public-subnet"
 ec2_route: "ose-public-route"
+ec2_default_user: "ec2-user"
 
 #####################################################
 # Master EC2 instances
 #####################################################
 ec2_master_instance_type: "m4.xlarge"
 ec2_master_image: "ami-b63769a1" # RHEL7
-ec2_master_username: "ec2-user"
 os_master_root_vol_size: "40"
 os_master_root_vol_type: "gp2"
 
@@ -56,7 +56,6 @@ os_master_root_vol_type: "gp2"
 #####################################################
 ec2_node_instance_type: "m4.large"
 ec2_node_image: "ami-261f5a4c" # RHEL Atomic Host
-ec2_node_username: "cloud-user"
 ec2_node_count: "2"
 os_node_root_vol_size: "15"
 os_node_root_vol_type: "gp2"
@@ -71,7 +70,7 @@ org_id: "${INSERT_VALUE_HERE}"
 # OpenShift cluster
 #####################################################
 openshift_release: "3.4"
-openshift_cloudprovider_kind: "aws"
+openshift_cloudprovider_kind: "aws" # ONLY supported
 cluster_admin_username: "${INSERT_VALUE_HERE}"
 cluster_admin_password: "${INSERT_VALUE_HERE}"
 
