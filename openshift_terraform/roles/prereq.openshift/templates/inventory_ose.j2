@@ -6,7 +6,7 @@ nodes
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
 # SSH user, this user should allow ssh based auth without requiring a password
-ansible_ssh_user={{ ec2_master_username }}
+ansible_ssh_user={{ ec2_default_user }}
 ansible_become=true
 
 # If ansible_ssh_user is not root, ansible_sudo must be set to true
