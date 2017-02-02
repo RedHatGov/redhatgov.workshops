@@ -1,4 +1,0 @@
-# file: roles/config.openshift/tasks/main.yml
----
-
-- include: oadm.yml

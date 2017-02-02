@@ -1,0 +1,10 @@
+# file: roles/openshift.prereq/tasks/main.yml
+---
+
+- include: hosts.yml
+
+# [TODO]: Skip Atomic hosts
+- include: rhel.yml
+
+# [TODO]: Skip RHEL hosts
+# - include: atomic.yml

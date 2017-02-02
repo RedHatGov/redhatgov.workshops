@@ -1,0 +1,128 @@
+# file: roles/openshift.prereq/tasks/rhel.yml
+---
+
+- name: Disable all Amazon RHEL repos
+  command: /usr/bin/yum-config-manager --disable *
+  tags:
+    - rhel
+
+- name: Disable Amazon yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/amazon-id.conf regexp='^enabled' line='enabled = 0' state=present
+  tags:
+    - rhel
+
+- name: Disable rhui-lb yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/rhui-lb.conf regexp='^enabled' line='enabled = 0' state=present
+  tags:
+    - rhel
+
+- name: Disable rhui yum repos
+  lineinfile: dest=/etc/yum.repos.d/redhat-rhui.repo regexp='^enabled' line='enabled = 0' state=present
+  tags:
+    - rhel
+
+- name: Enable product-id yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/product-id.conf regexp='^enabled' line='enabled = 1' state=present
+  tags:
+    - rhel
+
+- name: Disable aws RHUI yum repo
+  lineinfile: dest=/etc/yum.repos.d/redhat-rhui-client-config.repo regexp='^enabled' line='enabled = 0' state=present
+  tags:
+    - rhel
+
+- name: Enable subscription manager yum plugin
+  lineinfile: dest=/etc/yum/pluginconf.d/subscription-manager.conf regexp='^enabled' line='enabled = 1' state=present
+  tags:
+    - rhel
+
+- name: Subscribe using customer portal activation key
+  redhat_subscription: state=present activationkey='{{ activationkey }}' org_id='{{ org_id }}'
+  tags:
+    - rhel
+
+- name: Disable all repos by default
+  shell: subscription-manager repos --disable="*"
+  tags:
+    - rhel
+
+- name: Enable the pre-requisites repos
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="rhel-7-server-ose-"{{ openshift_release }}"-rpms"
+  tags:
+    - rhel
+
+- name: Import GPG keys
+  rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+  tags:
+    - rhel
+
+- name: Install pre-requisites
+  yum: name={{ item }} state=present
+  with_items:
+      - wget
+      - vim
+      - git
+      - unzip
+      - net-tools
+      - bind-utils
+      - httpd-tools
+      - bridge-utils
+      - bash-completion
+      - iptables-services
+  tags:
+    - rhel
+
+- name: Update all yum packages
+  yum: name=* state=latest
+  tags:
+    - rhel
+
+- name: Install atomic-openshift-utils
+  yum: name=atomic-openshift-utils state=present
+  tags:
+    - rhel
+
+- name: Install *-excluder packages
+  yum: name={{ item }} state=present
+  with_items:
+      - atomic-openshift-excluder
+      - atomic-openshift-docker-excluder
+  when: openshift_release >= 3.4
+  tags:
+    - rhel
+
+- name: Remove atomic-openshift packages in the host’s /etc/yum.conf file when installing
+  command: atomic-openshift-excluder unexclude
+  when: openshift_release >= 3.4
+  tags:
+  - rhel
+
+- name: Install Docker
+  yum: name=docker state=present
+  tags:
+    - rhel
+
+- name: Eanble insecure registry
+  command: sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16 --log-opt max-size=1M --log-opt max-file=3"' /etc/sysconfig/docker
+  tags:
+    - rhel
+
+- name: Setup docker-storage-setup
+  command: echo -e "DEVS=/dev/xvdb\nVG=docker-vg" >> /etc/sysconfig/docker-storage-setup
+  tags:
+    - rhel
+
+- name: Start docker
+  service: name=docker state=started enabled=yes
+  tags:
+    - rhel
+
+- name: get EC2 Facts
+  action: ec2_facts
+
+- debug: var=hostvars
+
+- name: Template inventory file to host
+  template: dest=/home/{{ ec2_default_user }}/inventory_ose  src=inventory_ose_rhel.j2
+  tags:
+   - rhel

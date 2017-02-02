@@ -1,0 +1,52 @@
+# file: roles/openshift.prereq/tasks/atomic.yml
+---
+
+- name: Subscribe using customer portal activation key
+  redhat_subscription: state=present activationkey='{{ activationkey }}' org_id='{{ org_id }}'
+  tags:
+    - atomic
+
+- name: Disable all repos by default
+  shell: subscription-manager repos --disable="*"
+  tags:
+    - atomic
+
+- name: Enable the pre-requisites repos
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="rhel-7-server-ose-"{{ openshift_release }}"-rpms"
+  tags:
+    - atomic
+
+- name: Import GPG keys
+  rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+  tags:
+    - atomic
+
+- name: Upgrade the atomic host platform to the latest version (atomic host upgrade)
+  shell: atomic host upgrade
+  tags:
+    - atomic
+
+- name: Reboot the host
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  sudo: true
+  ignore_errors: true
+  tags:
+    - atomic
+
+- name: Waiting for server to come back
+  local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
+  sudo: false
+  tags:
+    - atomic
+
+- name: get EC2 Facts
+  action: ec2_facts
+
+- debug: var=hostvars
+
+- name: Template inventory file to host
+  template: dest=/home/{{ ec2_default_user }}/inventory_ose  src=inventory_ose_atomic.j2
+  tags:
+   - atomic
