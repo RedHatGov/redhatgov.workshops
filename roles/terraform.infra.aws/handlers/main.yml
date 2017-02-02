@@ -1,0 +1,6 @@
+# file: roles/terraform.infra.aws/handlers/main.yml
+---
+# For example,
+# 
+# - name: restart ntpd
+#   service: name=ntpd state=restarted
