@@ -2,3 +2,5 @@
 ---
 
 - include: oadm.yml
+- include: logging.yml
+- include: metrics.yml
