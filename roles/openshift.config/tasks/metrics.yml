@@ -68,13 +68,15 @@
   tags:
   - metrics
 
-- name: Start nfs-server service
-  command: systemctl start nfs-server
+- name: Start nfs-server service, if not running
+  service: nfs-server
+  state: started
   tags:
   - metrics
 
-- name: Enable nfs-server service on boot
-  command: systemctl enable nfs-server
+- name: Enable nfs-server service, and not touch the running state
+  service: nfs-server
+  enabled: yes
   tags:
   - metrics
 
