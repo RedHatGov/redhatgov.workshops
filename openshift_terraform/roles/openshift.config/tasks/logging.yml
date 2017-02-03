@@ -105,7 +105,13 @@
   tags:
   - logging
 
-- name: Show available mounts (debug)
-  command: /sbin/showmount -e localhost
-  tags:
-  - logging
+# - name: Show available mounts
+#   command: /sbin/showmount -e localhost
+#   register: result
+#   tags:
+#   - metrics
+#
+# - name: Debug available mounts
+#   debug:
+#     var: result
+#     verbosity: 2
