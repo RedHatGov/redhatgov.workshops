@@ -33,4 +33,4 @@
   hosts: masters
   become: yes
   roles:
-    - { role: openshift.config, tags: ["administration", "logging", "metrics"] }
+    - { role: openshift.config, tags: ["administration"] }
