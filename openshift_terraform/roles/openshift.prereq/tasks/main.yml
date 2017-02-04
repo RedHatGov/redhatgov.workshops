@@ -2,6 +2,7 @@
 ---
 
 - include: hosts.yml
+- include: subscr.yml
 - include: rhel.yml
 
 # [TODO]: Add Atomic Host support
