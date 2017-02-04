@@ -1,26 +1,6 @@
 # file: roles/openshift.prereq/tasks/atomic.yml
 ---
 
-- name: Subscribe using customer portal activation key
-  redhat_subscription: state=present activationkey='{{ activationkey }}' org_id='{{ org_id }}'
-  tags:
-    - atomic
-
-- name: Disable all repos by default
-  shell: subscription-manager repos --disable="*"
-  tags:
-    - atomic
-
-- name: Enable the pre-requisites repos
-  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="rhel-7-server-ose-"{{ openshift_release }}"-rpms"
-  tags:
-    - atomic
-
-- name: Import GPG keys
-  rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
-  tags:
-    - atomic
-
 - name: Upgrade the atomic host platform to the latest version (atomic host upgrade)
   shell: atomic host upgrade
   tags:
