@@ -2,9 +2,7 @@
 ---
 
 - include: hosts.yml
-
-# [TODO]: Skip Atomic hosts
 - include: rhel.yml
 
-# [TODO]: Skip RHEL hosts
+# [TODO]: Add Atomic Host support
 # - include: atomic.yml
