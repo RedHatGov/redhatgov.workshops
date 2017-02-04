@@ -1,6 +1,5 @@
 # file: roles/openshift.config/tasks/main.yml
 ---
 
-- include: oadm.yml
 - include: logging.yml
-- include: metrics.yml
+- include: oadm.yml

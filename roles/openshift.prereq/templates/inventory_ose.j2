@@ -2,6 +2,7 @@
 [OSEv3:children]
 masters
 nodes
+nfs
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
@@ -24,8 +25,19 @@ openshift_master_default_subdomain=apps.ose.{{ domain_name }}
 # openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
 
 openshift_cloudprovider_kind={{ openshift_cloudprovider_kind }}
+
+# Configure AWS Variables
 openshift_cloudprovider_aws_access_key={{ aws_access_key_id }}
 openshift_cloudprovider_aws_secret_key={{ aws_secret_access_key }}
+
+# Configure Cluster Metrics
+openshift_hosted_metrics_deploy=true
+openshift_hosted_metrics_storage_kind=nfs
+openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
+openshift_hosted_metrics_storage_nfs_directory=/srv
+openshift_hosted_metrics_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_metrics_storage_volume_name=metrics
+openshift_hosted_metrics_storage_volume_size=2Gi
 
 # Host group for masters
 [masters]
