@@ -16,7 +16,9 @@
   hosts: masters, nodes
   become: yes
   roles:
-    - { role: openshift.prereq, tags: ["atomic", "network", "rhel", "subscription"] }
+    - { role: openshift.prereq, tags: ["network", "subscription", "rhel"] }
+    # [TODO]: Add Atomic Host support
+    # - { role: openshift.prereq, tags: ["network", "atomic", "rhel", "subscription"] }
 
 #---------------------------------------------------
 # OpenShift Advanced Installation
