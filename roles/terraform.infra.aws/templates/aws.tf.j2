@@ -2,19 +2,21 @@
 # API Keys
 #----------------------------------------------
 provider "aws" {
-    access_key = "{{ aws_access_key_id }}"
-    secret_key = "{{ aws_secret_access_key }}"
-    region     = "{{ region }}"
+    access_key              = "{{ aws_access_key_id }}"
+    secret_key              = "{{ aws_secret_access_key }}"
+    region                  = "{{ region }}"
 }
 
 #----------------------------------------------
 # VPC
 #----------------------------------------------
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-  tags { Name = "{{ ec2_vpc }}" }
+  cidr_block                = "10.0.0.0/16"
+  enable_dns_support        = "{{ ec2_assign_public_ip }}"
+  enable_dns_hostnames      = "{{ ec2_assign_public_ip }}"
+  tags {
+    Name                    = "{{ ec2_vpc }}"
+  }
 }
 
 #----------------------------------------------
@@ -23,15 +25,17 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "public" {
     vpc_id                  = "${aws_vpc.main.id}"
     cidr_block              = "10.0.2.0/24"
-    map_public_ip_on_launch = true
-    tags { Name = "{{ ec2_vpc_subnet }}" }
+    map_public_ip_on_launch = "{{ ec2_assign_public_ip }}"
+    tags {
+      Name                  = "{{ ec2_vpc_subnet }}"
+    }
 }
 
 #----------------------------------------------
 # Gateway
 #----------------------------------------------
 resource "aws_internet_gateway" "public" {
-  vpc_id = "${aws_vpc.main.id}"
+  vpc_id                    = "${aws_vpc.main.id}"
 }
 
 #----------------------------------------------
@@ -40,73 +44,65 @@ resource "aws_internet_gateway" "public" {
 resource "aws_route_table" "public" {
   vpc_id = "${aws_vpc.main.id}"
   route {
-      cidr_block = "0.0.0.0/0"
-      gateway_id = "${aws_internet_gateway.public.id}"
+      cidr_block            = "0.0.0.0/0"
+      gateway_id            = "${aws_internet_gateway.public.id}"
   }
-  tags { Name = "{{ ec2_route }}" }
+  tags {
+    Name                    = "{{ ec2_route }}" 
+  }
 }
 
 resource "aws_route_table_association" "public" {
-  subnet_id      = "${aws_subnet.public.id}"
-  route_table_id = "${aws_route_table.public.id}"
+  subnet_id                 = "${aws_subnet.public.id}"
+  route_table_id            = "${aws_route_table.public.id}"
 }
 
 #----------------------------------------------
 # Security Group
 #----------------------------------------------
 resource "aws_security_group" "{{ ec2_security_group }}" {
-  name   = "{{ ec2_security_group }}"
-  vpc_id = "${aws_vpc.main.id}"
-
+  name                      = "{{ ec2_security_group }}"
+  vpc_id                    = "${aws_vpc.main.id}"
   egress {
-    protocol    = -1
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    protocol                = -1
+    from_port               = 0
+    to_port                 = 0
+    cidr_blocks             = ["0.0.0.0/0"]
   }
-
   ingress {
-    protocol    = -1
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    protocol                = -1
+    from_port               = 0
+    to_port                 = 0
+    cidr_blocks             = ["0.0.0.0/0"]
   }
 }
-
-# TODO
-# TCP/22 - ssh
-# TCP/80 - Web Apps
-# TCP/443 - Web Apps (https)
-# UDP/4789 - SDN / VXLAN
-# TCP/8443 - Openshift Console
-# TCP/10250 - kubelet
 
 #----------------------------------------------
 # DNS
 #----------------------------------------------
-resource "aws_route53_record" "master" {
-  zone_id = "{{ zone_id }}"
-  name = "master.ose.{{ domain_name }}"
-  type = "A"
-  ttl = "300"
-  records = ["${aws_instance.ose-master.public_ip}"]
+resource "aws_route53_record" "{{ ec2_master_tag_name }}" {
+  zone_id                   = "{{ zone_id }}"
+  name                      = "master.ose.{{ domain_name }}"
+  type                      = "A"
+  ttl                       = "600"
+  records                   = ["${aws_instance.{{ ec2_master_group_name }}.public_ip}"]
 }
 
-resource "aws_route53_record" "nodes" {
-  count = "{{ ec2_node_count }}"
-  zone_id = "{{ zone_id }}"
-  name = "node.${count.index}.ose.{{ domain_name }}"
-  type = "A"
-  ttl = "300"
-  records = ["${element(aws_instance.ose-node.*.public_ip, count.index)}"]
+resource "aws_route53_record" "{{ ec2_node_tag_name }}" {
+  count                     = "{{ ec2_node_count }}"
+  zone_id                   = "{{ zone_id }}"
+  name                      = "node.${count.index}.ose.{{ domain_name }}"
+  type                      = "A"
+  ttl                       = "300"
+  records                   = ["${element(aws_instance.{{ ec2_node_group_name }}.*.public_ip, count.index)}"]
 }
 
 resource "aws_route53_record" "wildcard" {
-  zone_id = "{{ zone_id }}"
-  type = "A"
-  ttl = "300"
-  name = "*.apps.ose.{{ domain_name }}"
-  records = ["${aws_instance.ose-master.public_ip}"]
+  zone_id                   = "{{ zone_id }}"
+  type                      = "A"
+  ttl                       = "600"
+  name                      = "*.apps.ose.{{ domain_name }}"
+  records                   = ["${aws_instance.{{ ec2_master_group_name }}.public_ip}"]
 }
 
 #----------------------------------------------
@@ -114,63 +110,74 @@ resource "aws_route53_record" "wildcard" {
 #----------------------------------------------
 # Template for initial configuration bash script
 data "template_file" "init" {
-    template = "${file("init.tpl")}"
+    template                = "${file("init.tpl")}"
 }
 
 #----------------------------------------------
 # AMI
 #----------------------------------------------
-resource "aws_instance" "ose-master" {
-    ami               = "{{ ec2_master_image }}"
-    instance_type     = "{{ ec2_master_instance_type }}"
-    user_data         = "${data.template_file.init.rendered}"
-    subnet_id         = "${aws_subnet.public.id}"
-    key_name          = "{{ ec2_keypair }}"
-    security_groups   = [ "${aws_security_group.ose-sg.id}" ]
-    root_block_device = {
-      volume_size   = "{{ os_master_root_vol_size }}"
-		  volume_type   = "{{ os_master_root_vol_type }}"
+resource "aws_instance" "{{ ec2_master_group_name }}" {
+    ami                     = "{{ ec2_master_image }}"
+    instance_type           = "{{ ec2_master_instance_type }}"
+    user_data               = "${data.template_file.init.rendered}"
+    subnet_id               = "${aws_subnet.public.id}"
+    key_name                = "{{ ec2_keypair }}"
+    security_groups         = [ "${aws_security_group.{{ ec2_security_group }}.id}" ]
+    root_block_device {
+      volume_size           = "{{ os_master_root_vol_size }}"
+		  volume_type           = "{{ os_master_root_vol_type }}"
 	  }
-    connection {
-      type        = "ssh"
-      user        = "{{ ec2_default_user }}"
-      private_key = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
-    }
-    provisioner "file" {
-      source      = "{{ terraform_working_dir }}/{{ ec2_keypair }}"
-      destination = "~/.ssh/{{ ec2_keypair }}"
+    ebs_block_device {
+      device_name           = "{{ os_docker_block_device }}"
+      volume_size           = "{{ os_docker_vol_size }}"
+      volume_type           = "{{ os_docker_vol_type }}"
     }
     tags {
-        Name    = "master"
-        sshUser = "{{ ec2_default_user }}"
-        role    = "masters"
+        Name                = "{{ ec2_master_tag_name }}"
+        sshUser             = "{{ ec2_default_user }}"
+        role                = "{{ ec2_master_tag_role }}"
+    }
+    # Copies the file as the 'ec2_default_user' using SSH
+    provisioner "file" {
+      source                = "{{ terraform_working_dir }}/{{ ec2_keypair }}"
+      destination           = "/home/{{ ec2_default_user }}/.ssh/{{ ec2_keypair }}"
+      connection {
+        type                = "{{ terraform_provisioner_connection_type }}"
+        user                = "{{ ec2_default_user }}"
+        private_key         = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
+      }
     }
 }
 
-resource "aws_instance" "ose-node" {
-    count             = "{{ ec2_node_count }}"
-    ami               = "{{ ec2_node_image }}"
-    instance_type     = "{{ ec2_node_instance_type }}"
-    user_data         = "${data.template_file.init.rendered}"
-    subnet_id         = "${aws_subnet.public.id}"
-    key_name          = "{{ ec2_keypair }}"
-    security_groups   = [ "${aws_security_group.ose-sg.id}" ]
-	  root_block_device = {
-      volume_size   = "{{ os_node_root_vol_size }}"
-		  volume_type   = "{{ os_node_root_vol_type }}"
+resource "aws_instance" "{{ ec2_node_group_name }}" {
+    count                   = "{{ ec2_node_count }}"
+    ami                     = "{{ ec2_node_image }}"
+    instance_type           = "{{ ec2_node_instance_type }}"
+    user_data               = "${data.template_file.init.rendered}"
+    subnet_id               = "${aws_subnet.public.id}"
+    key_name                = "{{ ec2_keypair }}"
+    security_groups         = [ "${aws_security_group.{{ ec2_security_group }}.id}" ]
+	  root_block_device {
+      volume_size           = "{{ os_node_root_vol_size }}"
+		  volume_type           = "{{ os_node_root_vol_type }}"
 	  }
-    connection {
-      type        = "ssh"
-      user        = "{{ ec2_default_user }}"
-      private_key = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
-    }
-    provisioner "file" {
-        source      = "{{ terraform_working_dir }}/{{ ec2_keypair }}"
-        destination = "~/.ssh/{{ ec2_keypair }}"
+    ebs_block_device {
+      device_name           = "{{ os_docker_block_device }}"
+      volume_size           = "{{ os_docker_vol_size }}"
+      volume_type           = "{{ os_docker_vol_type }}"
     }
     tags {
-        Name    = "node-${count.index}"
-        sshUser = "{{ ec2_default_user }}"
-        role    = "nodes"
+        Name                = "{{ ec2_node_tag_name }}-${count.index}"
+        sshUser             = "{{ ec2_default_user }}"
+        role                = "{{ ec2_node_tag_role }}"
+    }
+    provisioner "file" {
+        source              = "{{ terraform_working_dir }}/{{ ec2_keypair }}"
+        destination         = "/home/{{ ec2_default_user }}/.ssh/{{ ec2_keypair }}"
+        connection {
+          type              = "{{ terraform_provisioner_connection_type }}"
+          user              = "{{ ec2_default_user }}"
+          private_key       = "${file("{{ terraform_working_dir }}/{{ ec2_keypair }}")}"
+        }
     }
 }
