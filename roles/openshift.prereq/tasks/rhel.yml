@@ -48,12 +48,17 @@
     - rhel
 
 - name: Eanble insecure registry
-  command: sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16 --log-opt max-size=1M --log-opt max-file=3"' /etc/sysconfig/docker
+  shell: sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16 --log-opt max-size=1M --log-opt max-file=3"' /etc/sysconfig/docker
   tags:
     - rhel
 
-- name: Setup docker-storage-setup
-  command: echo -e "DEVS=/dev/xvdb\nVG=docker-vg" >> /etc/sysconfig/docker-storage-setup
+- name: Prepare additional block device
+  shell: echo -e "WIPE_SIGNATURES=true\nDEVS={{ os_docker_block_device }}\nVG={{ os_docker_volume_group }}" >> /etc/sysconfig/docker-storage-setup
+  tags:
+    - rhel
+
+- name: Create 'docker-pool' logical volume
+  command: docker-storage-setup
   tags:
     - rhel
 
