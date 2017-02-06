@@ -67,8 +67,13 @@
   tags:
     - subscription
 
-- name: Enable the pre-requisites repos
-  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="rhel-7-server-ose-"{{ openshift_release }}"-rpms"
+- name: Enable pre-requisites repos
+  shell: subscription-manager repos --enable {{ item }}
+  with_items:
+    - rhel-7-server-rpms
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-optional-rpms
+    - rhel-7-server-ose-"{{ openshift_release }}"-rpms
   tags:
     - subscription
 
