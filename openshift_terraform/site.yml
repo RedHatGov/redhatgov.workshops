@@ -5,9 +5,11 @@
 # Terraform Providers
 #---------------------------------------------------
 - name: Terraform AWS Provider
-  hosts: local_target
+  hosts: targets
   roles:
-    - { role: terraform.infra.aws, tags: ["terraform"], when: openshift_cloudprovider_kind == "aws" }
+    - terraform.infra.aws
+
+# [TODO]: Add Atomic Host support.
 
 #---------------------------------------------------
 # OpenShift Pre- Installation
@@ -16,9 +18,7 @@
   hosts: masters, nodes
   become: yes
   roles:
-    - { role: openshift.prereq, tags: ["network", "subscription", "rhel"] }
-    # [TODO]: Add Atomic Host support
-    # - { role: openshift.prereq, tags: ["network", "atomic", "rhel", "subscription"] }
+    - openshift.prereq
 
 #---------------------------------------------------
 # OpenShift Advanced Installation
@@ -26,7 +26,7 @@
 - name: OpenShift Advanced Installation
   hosts: masters
   roles:
-    - { role: openshift.install, tags: ["advanced"] }
+    - openshift.install
 
 #---------------------------------------------------
 # Configure OpenShift Cluster
@@ -35,4 +35,4 @@
   hosts: masters
   become: yes
   roles:
-    - { role: openshift.config, tags: ["administration"] }
+    - openshift.config

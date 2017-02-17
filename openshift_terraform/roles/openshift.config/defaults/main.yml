@@ -1,4 +1,8 @@
 # file: roles/openshift.config/defaults/main.yml
 ---
-#
-# foo: default
+
+#####################################################
+# Cluster administration
+#####################################################
+cluster_admin_username: "${INSERT_VALUE_HERE}"
+cluster_admin_password: "${INSERT_VALUE_HERE}"

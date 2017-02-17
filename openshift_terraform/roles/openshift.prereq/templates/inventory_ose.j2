@@ -7,7 +7,7 @@ nfs
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
 # SSH user, this user should allow ssh based auth without requiring a password
-ansible_ssh_user={{ ec2_default_user }}
+ansible_ssh_user={{ default_user }}
 ansible_become=true
 
 # If ansible_ssh_user is not root, ansible_sudo must be set to true
@@ -19,12 +19,12 @@ openshift_install_examples=true
 
 # Uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
-openshift_master_default_subdomain=apps.ose.{{ domain_name }}
+openshift_master_default_subdomain=apps.ose.{{ default_domain_name }}
 
 # Apply updated node defaults
 # openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
 
-openshift_cloudprovider_kind={{ openshift_cloudprovider_kind }}
+openshift_cloudprovider_kind=aws
 
 # Configure AWS Variables
 openshift_cloudprovider_aws_access_key={{ aws_access_key_id }}
