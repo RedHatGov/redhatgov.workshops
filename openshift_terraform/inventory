@@ -1,5 +1,7 @@
 # file: inventory
 
+# [TODO]: Implement dynamic inventory file.
+
 [targets]
 localhost ansible_connection=local
 
