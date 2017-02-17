@@ -19,12 +19,14 @@
   hostname:
     name: "{{ inventory_hostname }}"
 
-# - name: Gather EC2 facts for host
-#   action: ec2_facts
-#   register: ec2_facts
-#
-# - name: Append EC2 host public ipv4 to hosts file
-#   shell: "echo -e '{{ ec2_facts.ansible_facts.ansible_ec2_public_ipv4 }} {{ inventory_hostname }}' | tee --append /etc/hosts > /dev/null"
+# [TODO]: Replace EC2 facts with ansible IPv4.
+
+- name: Gather EC2 facts for host
+  action: ec2_facts
+  register: ec2_facts
+
+- name: Append EC2 host public ipv4 to hosts file
+  shell: "echo -e '{{ ec2_facts.ansible_facts.ansible_ec2_public_ipv4 }} {{ inventory_hostname }}' | tee --append /etc/hosts > /dev/null"
 
 - name: Append entry to hosts file
   lineinfile: "dest=/etc/hosts state=present insertafter=EOF line={{ item }}"
