@@ -1,9 +1,0 @@
----
-
-- name: Create admin account
-  become: yes
-  htpasswd: name='{{ cluster_admin_username }}'  password='{{ cluster_admin_password }}'  path=/etc/origin/master/htpasswd  state=present
-
-- name: Add cluster role to admin account
-  become: yes
-  shell: oadm --config=/etc/origin/master/admin.kubeconfig policy add-cluster-role-to-user cluster-admin {{ cluster_admin_username }}
