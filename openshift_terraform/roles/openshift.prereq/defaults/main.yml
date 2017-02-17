@@ -1,6 +1,8 @@
 # file: roles/openshift.prereq/defaults/main.yml
 ---
 
+# [TODO]: Replace EC2 facts with ansible IPv4.
+
 #####################################################
 # Hosts configuration
 #####################################################
