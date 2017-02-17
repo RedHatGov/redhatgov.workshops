@@ -4,5 +4,11 @@
 #####################################################
 # Cluster administration
 #####################################################
-cluster_admin_username: "${INSERT_VALUE_HERE}"
-cluster_admin_password: "${INSERT_VALUE_HERE}"
+openshift_cluster_admin_username: "${INSERT_VALUE_HERE}"
+openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# Add dummy users
+#####################################################
+openshift_test_users_password: example_password
+openshift_test_users_count: 20
