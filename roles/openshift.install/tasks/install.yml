@@ -3,69 +3,47 @@
 
 - name: Curl get pip
   become: yes
-  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir=/home/{{ ec2_default_user }}
-  tags:
-    - advanced
+  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir={{ default_home }}
 
 - name: Python install pip
   become: yes
-  command: python /home/ec2-user/get-pip.py chdir=/home/{{ ec2_default_user }}
-  tags:
-   - advanced
+  command: python {{ default_home }}/get-pip.py chdir={{ default_home }}
 
 - name: Install passlib
   become: yes
   pip: name=passlib state=present
-  tags:
-   - advanced
 
 - name: Copy over key pair
-  copy: dest="/home/{{ ec2_default_user }}/.ssh/{{ ec2_keypair }}"  mode=0400  src="{{ terraform_working_dir }}/{{ ec2_keypair }}"
-  tags:
-   - advanced
+  copy: dest="{{ default_ssh }}/{{ default_keypair }}"  mode=0400  src="{{ terraform_workspace }}/{{ default_keypair }}"
 
 - name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
   file:
-    path: /home/{{ ec2_default_user }}/.ssh/config
+    path: "{{ default_ssh }}/config"
     state: touch
     mode: "u=rw,g=r,o=r"
-  tags:
-   - advanced
 
 - name: Insert/update "Host" configuration block in ~/.ssh/config
   blockinfile:
-    dest: /home/{{ ec2_default_user }}/.ssh/config
+    dest: "{{ default_ssh }}/config"
     block: |
       Host *
       IdentityFile ~/.ssh/libra
-  tags:
-   - advanced
 
-- name: Touch the same file, but add/remove some permissions
+- name: Add/remove file permissions
   file:
-    path: /home/{{ ec2_default_user }}/.ssh/config
+    path: "{{ default_ssh }}/config"
     state: touch
     mode: 0400
-  tags:
-   - advanced
 
 # - name: Debug enable ssh-agent
 #  shell: echo "ssh-agent = $(ssh-agent)"
 
 - name: Enable ssh-agent
   shell: eval $(ssh-agent)
-  tags:
-    - advanced
 
 - name: Run advanced installation method
-  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir=/home/{{ ec2_default_user }}
-  tags:
-   - advanced
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir={{ default_home }}
 
 # [TODO]: Apply to masters and nodes (both)
 # - name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed
 #   command: atomic-openshift-excluder exclude
-#   become: yes
-#   when: openshift_release >= 3.4
-#   tags:
-#   - rhel

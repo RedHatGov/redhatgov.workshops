@@ -1,13 +1,10 @@
 # file: inventory
 
-ansible_ssh_user=root
-ansible_become=yes
-
-[local_target]
-localhost ansible_connection=local ansible_python_interpreter='/usr/bin/env python'
+[targets]
+localhost ansible_connection=local
 
 [masters]
-master.ose.naps-redhat.com ansible_user=ec2-user
+master.ose.naps-redhat.com
 
 [nodes]
-node.[0:1].ose.naps-redhat.com ansible_user=ec2-user
+node.[0:1].ose.naps-redhat.com

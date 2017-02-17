@@ -1,71 +1,31 @@
 # file: roles/openshift.prereq/tasks/rhel.yml
 ---
 
-- name: Install pre-requisite packages
+- name: Install base packages
   yum: name={{ item }} state=present
-  with_items:
-      - wget
-      - vim
-      - git
-      - unzip
-      - net-tools
-      - bind-utils
-      - httpd-tools
-      - bridge-utils
-      - bash-completion
-      - iptables-services
-  tags:
-    - rhel
+  with_items: "{{ rhel_base_pkgs }}"
 
-- name: Update all yum packages
+- name: Update the system to the latest packages
   yum: name=* state=latest
-  tags:
-    - rhel
 
-- name: Install atomic-openshift-utils
-  yum: name=atomic-openshift-utils state=present
-  tags:
-    - rhel
-
-- name: Install *-excluder packages
+- name: Install OpenShift packages
   yum: name={{ item }} state=present
-  with_items:
-      - atomic-openshift-excluder
-      - atomic-openshift-docker-excluder
-  when: openshift_release >= 3.4
-  tags:
-    - rhel
+  with_items: "{{ rhel_ose_pkgs }}"
 
 - name: Remove atomic-openshift packages in the host’s /etc/yum.conf file when installing
   command: atomic-openshift-excluder unexclude
-  when: openshift_release >= 3.4
-  tags:
-  - rhel
-
-- name: Install Docker
-  yum: name=docker state=present
-  tags:
-    - rhel
 
 - name: Eanble insecure registry
   shell: sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16 --log-opt max-size=1M --log-opt max-file=3"' /etc/sysconfig/docker
-  tags:
-    - rhel
 
 - name: Prepare additional block device
   shell: echo -e "WIPE_SIGNATURES=true\nDEVS={{ os_docker_block_device }}\nVG={{ os_docker_volume_group }}" >> /etc/sysconfig/docker-storage-setup
-  tags:
-    - rhel
 
 - name: Create 'docker-pool' logical volume
   command: docker-storage-setup
-  tags:
-    - rhel
 
 - name: Start docker
   service: name=docker state=started enabled=yes
-  tags:
-    - rhel
 
 - name: get EC2 Facts
   action: ec2_facts
@@ -73,6 +33,4 @@
 - debug: var=hostvars
 
 - name: Template inventory file to host
-  template: dest=/home/{{ ec2_default_user }}/inventory_ose  src=inventory_ose.j2
-  tags:
-   - rhel
+  template: dest={{ default_home }}/inventory_ose  src=inventory_ose.j2
