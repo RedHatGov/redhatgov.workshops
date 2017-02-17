@@ -4,7 +4,7 @@
 localhost ansible_connection=local
 
 [masters]
-master.ose.naps-redhat.com
+master.ose.${INSERT_VALUE_HERE}
 
 [nodes]
-node.[0:1].ose.naps-redhat.com
+node.[0:1].ose.${INSERT_VALUE_HERE}
