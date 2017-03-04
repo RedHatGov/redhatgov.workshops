@@ -2,3 +2,4 @@
 ---
 
 - include: acct.yml
+- include: logging.yml

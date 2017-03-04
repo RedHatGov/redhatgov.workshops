@@ -103,7 +103,7 @@ resource "aws_route53_record" "wildcard" {
   zone_id                   = "{{ aws_route53_zone_id }}"
   type                      = "A"
   ttl                       = "600"
-  name                      = "*.apps.ose.{{ default_domain_name }}"
+  name                      = "*.{{ default_wildcard_subdomain }}.{{ default_domain_name }}"
   records                   = ["${aws_instance.{{ ec2_master_group_name }}.public_ip}"]
 }
 
