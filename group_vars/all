@@ -4,6 +4,7 @@
 # Default configuration
 #####################################################
 default_domain_name: "${INSERT_VALUE_HERE}"
+default_wildcard_subdomain: "${INSERT_VALUE_HERE}"
 default_user: "${INSERT_VALUE_HERE}"
 default_home: "/home/{{ default_user }}"
 default_ssh: "{{ default_home }}/.ssh"
