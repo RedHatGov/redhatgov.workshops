@@ -61,6 +61,8 @@ ansible-playbook -i inventory site.yml
 
 ## Destroy
 
+**[NOTE]:** This hidden directory also contains the key pair for SSH access to instantiated host systems.
+
 ```
 cd $(pwd)/.{{ default_domain }}
 terraform destroy
