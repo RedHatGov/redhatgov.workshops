@@ -84,7 +84,7 @@ resource "aws_security_group" "{{ aws_security_group_name }}" {
 #----------------------------------------------
 resource "aws_route53_record" "{{ ec2_master_tag_name }}" {
   zone_id                   = "{{ aws_route53_zone_id }}"
-  name                      = "master.ose.{{ default_domain_name }}"
+  name                      = "master.{{ default_subdomain }}.{{ default_domain_name }}"
   type                      = "A"
   ttl                       = "600"
   records                   = ["${aws_instance.{{ ec2_master_group_name }}.public_ip}"]
@@ -93,7 +93,7 @@ resource "aws_route53_record" "{{ ec2_master_tag_name }}" {
 resource "aws_route53_record" "{{ ec2_node_tag_name }}" {
   count                     = "{{ ec2_node_count }}"
   zone_id                   = "{{ aws_route53_zone_id }}"
-  name                      = "node.${count.index}.ose.{{ default_domain_name }}"
+  name                      = "node.${count.index}.{{ default_subdomain }}.{{ default_domain_name }}"
   type                      = "A"
   ttl                       = "300"
   records                   = ["${element(aws_instance.{{ ec2_node_group_name }}.*.public_ip, count.index)}"]
