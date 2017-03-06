@@ -6,7 +6,7 @@
 localhost ansible_connection=local
 
 [masters]
-master.ose.${INSERT_VALUE_HERE}
+master.{{ default_subdomain }}.{{ default_domain_name }}
 
 [nodes]
-node.[0:1].ose.${INSERT_VALUE_HERE}
+node.[0:1].{{ default_subdomain }}.{{ default_domain_name }}
