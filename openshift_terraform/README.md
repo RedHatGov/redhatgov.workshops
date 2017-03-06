@@ -11,6 +11,7 @@ Ansible playbook to install OpenShift using Terraform supported providers.
 ### [Amazon Web Services](https://access.redhat.com/articles/2623521)
 
 - [AWS Command Line Interface](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+- Domain purchased through AWS and managed by [Route53](https://aws.amazon.com/route53/).
 
 ### [Google Cloud Platform](https://access.redhat.com/articles/2751521)
 
@@ -64,13 +65,13 @@ node.[0:1].{{ default_subdomain }}
 
 # Usage
 
-## Provision
+### Provision
 
 ```
 ansible-playbook -i inventory site.yml
 ```
 
-## Destroy
+### Destroy
 
 **[NOTE]:** This hidden directory contains the key pair for SSH access to instantiated host systems.
 
