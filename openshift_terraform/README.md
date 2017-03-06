@@ -44,15 +44,15 @@ openshift_cluster_admin_username: "${INSERT_VALUE_HERE}"
 openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 ```
 
+**[TODO]:** Implement dynamic inventory file.
+
 ### inventory
 
 **[IMPORTANT]:** These variables must be updated manually, based on value from `group_vars/all` section above.
 
-**[TODO]:** Implement dynamic inventory file.
-
 ```
-master.{{ default_subdomain }}.{{ default_domain_name }}
-node.[0:1].{{ default_subdomain }}.{{ default_domain_name }}
+master.{{ default_subdomain }}
+node.[0:1].{{ default_subdomain }}
 ```
 
 # Usage
