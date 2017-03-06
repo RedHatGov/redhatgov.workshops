@@ -4,8 +4,8 @@
 # Default configuration
 #####################################################
 default_domain: "${INSERT_VALUE_HERE}"
-default_subdomain: "${INSERT_VALUE_HERE}.{{ default_domain }}"
-default_wildcard: "${INSERT_VALUE_HERE}.{{ default_subdomain }}"
+default_subdomain: "ose.{{ default_domain }}"
+default_wildcard: "apps.{{ default_subdomain }}"
 default_user: "${INSERT_VALUE_HERE}"
 default_home: "/home/{{ default_user }}"
 default_ssh: "{{ default_home }}/.ssh"
