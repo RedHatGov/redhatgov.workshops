@@ -24,7 +24,7 @@ Ansible playbook to install OpenShift using Terraform supported providers.
 
 # Required
 
-The following settings must be set before usage.
+The following variables must be set before usage.
 
 ### group_vars/all
 
