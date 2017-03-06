@@ -59,9 +59,9 @@ node.[0:1].{{ default_subdomain }}
 ansible-playbook -i inventory site.yml
 ```
 
-## Destroy the cluster & provider resources
+## Destroy
 
 ```
-cd $(pwd)/.terraform
+cd $(pwd)/.{{ default_domain }}
 terraform destroy
 ```
