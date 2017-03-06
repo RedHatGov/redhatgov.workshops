@@ -5,7 +5,7 @@
 #####################################################
 default_domain_name: "${INSERT_VALUE_HERE}"
 default_subdomain: "${INSERT_VALUE_HERE}.{{ default_domain_name }}"
-default_wildcard: "${INSERT_VALUE_HERE}.{{ default_subdomain }}.{{ default_domain_name }}"
+default_wildcard: "${INSERT_VALUE_HERE}.{{ default_subdomain }}"
 default_user: "${INSERT_VALUE_HERE}"
 default_home: "/home/{{ default_user }}"
 default_ssh: "{{ default_home }}/.ssh"
