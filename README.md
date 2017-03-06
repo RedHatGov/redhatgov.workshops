@@ -48,7 +48,7 @@ openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
 **[TODO]:** Implement dynamic inventory file.
 
-**[IMPT]:** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` section above.
+**[IMPORTANT]:** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` section above.
 
 ```
 master.{{ default_subdomain }}
