@@ -6,7 +6,7 @@
   lineinfile:
     dest: /etc/origin/master/master-config.yaml
     insertafter: "assetConfig:"
-    line:  "loggingPublicURL: https://kibana.{{ default_wildcard_subdomain }}"
+    line:  "loggingPublicURL: https://kibana.{{ default_wildcard }}"
 
 - name: restart openshift service
   become: yes
