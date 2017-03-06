@@ -16,8 +16,8 @@ The following settings must be set before usage.
 ### group_vars/all
 
 ```
-default_domain_name: "${INSERT_VALUE_HERE}"
-default_subdomain: "${INSERT_VALUE_HERE}.{{ default_domain_name }}"
+default_domain: "${INSERT_VALUE_HERE}"
+default_subdomain: "${INSERT_VALUE_HERE}.{{ default_domain }}"
 default_wildcard: "${INSERT_VALUE_HERE}.{{ default_subdomain }}"
 default_user: "${INSERT_VALUE_HERE}"
 aws_access_key_id: "${INSERT_VALUE_HERE}"
