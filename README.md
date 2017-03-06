@@ -17,7 +17,8 @@ The following settings must be set before usage.
 
 ```
 default_domain_name: "${INSERT_VALUE_HERE}"
-default_wildcard_subdomain: "${INSERT_VALUE_HERE}"
+default_subdomain: "${INSERT_VALUE_HERE}"
+default_wildcard_subdomain: "${INSERT_VALUE_HERE}.{{ default_subdomain }}"
 default_user: "${INSERT_VALUE_HERE}"
 aws_access_key_id: "${INSERT_VALUE_HERE}"
 aws_secret_access_key: "${INSERT_VALUE_HERE}"
@@ -45,9 +46,13 @@ openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
 ### inventory
 
+**[IMPORTANT]:** These variables must be updated manually, based on value from `group_vars/all` section above.
+
+**[TODO]:** Implement dynamic inventory file.
+
 ```
-master.ose.${INSERT_VALUE_HERE}
-node.[0:1].ose.${INSERT_VALUE_HERE}
+master.{{ default_subdomain }}.{{ default_domain_name }}
+node.[0:1].{{ default_subdomain }}.{{ default_domain_name }}
 ```
 
 # Usage
