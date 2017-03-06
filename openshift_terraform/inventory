@@ -5,7 +5,7 @@
 [targets]
 localhost ansible_connection=local
 
-# [NOTE]: These variables must be updated manually, based on `default_subdomain` value from `group_vars/all`.
+# [NOTE]: These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
 
 [masters]
 master.{{ default_subdomain }}
