@@ -6,8 +6,19 @@ Ansible playbook to install OpenShift using Terraform supported providers.
 
 - [Terraform](https://www.terraform.io/intro/getting-started/install.html) (v0.8.5)
 - [Ansible](http://docs.ansible.com/ansible/intro_installation.html) (v2.2.1.0)
-- [AWS Command Line Interface](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 - [Red Hat Customer Portal Activation Key](https://access.redhat.com/articles/1378093)
+
+### [Amazon Web Services](https://access.redhat.com/articles/2623521)
+
+- [AWS Command Line Interface](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+
+### [Google Cloud Platform](https://access.redhat.com/articles/2751521)
+
+- TBD
+
+### Microsoft Azure
+
+- TBD
 
 # Required
 
