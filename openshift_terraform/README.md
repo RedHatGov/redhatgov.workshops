@@ -17,8 +17,8 @@ The following settings must be set before usage.
 
 ```
 default_domain_name: "${INSERT_VALUE_HERE}"
-default_subdomain: "${INSERT_VALUE_HERE}"
-default_wildcard_subdomain: "${INSERT_VALUE_HERE}.{{ default_subdomain }}"
+default_subdomain: "${INSERT_VALUE_HERE}.{{ default_domain_name }}"
+default_wildcard_subdomain: "${INSERT_VALUE_HERE}.{{ default_subdomain }}.{{ default_domain_name }}"
 default_user: "${INSERT_VALUE_HERE}"
 aws_access_key_id: "${INSERT_VALUE_HERE}"
 aws_secret_access_key: "${INSERT_VALUE_HERE}"
