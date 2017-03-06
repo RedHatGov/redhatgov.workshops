@@ -44,7 +44,7 @@ openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
 ### inventory
 
-**[NOTE]:** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all`.
+**[NOTE]:** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
 
 ```
 master.{{ default_subdomain }}
