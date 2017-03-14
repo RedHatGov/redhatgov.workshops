@@ -18,7 +18,7 @@
   hostname:
     name: "{{ inventory_hostname }}"
 
-- name: Read hostname from file
+- name: Read system hostname
   shell: hostname -F /etc/hostname
 
 # [TODO]: Replace EC2 facts with ansible IPv4.
