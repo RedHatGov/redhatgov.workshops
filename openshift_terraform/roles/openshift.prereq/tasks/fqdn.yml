@@ -1,13 +1,12 @@
 # file: roles/openshift.prereq/tasks/fqdn.yml
 ---
 
-# - name: Change key pair access permissions
-#   file:
-#     dest: "{{ default_ssh }}/{{ default_keypair }}"
-#     mode: 0400
-
-- name: Set hostname in sysconfigs
-  lineinfile: "dest=/etc/sysconfig/hostname state=present insertafter=EOF line='HOSTNAME={{ inventory_hostname }}' create=yes"
+- name: Update system hostname
+  replace:
+    dest: /etc/hostname
+    regexp: '.*'
+    replace: '{{ inventory_hostname }}'
+    backup: yes
 
 - name: Set hosts FQDN
   lineinfile:
@@ -15,11 +14,12 @@
     regexp: '^127\.0\.0\.1'
     line: '127.0.0.1   {{ inventory_hostname }} localhost localhost.localdomain localhost4 localhost4.localdomain4'
 
-# [TODO]: Update `/etc/hostname` with {{ inventory_hostname }}.
-
-- name: Set hostname
+- name: Set system hostname
   hostname:
     name: "{{ inventory_hostname }}"
+
+- name: Read hostname from file
+  shell: hostname -F /etc/hostname
 
 # [TODO]: Replace EC2 facts with ansible IPv4.
 
