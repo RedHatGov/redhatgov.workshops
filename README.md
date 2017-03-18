@@ -67,14 +67,14 @@ openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
 ### inventory
 
-**[NOTE]:** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
+**!Important** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
 
 ```
 master.{{ default_subdomain }}
 node.[0:1].{{ default_subdomain }}
 ```
 
-**[TIP]:** The value `[0:1]` is a [pattern](http://docs.ansible.com/ansible/intro_patterns.html#patterns) that declares how many OpenShift nodes to create. In this case it will create `node0` and `node1`.
+**[NOTE]:** The value `[0:1]` is a [pattern](http://docs.ansible.com/ansible/intro_patterns.html#patterns) that declares how many OpenShift nodes to create. In this case it will create `node0` and `node1`.
 
 # Usage
 
