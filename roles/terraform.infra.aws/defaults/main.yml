@@ -1,6 +1,8 @@
 # file: roles/terraform.infra.aws/defaults/main.yml
 ---
 
+# [TODO]: Implement dynamic route53 hosted zone id retrieval.
+
 #####################################################
 # AWS Route53 (DNS)
 #####################################################

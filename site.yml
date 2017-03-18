@@ -9,6 +9,8 @@
   roles:
     - terraform.infra.aws
 
+# [TODO]: Add Terraform Google Cloud Platform provider support.
+# [TODO]: Add Terraform Microsoft Azure provider support.
 # [TODO]: Add Atomic Host support.
 
 #---------------------------------------------------
