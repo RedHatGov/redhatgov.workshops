@@ -55,7 +55,7 @@ openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 ### inventory
 
 The value '[0:1]' tells ansible how many OpenShift nodes to create.  In this case it will create node0 and node1.
- 
+
 ```
 master.ose.${INSERT_VALUE_HERE}
 node.[0:1].ose.${INSERT_VALUE_HERE}
