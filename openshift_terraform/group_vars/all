@@ -3,7 +3,9 @@
 #####################################################
 # Default configuration
 #####################################################
-default_domain_name: "${INSERT_VALUE_HERE}"
+default_domain: "${INSERT_VALUE_HERE}"
+default_subdomain: "ose.{{ default_domain }}"
+default_wildcard: "apps.{{ default_subdomain }}"
 default_user: "${INSERT_VALUE_HERE}"
 default_home: "/home/{{ default_user }}"
 default_ssh: "{{ default_home }}/.ssh"
@@ -18,7 +20,7 @@ aws_secret_access_key: "${INSERT_VALUE_HERE}"
 #####################################################
 # Terraform configuration
 #####################################################
-terraform_workspace: "{{ lookup('env','PWD') }}/.{{ default_domain_name }}"
+terraform_workspace: "{{ lookup('env','PWD') }}/.{{ default_domain }}"
 terraform_provisioner_connection_type: "ssh"
 
 #####################################################

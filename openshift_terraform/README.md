@@ -8,17 +8,30 @@ After checking out this repository, search for the string "INSERT_VALUES_HERE" t
 
 - [Terraform](https://www.terraform.io/intro/getting-started/install.html) (v0.8.5)
 - [Ansible](http://docs.ansible.com/ansible/intro_installation.html) (v2.2.1.0)
-- [AWS Command Line Interface](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 - [Red Hat Customer Portal Activation Key](https://access.redhat.com/articles/1378093)
+- [Red Hat Cloud Access](https://www.redhat.com/en/technologies/cloud-computing/cloud-access) (optional)
+
+### [Amazon Web Services](https://access.redhat.com/articles/2623521)
+
+- [AWS Command Line Interface](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+- Domain purchased through AWS and managed by [Route53](https://aws.amazon.com/route53/)
+
+### [Google Cloud Platform](https://access.redhat.com/articles/2751521)
+
+- TBD
+
+### Microsoft Azure
+
+- TBD
 
 # Required
 
-The following settings must be set before usage.
+The following variables must be set before usage.
 
 ### group_vars/all
 
 ```
-default_domain_name: "${INSERT_VALUE_HERE}"
+default_domain: "${INSERT_VALUE_HERE}"
 default_user: "${INSERT_VALUE_HERE}"
 aws_access_key_id: "${INSERT_VALUE_HERE}"
 aws_secret_access_key: "${INSERT_VALUE_HERE}"
@@ -54,24 +67,28 @@ openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
 ### inventory
 
-The value '[0:1]' tells ansible how many OpenShift nodes to create.  In this case it will create node0 and node1.
+**[NOTE]:** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
 
 ```
-master.ose.${INSERT_VALUE_HERE}
-node.[0:1].ose.${INSERT_VALUE_HERE}
+master.{{ default_subdomain }}
+node.[0:1].{{ default_subdomain }}
 ```
+
+**[TIP]:** The value `[0:1]` is a [pattern](http://docs.ansible.com/ansible/intro_patterns.html#patterns) that declares how many OpenShift nodes to create. In this case it will create `node0` and `node1`.
 
 # Usage
 
-## Provision
+### Provision
 
 ```
 ansible-playbook -i inventory site.yml
 ```
 
-## Destroy the cluster & provider resources
+### Destroy
+
+**[NOTE]:** This hidden directory contains the key pair for SSH access to instantiated host systems.
 
 ```
-cd $(pwd)/.terraform
+cd $(pwd)/.{{ default_domain }}
 terraform destroy
 ```
