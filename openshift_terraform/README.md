@@ -45,9 +45,8 @@ aws_route53_zone_id: "${INSERT_VALUE_HERE}"
 The 'aws_route53_zone_id' value can be found using the following command:
 
 ```
-aws route53 list-hosted-zones --query 'HostedZones[*]' --output text |
-grep '\/hostedzone\/.*${default_domain_name}' | sed -e 's/.*\///' -e
-'s/[^a-zA-Z0-9].*//'
+aws route53 list-hosted-zones --query 'HostedZones[*]' --output text | \
+    grep '\/hostedzone\/.*${default_domain_name}' | sed -e 's/.*\///' -e 's/[^a-zA-Z0-9].*//'
 ```
 
 Make sure to replace "${default_domain_name}" with the domain you've purchased through AWS and managed by Route53.
