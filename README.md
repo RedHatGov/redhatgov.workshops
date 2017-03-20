@@ -42,14 +42,14 @@ aws_secret_access_key: "${INSERT_VALUE_HERE}"
 ```
 aws_route53_zone_id: "${INSERT_VALUE_HERE}"
 ```
-The 'aws_route53_zone_id' value can be found using the following command:
+The `aws_route53_zone_id` value can be found using the following command:
 
-```
+<pre>
 aws route53 list-hosted-zones --query 'HostedZones[*]' --output text | \
-    grep '\/hostedzone\/.*${default_domain_name}' | sed -e 's/.*\///' -e 's/[^a-zA-Z0-9].*//'
-```
+grep '\/hostedzone\/.*<b>${INSERT_VALUE_HERE}</b>' | sed -e 's/.*\///' -e 's/[^a-zA-Z0-9].*//'
+</pre>
 
-Make sure to replace "${default_domain_name}" with the domain you've purchased through AWS and managed by Route53.
+Make sure to replace "${INSERT_VALUE_HERE}" with the domain purchased through AWS and managed by Route53.
 
 
 ### roles/openshift.prereq/defaults/main.yml
