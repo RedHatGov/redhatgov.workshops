@@ -49,7 +49,7 @@ aws route53 list-hosted-zones --query 'HostedZones[*]' --output text | \
 grep '\/hostedzone\/.*<b>${INSERT_VALUE_HERE}</b>' | sed -e 's/.*\///' -e 's/[^a-zA-Z0-9].*//'
 </pre>
 
-Make sure to replace "${INSERT_VALUE_HERE}" with the domain purchased through AWS and managed by Route53.
+Make sure to replace `${INSERT_VALUE_HERE}` with the domain purchased through AWS and managed by Route53.
 
 
 ### roles/openshift.prereq/defaults/main.yml
