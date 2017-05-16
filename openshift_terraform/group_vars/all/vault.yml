@@ -1,0 +1,31 @@
+# file: group_vars/vault
+
+#####################################################
+# Default vault configuration
+#####################################################
+vault_default_domain: "${INSERT_VALUE_HERE}"
+vault_default_keypair: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# AWS access keys
+#####################################################
+vault_aws_access_key_id: "${INSERT_VALUE_HERE}"
+vault_aws_secret_access_key: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# AWS R53 Zone ID
+#####################################################
+vault_aws_route53_zone_id: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# Red Hat Subscription Information 
+#####################################################
+vault_rhel_rhsm_activationkey: "${INSERT_VALUE_HERE}"
+vault_rhel_rhsm_org_id: "${INSERT_VALUE_HERE}"
+
+#####################################################
+# Cluster administration
+#####################################################
+vault_openshift_cluster_admin_username: "${INSERT_VALUE_HERE}"
+vault_openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
+
