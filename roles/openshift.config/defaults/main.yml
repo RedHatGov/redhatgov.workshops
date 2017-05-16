@@ -4,8 +4,8 @@
 #####################################################
 # Cluster administration
 #####################################################
-openshift_cluster_admin_username: "${INSERT_VALUE_HERE}"
-openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
+openshift_cluster_admin_username: "{{ vault_openshift_cluster_admin_username }}"
+openshift_cluster_admin_password: "{{ vault_openshift_cluster_admin_password }}"
 
 #####################################################
 # Add dummy users

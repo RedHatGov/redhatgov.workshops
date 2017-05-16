@@ -27,7 +27,7 @@
     dest: "{{ default_ssh }}/config"
     block: |
       Host *
-      IdentityFile ~/.ssh/libra
+      IdentityFile ~/.ssh/{{ default_keypair }}
 
 - name: Add/remove file permissions
   file:
