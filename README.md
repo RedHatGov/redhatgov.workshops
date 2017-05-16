@@ -28,7 +28,7 @@ After checking out this repository, search for the string "INSERT_VALUES_HERE" t
 
 The following variables must be set before usage.
 
-### group_vars/all
+### group_vars/all/vault.yml
 
 ```
 default_domain: "${INSERT_VALUE_HERE}"
@@ -36,8 +36,6 @@ default_user: "${INSERT_VALUE_HERE}"
 aws_access_key_id: "${INSERT_VALUE_HERE}"
 aws_secret_access_key: "${INSERT_VALUE_HERE}"
 ```
-
-### roles/terraform.infra.aws/defaults/main.yml
 
 ```
 aws_route53_zone_id: "${INSERT_VALUE_HERE}"
@@ -50,16 +48,10 @@ grep '\/hostedzone\/.*<b>${INSERT_VALUE_HERE}</b>' | sed -e 's/.*\///' -e 's/[^a
 </pre>
 
 Make sure to replace `${INSERT_VALUE_HERE}` with the domain purchased through AWS and managed by Route53.
-
-
-### roles/openshift.prereq/defaults/main.yml
-
 ```
 rhel_rhsm_activationkey: "${INSERT_VALUE_HERE}"
 rhel_rhsm_org_id: "${INSERT_VALUE_HERE}"
 ```
-
-### roles/openshift.config/defaults/main.yml
 
 ```
 openshift_cluster_admin_username: "${INSERT_VALUE_HERE}"
@@ -68,7 +60,7 @@ openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
 ### inventory
 
-**!Important** These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
+**!Important** These variables must be updated manually, based on `vault_default_subdomain` value from `group_vars/all/vault.yml` file.
 
 ```
 master.{{ default_subdomain }}
@@ -78,6 +70,14 @@ node.[0:1].{{ default_subdomain }}
 **[NOTE]:** The value `[0:1]` is a [pattern](http://docs.ansible.com/ansible/intro_patterns.html#patterns) that declares how many OpenShift nodes to create. In this case it will create `node0` and `node1`.
 
 # Usage
+
+**!Important** You must encrypt your group_vars/all/vault.yml before running your playbook.  You must add a vault_pass.txt to your home directory containing your password.
+
+```
+ansible-vault encrypt group_vars/all/vault.yml
+```
+
+You will be prompted to create a password and once complete, you can put this password is a file referenced in the ansible.cfg (vault_password_file = ~/.vault_pass.txt) file.  The current entry has a location of ~/.vault_pass.txt but you can chnage this at your discretion.
 
 ### Provision
 
@@ -92,4 +92,5 @@ ansible-playbook -i inventory site.yml
 ```
 cd $(pwd)/.{{ default_domain }}
 terraform destroy
+
 ```
