@@ -15,8 +15,8 @@ etc_hosts:
 #####################################################
 # Red Hat Subscription Management (RHSM)
 #####################################################
-rhel_rhsm_activationkey: "${INSERT_VALUE_HERE}"
-rhel_rhsm_org_id: "${INSERT_VALUE_HERE}"
+rhel_rhsm_activationkey: "{{ vault_rhel_rhsm_activationkey }}"
+rhel_rhsm_org_id: "{{ vault_rhel_rhsm_org_id }}"
 
 rhel_rhsm_plugins:
   - /etc/yum/pluginconf.d/product-id.conf
@@ -25,8 +25,11 @@ rhel_rhsm_plugins:
 rhel_rhsm_repos:
   - rhel-7-server-rpms
   - rhel-7-server-extras-rpms
-  - rhel-7-server-optional-rpms
   - rhel-7-server-ose-"{{ openshift_release }}"-rpms
+
+rhel_rhsm_repo_ocp_v3_4: rhel-7-server-optional-rpms
+rhel_rhsm_repo_ocp_v3_5: rhel-7-fast-datapath-rpms
+
 
 #####################################################
 # Red Hat Update Infrastructure (RHUI)

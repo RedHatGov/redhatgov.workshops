@@ -29,6 +29,14 @@
   shell: subscription-manager repos --enable {{ item }}
   with_items: "{{ rhel_rhsm_repos }}"
 
+- name: Enable only the repositories required
+  shell: subscription-manager repos --enable {{ rhel_rhsm_repo_ocp_v3_4 }}
+  when: openshift_release == "3.4"
+
+- name: Enable only the repositories required
+  shell: subscription-manager repos --enable {{ rhel_rhsm_repo_ocp_v3_5 }}
+  when: openshift_release == "3.5"
+
 # - name: Import Red Hat beta test products key
 #   rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
 #   ignore_errors: True
