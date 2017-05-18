@@ -1,21 +1,21 @@
-# file: group_vars/all
+# file: group_vars/all.yml
 
 #####################################################
 # Default configuration
 #####################################################
-default_domain: "${INSERT_VALUE_HERE}"
-default_subdomain: "ose.{{ default_domain }}"
+default_domain: "{{ vault_default_domain }}"
+default_subdomain: "ocp.{{ default_domain }}"
 default_wildcard: "apps.{{ default_subdomain }}"
-default_user: "${INSERT_VALUE_HERE}"
+default_user: "ec2-user"
 default_home: "/home/{{ default_user }}"
 default_ssh: "{{ default_home }}/.ssh"
-default_keypair: "libra"
+default_keypair: "{{ vault_default_keypair }}"
 
 #####################################################
 # AWS access keys
 #####################################################
-aws_access_key_id: "${INSERT_VALUE_HERE}"
-aws_secret_access_key: "${INSERT_VALUE_HERE}"
+aws_access_key_id: "{{ vault_aws_access_key_id }}"
+aws_secret_access_key: "{{ vault_aws_secret_access_key }}"
 
 #####################################################
 # Terraform configuration
@@ -34,7 +34,7 @@ os_docker_vol_type: "gp2"
 #####################################################
 # OpenShift configuration
 #####################################################
-openshift_release: "3.4"
+openshift_release: "3.5"
 
 #####################################################
 # Ansible configuration
