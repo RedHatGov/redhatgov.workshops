@@ -17,7 +17,11 @@
   with_items: "{{ rhel_rhsm_plugins }}"
 
 - name: Register with RHSM
-  redhat_subscription: state=present activationkey='{{ rhel_rhsm_activationkey }}' org_id='{{ rhel_rhsm_org_id }}'
+  shell: subscription-manager register --org={{ rhel_rhsm_org_id }} --activationkey={{ rhel_rhsm_activationkey }}
+  register: result
+  retries: 10
+  delay: 30
+  until: result.rc == 0
 
 - name: Disable all RHSM repositories
   shell: subscription-manager repos --disable="*"
