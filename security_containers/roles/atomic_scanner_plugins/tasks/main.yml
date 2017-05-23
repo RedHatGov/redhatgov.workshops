@@ -1,0 +1,30 @@
+# file: roles/atomic_scanner_plugins/tasks/main.yml
+---
+
+- name: Install Atomic commmand
+  become: yes
+  yum: 
+    name: atomic 
+    state: present
+
+
+- name: Setup workshop directories
+  file:
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode:  0700
+    path:  /home/{{ system_user }}/workshopfiles
+    state: directory 
+
+- name: Copy Scanner Files to Hosts. 
+  copy:
+    src: "{{ item }}"
+    dest: /home/{{ system_user }}/workshopfiles
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0755
+  with_items:
+    - Dockerfile
+    - example_plugin
+    - install.sh
+    - list_rpms.py
