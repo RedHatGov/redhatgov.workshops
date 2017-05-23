@@ -1,0 +1,22 @@
+# file: 1_aws_infra.yml
+---
+# https://www.terraform.io/docs/providers/aws/index.html
+
+
+- name: Provision AWS Infrastucture using Terraform 
+  hosts: local_target
+  roles:
+  - { role: aws.infra.terraform, tags: ["tf_create"] }
+
+
+
+#############################################################
+#  USAGE
+#############################################################
+# Create
+# ansible-playbook -i inventory 1_aws_infra.yml
+#
+# Destroy
+# cd /tmp/terraform
+# terraform destroy
+# yes

@@ -1,0 +1,62 @@
+# file: group_vars/all
+#####################################################
+#
+#               ////IMPORTANT////
+#
+# aws.infra.terraform |  Prefix all resources to 
+#                        ensure easy cleanup and 
+#                        identifcation.
+#####################################################
+workshop_prefix: "changeme"
+
+system_user:                  "ec2-user"    # AWS
+# system_user:                  "vagrant"     # vagrant
+
+#####################################################
+# aws.infra.terraform  |  Domain Name you own
+#####################################################
+domain_name: ""
+zone_id:     ""
+
+#####################################################
+# aws.infra.terraform  |  AWS API Keys terraform.tfvars
+#####################################################
+aws_access_key: ""
+aws_secret_key: ""
+region: "us-east-1"
+
+#####################################################
+# aws.infra.terraform  |  .terraform working dir 
+#####################################################
+terraform_working_dir: "{{ lookup('env','PWD') }}/.terraform"
+
+#####################################################
+# aws.infra.terraform  |  SSH Key Vars
+#####################################################
+ssh_key_path: "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
+ansible_ssh_private_key_file: "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
+# ansible_ssh_user: ec2-user
+
+#####################################################
+# aws.infra.terraform  |  Number of Students
+#####################################################
+number_tower_nodes: 2
+number_nodes: 2
+
+#####################################################
+# subscription_manager |  Subscribe RHEL Nodes
+#####################################################
+username: ""
+password: ""
+pool_id:  ""
+
+
+#####################################################
+# LetsEncrypt          |  email
+#####################################################
+letsencrypt_email: "someone@redhat.com"
+
+#####################################################
+# wetty
+workshop_password:            "redhat!@#"
+#####################################################

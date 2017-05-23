@@ -1,0 +1,17 @@
+# file: 2_aws_ec2.yml
+---
+
+- name: Configure Nodes 
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  roles:
+    - { role: subscription_manager }
+    - { role: epel }
+    - { role: LetsEncrypt }
+    - { role: nodejs }
+    - { role: wetty }
+    - { role: ansible.tower }
+    - { role: zsh }
+
+
