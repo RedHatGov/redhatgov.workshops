@@ -35,6 +35,7 @@
                             --rsa-key-size 4096 \
                             --email {{ letsencrypt_email }} \
                             --domains "{{ workshop_prefix | lower }}.tower.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}"
+  when: letsencrypt
 
 
 # New certs located at:  /etc/letsencrypt/live/<url>/
