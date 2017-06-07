@@ -34,11 +34,18 @@
 # Subscribe to RHN
 #---------------------------------------------------
 
+- name: Check RHN subscription status
+  command: subscription-manager status
+  register: sm_result
+  ignore_errors: True
+
 - name: Subscribe RHN
   command: subscription-manager register --username="{{ username }}" --password="{{ password }}" --force
+  when: sm_result.rc != 0
 
 - name: Attach RHN Pool
   command: subscription-manager attach --pool "{{ pool_id }}"
+  when: sm_result.rc != 0
 
 - name: Disable all repos by default
   command: subscription-manager repos --disable "*"
@@ -46,10 +53,7 @@
     - rhel
 
 - name: Enable the requisite rhel7 repos
-  shell: subscription-manager repos --enable="rhel-7-server-rpms" \
-                                    --enable="rhel-7-server-extras-rpms" \
-                                    --enable="rhel-7-server-optional-rpms" 
-                                    #--enable="rhel-7-server-ose-3.4-rpms"
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
   tags:
     - rhel
 

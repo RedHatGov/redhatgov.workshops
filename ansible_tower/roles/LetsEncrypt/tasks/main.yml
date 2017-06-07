@@ -1,7 +1,5 @@
 # file: roles/LetsEncrypt/tasks/main.yml
 ---
-
-
 - name: Install Certbot Repos
   become: yes
   yum:
@@ -9,11 +7,7 @@
     state: present  
   with_items:
     - yum-utils
-<<<<<<< HEAD
   when: letsencrypt
-=======
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
-
 
 - name: Install Certbot
   become: yes
@@ -24,19 +18,11 @@
   with_items:
     - rhui-REGION-rhel-server-extras
     - rhui-REGION-rhel-server-optional
-<<<<<<< HEAD
   when: letsencrypt 
 
 - debug: 
     var: hostvars[inventory_hostname]['ec2_tag_Index']
   when: letsencrypt
-=======
- 
-
-- debug: 
-    var: hostvars[inventory_hostname]['ec2_tag_Index']
-
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
 
 - name: Generate Certs tower-node
   become: yes
@@ -48,13 +34,6 @@
                             --email {{ letsencrypt_email }} \
                             --domains "{{ workshop_prefix | lower }}.tower.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}"
   when: letsencrypt
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
-=======
-
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
 
 # New certs located at:  /etc/letsencrypt/live/<url>/
+

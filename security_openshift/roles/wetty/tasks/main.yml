@@ -14,7 +14,6 @@
   become: yes
   command: npm install wetty -g chdir=/home/ec2-user
 
-<<<<<<< HEAD
 
 #-------------------------------------------------------
 # Let's Encrypt. 
@@ -23,29 +22,16 @@
   become: yes
   command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"  
   when: letsencrypt
-=======
-# Depends on Let's Encrypt. 
-- name: Copy Cert.pem to Wetty dir
-  become: yes
-  command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"  
-  when: aws
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
 
 - name: Copy privkey.pem to Wetty dir
   become: yes
   command: cp privkey.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/" 
-<<<<<<< HEAD
   when: letsencrypt
 
 #-------------------------------------------------------
 # Self-Signed Certs 
 #-------------------------------------------------------
 - name: Generate Self Signed Certs
-=======
-  when: aws
-
-- name: Generate Self Signed Certs fro Vagrant
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
   command: >
     openssl req -new
       -x509
@@ -56,11 +42,7 @@
       -keyout /home/{{ system_user }}/.ssh/privkey.pem
       -out /home/{{ system_user }}/.ssh/cert.pem
   with_items: "{{ openssl_self_signed }}"
-<<<<<<< HEAD
   when: not letsencrypt
-=======
-  when: not aws  
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
 
 - name: Set permissions on SSL certs
   become: yes
@@ -77,11 +59,7 @@
 - name: Sorry Dan.
   become: yes
   command: setenforce 0
-<<<<<<< HEAD
 
-=======
-  when: aws
->>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
 
 # SYSTEMD
 - name: Template Systemd Service File 
