@@ -1,0 +1,9 @@
+secrets.yml
+users.yml
+extra_vars.yml
+*.txt
+.vagrant
+.terraform
+env.sh
+group_vars/all
+all

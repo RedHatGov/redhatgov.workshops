@@ -1,0 +1,5 @@
+# file: roles/atomic_scanner_plugins/defaults/main.yml
+---
+#
+
+# system_user: "ec2-user"  # vagrant

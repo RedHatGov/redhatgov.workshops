@@ -1,0 +1,16 @@
+type: scanner
+scanner_name: example_plugin
+image_name: example_plugin
+default_scan: rpm-list
+custom_args: ['-v', '/tmp/foobar:/foobar']
+scans: [
+ { name: rpm-list,
+ args: ['python', 'list_rpms.py', 'list-rpms'],
+ description: "List all RPMS",
+ },
+ { name: get-os,
+ args: ['python', 'list_rpms.py', 'get-os'],
+ description: "Get the OS of the object",
+ }
+]
+

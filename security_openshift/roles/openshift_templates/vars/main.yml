@@ -1,0 +1,4 @@
+# file: roles/openshift_templates/vars/main.yml
+---
+#
+# foo: bar
