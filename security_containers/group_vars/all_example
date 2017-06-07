@@ -40,7 +40,11 @@ ami_id:                       "ami-b63769a1" # RHEL 7.3
 
 #--------------------------------------------------------------------------------------
 # LetsEncrypt
+<<<<<<< HEAD
 letsencrypt:                  false          # set to false when using vagrant
+=======
+aws:                          true          # set to false when using vagrant
+>>>>>>> 85f34e3fb70678360017bbf1e10f4751eb7bc38d
 letsencrypt_email:            "someone@redhat.com"
 #--------------------------------------------------------------------------------------
 
