@@ -55,6 +55,8 @@ pool_id:  ""
 # LetsEncrypt          |  email
 #####################################################
 letsencrypt_email: "someone@redhat.com"
+letsencrypt:       false
+
 
 #####################################################
 # wetty

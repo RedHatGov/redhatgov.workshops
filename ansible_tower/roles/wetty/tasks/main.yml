@@ -14,14 +14,35 @@
   become: yes
   command: npm install wetty -g chdir=/home/ec2-user
 
-# Depends on Let's Encrypt. 
-- name: Copy Cert.pem to Wetty dir
+
+#-------------------------------------------------------
+# Let's Encrypt. 
+#-------------------------------------------------------
+- name: Copy cert.pem to Wetty dir
   become: yes
-  command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix }}.tower.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"  
+  command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"  
+  when: letsencrypt
 
 - name: Copy privkey.pem to Wetty dir
   become: yes
-  command: cp privkey.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix }}.tower.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/" 
+  command: cp privkey.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/" 
+  when: letsencrypt
+
+#-------------------------------------------------------
+# Self-Signed Certs 
+#-------------------------------------------------------
+- name: Generate Self Signed Certs
+  command: >
+    openssl req -new
+      -x509
+      -nodes
+      -days {{ item.days | default(3650) }}
+      -subj "/C={{ item.country | default('') }}/ST={{ item.state | default('') }}/L={{ item.city | default('') }}/O={{ item.organization | default('') }}/OU={{ item.unit | default('') }}/CN={{ item.name }}/emailAddress={{ item.email | default('') }}"
+      -newkey rsa:2048
+      -keyout /home/{{ system_user }}/.ssh/privkey.pem
+      -out /home/{{ system_user }}/.ssh/cert.pem
+  with_items: "{{ openssl_self_signed }}"
+  when: not letsencrypt
 
 - name: Set permissions on SSL certs
   become: yes
@@ -38,6 +59,7 @@
 - name: Sorry Dan.
   become: yes
   command: setenforce 0
+
 
 # SYSTEMD
 - name: Template Systemd Service File 
