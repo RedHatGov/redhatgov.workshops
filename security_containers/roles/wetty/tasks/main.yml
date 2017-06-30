@@ -12,7 +12,7 @@
 
 - name: Install Wetty Globaly
   become: yes
-  command: npm install wetty -g chdir=/home/ec2-user
+  command: npm install wetty -g chdir=/home/{{ system_user }}
 
 
 #-------------------------------------------------------
@@ -55,11 +55,6 @@
     - cert.pem
     - privkey.pem
 
-# TODO: SELinux & Systemd
-- name: Sorry Dan.
-  become: yes
-  command: setenforce 0
-
 
 # SYSTEMD
 - name: Template Systemd Service File 
@@ -93,6 +88,44 @@
     mode: 0644 
   notify: 
     - sshd  
+
+
+# - name: Open port in Firewall 
+#   become: yes
+#   firewalld:
+#     port: 8888/tcp  #"{{ wetty_port }}"
+#     permanent: true
+#     state: enabled
+
+- name: Turn off Firewall
+  become: yes
+  command: service firewalld stop
+
+- name: Create SELinux dir
+  become: yes
+  file: 
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode:  0700
+    path:  "/home/{{ system_user }}/.selinux"
+    state: directory  
+
+- name: Copy over SELinux modules for Wetty
+  become: yes
+  copy:
+    src:   "{{ item }}"
+    dest:  "/home/{{ system_user }}/.selinux"
+    group: "{{system_user}}"
+    owner: "{{system_user}}"
+    mode:  0700
+  with_items: 
+    - wetty.pp
+    - wetty.te
+
+- name: Update SELinux for Wetty
+  become: yes
+  command: sudo semodule -i wetty.pp chdir=/home/{{ system_user }}/.selinux
+
 
 ###########################################################
 #   Build from Source
