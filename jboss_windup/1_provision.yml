@@ -1,0 +1,26 @@
+# file: site.yml
+---
+
+# Use Redis to cash facts between playbooks:
+#   brew install redis      # macOS
+#   yum install -y redis    # RHEL
+#   pip install redis
+#   redis-server /usr/local/etc/redis.conf &
+
+# password_hash requires the passlib python module to generate password hashes
+# sudo pip install passlib
+
+#------------------------------------------------------
+# Make sure to export the AWS Keys `source env.sh`
+#------------------------------------------------------
+- name: Provision AWS Infrastucture using Terraform
+  hosts: local_target    
+  roles:
+    - aws.infra.terraform
+
+
+
+
+
+
+ 

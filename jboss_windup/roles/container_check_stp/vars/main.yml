@@ -1,0 +1,4 @@
+# file: roles/container_check_stp/vars/main.yml
+---
+#
+# foo: bar
