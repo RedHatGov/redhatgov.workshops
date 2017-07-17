@@ -1,0 +1,14 @@
+# file: inventory
+
+# [TODO]: Implement dynamic inventory file.
+
+[targets]
+localhost ansible_connection=local
+
+# [NOTE]: These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
+
+[masters]
+master.ocp.${INSERT_VALUE_HERE}
+
+[nodes]
+node.[0:1].ocp.${INSERT_VALUE_HERE}

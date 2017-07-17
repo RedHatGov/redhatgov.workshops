@@ -1,0 +1,8 @@
+# file: roles/openshift.prereq/tasks/main.yml
+---
+
+- include: fqdn.yml
+- include: rhsm.yml
+- include: rhel.yml
+
+# [TODO]: Add Atomic Host support.
