@@ -1,0 +1,75 @@
+# file: roles/terraform.infra.aws/defaults/main.yml
+---
+
+# [TODO]: Implement dynamic route53 hosted zone id retrieval.
+
+#####################################################
+# AWS Route53 (DNS)
+#####################################################
+aws_route53_zone_id: "{{ vault_aws_route53_zone_id }}"
+aws_route53_region: "us-east-1"
+
+#####################################################
+# AWS Virtual Private Network (VPC)
+#####################################################
+aws_vpc_cidr_block: "10.0.0.0/16"
+aws_vpc_enable_dns_support: "true"
+aws_vpc_enable_dns_hostnames: "true"
+aws_vpc_tag_name: "ose-vpc"
+
+#####################################################
+# AWS Subnet
+#####################################################
+aws_subnet_cidr_block: "10.0.2.0/24"
+aws_subnet_map_public_ip_on_launch: "true"
+aws_subnet_tag_name: "ose-public-subnet"
+
+#####################################################
+# AWS Route
+#####################################################
+aws_route_table_cidr_block: "0.0.0.0/0"
+aws_route_table_tag_name: "ose-public-route"
+
+#####################################################
+# AWS Security
+#####################################################
+aws_security_group_name: "ose-sg"
+
+#####################################################
+# Master EC2 instances
+#####################################################
+ec2_master_instance_type: "m4.xlarge"
+ec2_master_image: "ami-b63769a1"                    # RHEL7
+ec2_master_group_name: "ose-master"
+ec2_master_tag_name: "master"
+ec2_master_tag_role: "masters"
+os_master_root_vol_size: "40"
+os_master_root_vol_type: "gp2"
+
+#####################################################
+# Etcd EC2 instances
+#####################################################
+# ec2_etcd_instance_type: "m4.large"
+# ec2_etcd_image: "ami-b63769a1"
+# os_etcd_root_vol_size: "20"
+# os_etcd_root_vol_type: "standard"
+# os_etcd_vol_size: "20"
+# os_etcd_vol_type: "standard"
+
+#####################################################
+# Infra EC2 instances
+#####################################################
+# ec2_infra_instance_type: "m4.large"
+# ec2_infra_image: "ami-b63769a1"
+
+#####################################################
+# Node EC2 instances
+#####################################################
+ec2_node_instance_type: "m4.large"
+ec2_node_image: "ami-b63769a1"
+ec2_node_group_name: "ose-node"
+ec2_node_tag_name: "node"
+ec2_node_tag_role: "nodes"
+ec2_node_count: "2"
+os_node_root_vol_size: "15"
+os_node_root_vol_type: "gp2"

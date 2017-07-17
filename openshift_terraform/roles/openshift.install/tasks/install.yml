@@ -1,0 +1,49 @@
+# file: roles/openshift.install/tasks/install.yml
+---
+
+- name: Curl get pip
+  become: yes
+  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir={{ default_home }}
+
+- name: Python install pip
+  become: yes
+  command: python {{ default_home }}/get-pip.py chdir={{ default_home }}
+
+- name: Install passlib
+  become: yes
+  pip: name=passlib state=present
+
+- name: Copy over key pair
+  copy: dest="{{ default_ssh }}/{{ default_keypair }}"  mode=0400  src="{{ terraform_workspace }}/{{ default_keypair }}"
+
+- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
+  file:
+    path: "{{ default_ssh }}/config"
+    state: touch
+    mode: "u=rw,g=r,o=r"
+
+- name: Insert/update "Host" configuration block in ~/.ssh/config
+  blockinfile:
+    dest: "{{ default_ssh }}/config"
+    block: |
+      Host *
+      IdentityFile ~/.ssh/{{ default_keypair }}
+
+- name: Add/remove file permissions
+  file:
+    path: "{{ default_ssh }}/config"
+    state: touch
+    mode: 0400
+
+# - name: Debug enable ssh-agent
+#  shell: echo "ssh-agent = $(ssh-agent)"
+
+- name: Enable ssh-agent
+  shell: eval $(ssh-agent)
+
+- name: Run advanced installation method
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir={{ default_home }}
+
+# [TODO]: Apply to masters and nodes (both)
+# - name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed
+#   command: atomic-openshift-excluder exclude

@@ -1,0 +1,67 @@
+# file: roles/openshift.prereq/defaults/main.yml
+---
+
+# [TODO]: Replace EC2 facts with ansible IPv4.
+
+#####################################################
+# Hosts configuration
+#####################################################
+etc_hosts:
+  # - "{{ ec2_facts.ansible_facts.ansible_ec2_public_ipv4 }} {{ inventory_hostname }}"
+  - 209.132.183.44  xmlrpc.rhn.redhat.com
+  - 23.204.148.218  content-xmlrpc.rhn.redhat.com
+  - 209.132.183.49  subscription.rhn.redhat.com
+
+#####################################################
+# Red Hat Subscription Management (RHSM)
+#####################################################
+rhel_rhsm_activationkey: "{{ vault_rhel_rhsm_activationkey }}"
+rhel_rhsm_org_id: "{{ vault_rhel_rhsm_org_id }}"
+
+rhel_rhsm_plugins:
+  - /etc/yum/pluginconf.d/product-id.conf
+  - /etc/yum/pluginconf.d/subscription-manager.conf
+
+rhel_rhsm_repos:
+  - rhel-7-server-rpms
+  - rhel-7-server-extras-rpms
+  - rhel-7-server-ose-"{{ openshift_release }}"-rpms
+
+rhel_rhsm_repo_ocp_v3_4: rhel-7-server-optional-rpms
+rhel_rhsm_repo_ocp_v3_5: rhel-7-fast-datapath-rpms
+
+
+#####################################################
+# Red Hat Update Infrastructure (RHUI)
+#####################################################
+rhel_rhui_plugins:
+  - /etc/yum/pluginconf.d/amazon-id.conf
+  - /etc/yum/pluginconf.d/rhui-lb.conf
+
+rhel_rhui_repos:
+  - /etc/yum.repos.d/redhat-rhui.repo
+  - /etc/yum.repos.d/redhat-rhui-client-config.repo
+
+#####################################################
+# Base packages
+#####################################################
+rhel_base_pkgs:
+  - wget
+  - vim
+  - git
+  - unzip
+  - net-tools
+  - bind-utils
+  - httpd-tools
+  - bridge-utils
+  - bash-completion
+  - iptables-services
+
+#####################################################
+# OpenShift packages
+#####################################################
+rhel_ose_pkgs:
+  - atomic-openshift-utils
+  - docker
+  - atomic-openshift-excluder
+  - atomic-openshift-docker-excluder
