@@ -1,0 +1,40 @@
+# file: site.yml
+---
+
+#---------------------------------------------------
+# Terraform Providers
+#---------------------------------------------------
+- name: Terraform AWS Provider
+  hosts: targets
+  roles:
+    - terraform.infra.aws
+
+# [TODO]: Add Terraform Google Cloud Platform provider support.
+# [TODO]: Add Terraform Microsoft Azure provider support.
+# [TODO]: Add Atomic Host support.
+
+#---------------------------------------------------
+# OpenShift Pre- Installation
+#---------------------------------------------------
+- name: OpenShift Pre- Installation
+  hosts: masters, nodes
+  become: yes
+  roles:
+    - openshift.prereq
+
+#---------------------------------------------------
+# OpenShift Advanced Installation
+#---------------------------------------------------
+- name: OpenShift Advanced Installation
+  hosts: masters
+  roles:
+    - openshift.install
+
+#---------------------------------------------------
+# Configure OpenShift Cluster
+#---------------------------------------------------
+- name: Configure OpenShift Cluster
+  hosts: masters
+  become: yes
+  roles:
+    - openshift.config

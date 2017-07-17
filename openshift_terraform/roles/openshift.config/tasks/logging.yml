@@ -1,0 +1,15 @@
+# file: roles/openshift.config/tasks/logging.yml
+---
+
+- name: Add metricsPublicURL to master-config file
+  become: yes
+  lineinfile:
+    dest: /etc/origin/master/master-config.yaml
+    insertafter: "assetConfig:"
+    line:  "  loggingPublicURL: https://kibana.{{ default_wildcard }}"
+
+- name: Restart master service
+  become: yes
+  service:
+    name: atomic-openshift-master.service
+    state: restarted
