@@ -1,0 +1,81 @@
+# Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+nfs
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+# SSH user, this user should allow ssh based auth without requiring a password
+ansible_ssh_user={{ default_user }}
+ansible_become=true
+
+# If ansible_ssh_user is not root, ansible_sudo must be set to true
+# ansible_sudo=true
+
+openshift_release=v{{ openshift_release }}
+deployment_type=openshift-enterprise
+openshift_install_examples=true
+
+# Uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+openshift_master_default_subdomain={{ default_wildcard }}
+
+# Apply updated node defaults
+# openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
+
+openshift_cloudprovider_kind=aws
+
+# Configure AWS Variables
+openshift_cloudprovider_aws_access_key={{ aws_access_key_id }}
+openshift_cloudprovider_aws_secret_key={{ aws_secret_access_key }}
+
+# Metrics deployment
+# See: https://docs.openshift.com/enterprise/latest/install_config/cluster_metrics.html
+openshift_hosted_metrics_deploy=true
+openshift_hosted_metrics_storage_kind=nfs
+openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
+openshift_hosted_metrics_storage_nfs_directory=/srv
+openshift_hosted_metrics_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_metrics_storage_volume_name=metrics
+openshift_hosted_metrics_storage_volume_size=2Gi
+
+# Logging deployment
+# See: https://docs.openshift.com/enterprise/latest/install_config/aggregate_logging.html
+openshift_hosted_logging_deploy=true
+openshift_hosted_logging_storage_kind=nfs
+openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+openshift_hosted_logging_storage_nfs_directory=/srv
+openshift_hosted_logging_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_logging_storage_volume_name=logging
+openshift_hosted_logging_storage_volume_size=2Gi
+
+# Host group for masters
+[masters]
+{% for host in inventory_ose_masters %}
+{% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true ansible_connection=local ansible_become=yes
+{% endif %}
+{% endfor %}
+
+# Host group for NFS volume
+[nfs]
+{% for host in inventory_ose_masters %}
+{% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true ansible_connection=local ansible_become=yes
+{% endif %}
+{% endfor %}
+
+# Host group for nodes, includes region info
+[nodes]
+{% for host in inventory_ose_masters %}
+{% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true ansible_connection=local ansible_become=yes
+{% endif %}
+{% endfor %}
+
+{% for host in inventory_ose_nodes %}
+{% if (hostvars[host]['inventory_hostname'] | match("node")) %}
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }}
+{% endif %}
+{% endfor %}

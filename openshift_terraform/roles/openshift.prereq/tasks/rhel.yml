@@ -1,0 +1,36 @@
+# file: roles/openshift.prereq/tasks/rhel.yml
+---
+
+- name: Install base packages
+  yum: name={{ item }} state=present
+  with_items: "{{ rhel_base_pkgs }}"
+
+- name: Update the system to the latest packages
+  yum: name=* state=latest
+
+- name: Install OpenShift packages
+  yum: name={{ item }} state=present
+  with_items: "{{ rhel_ose_pkgs }}"
+
+- name: Remove atomic-openshift packages in the host’s /etc/yum.conf file when installing
+  command: atomic-openshift-excluder unexclude
+
+- name: Eanble insecure registry
+  shell: sed -i '/OPTIONS=.*/c\OPTIONS="--selinux-enabled --insecure-registry 172.30.0.0/16 --log-opt max-size=1M --log-opt max-file=3"' /etc/sysconfig/docker
+
+- name: Prepare additional block device
+  shell: echo -e "WIPE_SIGNATURES=true\nDEVS={{ os_docker_block_device }}\nVG={{ os_docker_volume_group }}" >> /etc/sysconfig/docker-storage-setup
+
+- name: Create 'docker-pool' logical volume
+  command: docker-storage-setup
+
+- name: Start docker
+  service: name=docker state=started enabled=yes
+
+- name: get EC2 Facts
+  action: ec2_facts
+
+- debug: var=hostvars
+
+- name: Template inventory file to host
+  template: dest={{ default_home }}/inventory_ose  src=inventory_ose.j2

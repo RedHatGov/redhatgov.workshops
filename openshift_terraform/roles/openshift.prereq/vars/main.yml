@@ -1,0 +1,5 @@
+# file: roles/openshift.prereq/vars/main.yml
+---
+
+inventory_ose_masters: "{{ groups['masters'] }}"
+inventory_ose_nodes: "{{ groups['nodes'] }}"

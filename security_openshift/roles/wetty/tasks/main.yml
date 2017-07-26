@@ -12,20 +12,26 @@
 
 - name: Install Wetty Globaly
   become: yes
-  command: npm install wetty -g chdir=/home/ec2-user
+  command: npm install wetty -g chdir=/home/{{ system_user }}
 
-# Depends on Let's Encrypt. 
-- name: Copy Cert.pem to Wetty dir
+
+#-------------------------------------------------------
+# Let's Encrypt. 
+#-------------------------------------------------------
+- name: Copy cert.pem to Wetty dir
   become: yes
   command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"  
-  when: aws
+  when: letsencrypt
 
 - name: Copy privkey.pem to Wetty dir
   become: yes
   command: cp privkey.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/" 
-  when: aws
+  when: letsencrypt
 
-- name: Generate Self Signed Certs fro Vagrant
+#-------------------------------------------------------
+# Self-Signed Certs 
+#-------------------------------------------------------
+- name: Generate Self Signed Certs
   command: >
     openssl req -new
       -x509
@@ -36,7 +42,7 @@
       -keyout /home/{{ system_user }}/.ssh/privkey.pem
       -out /home/{{ system_user }}/.ssh/cert.pem
   with_items: "{{ openssl_self_signed }}"
-  when: not aws  
+  when: not letsencrypt
 
 - name: Set permissions on SSL certs
   become: yes
@@ -49,11 +55,6 @@
     - cert.pem
     - privkey.pem
 
-# TODO: SELinux & Systemd
-- name: Sorry Dan.
-  become: yes
-  command: setenforce 0
-  when: aws
 
 # SYSTEMD
 - name: Template Systemd Service File 
@@ -87,6 +88,44 @@
     mode: 0644 
   notify: 
     - sshd  
+
+
+# - name: Open port in Firewall 
+#   become: yes
+#   firewalld:
+#     port: 8888/tcp  #"{{ wetty_port }}"
+#     permanent: true
+#     state: enabled
+
+- name: Turn off Firewall
+  become: yes
+  command: service firewalld stop
+
+- name: Create SELinux dir
+  become: yes
+  file: 
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode:  0700
+    path:  "/home/{{ system_user }}/.selinux"
+    state: directory  
+
+- name: Copy over SELinux modules for Wetty
+  become: yes
+  copy:
+    src:   "{{ item }}"
+    dest:  "/home/{{ system_user }}/.selinux"
+    group: "{{system_user}}"
+    owner: "{{system_user}}"
+    mode:  0700
+  with_items: 
+    - wetty.pp
+    - wetty.te
+
+- name: Update SELinux for Wetty
+  become: yes
+  command: sudo semodule -i wetty.pp chdir=/home/{{ system_user }}/.selinux
+
 
 ###########################################################
 #   Build from Source

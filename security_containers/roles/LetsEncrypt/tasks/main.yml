@@ -1,45 +1,39 @@
 # file: roles/LetsEncrypt/tasks/main.yml
 ---
+- name: Install Certbot Repos
+  become: yes
+  yum:
+    name:  "{{ item }}"
+    state: present  
+  with_items:
+    - yum-utils
+  when: letsencrypt
 
-# Works in AWS RHEL 7.3
-# - name: Install Certbot Repos
-#   become: yes
-#   yum:
-#     name:  "{{ item }}"
-#     state: present  
-#   with_items:
-#     - yum-utils
-
-
-# - name: Install Certbot
-#   become: yes
-#   yum:
-#     name: "certbot" 
-#     enablerepo: "{{ item }}"
-#     state: present
-#   with_items:
-#     - rhui-REGION-rhel-server-extras
-#     - rhui-REGION-rhel-server-optional
- 
-- name: Get Certbot from source
-  become: no
-  git:   
-    dest: /home/{{ system_user }}/.certbot
-    repo: https://github.com/certbot/certbot.git   
+- name: Install Certbot
+  become: yes
+  yum:
+    name: "certbot" 
+    enablerepo: "{{ item }}"
+    state: present
+  with_items:
+    - rhui-REGION-rhel-server-extras
+    - rhui-REGION-rhel-server-optional
+  when: letsencrypt 
 
 - debug: 
     var: hostvars[inventory_hostname]['ec2_tag_Index']
+  when: letsencrypt
 
-- name: Generate Certs AWS
+- name: Generate Certs tower-node
   become: yes
-  command: ./certbot-auto certonly --standalone \
+  command: certbot certonly --standalone \
                             --agree-tos  \
                             --non-interactive \
                             --text \
                             --rsa-key-size 4096 \
                             --email {{ letsencrypt_email }} \
-                            --domains "{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}" chdir=/home/{{ system_user }}/.certbot
+                            --domains "{{ workshop_prefix | lower }}.tower.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}"
+  when: letsencrypt
 
-
-# /etc/letsencrypt/live/<url>/
+# New certs located at:  /etc/letsencrypt/live/<url>/
 
