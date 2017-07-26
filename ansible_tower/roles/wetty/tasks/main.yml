@@ -41,6 +41,8 @@
       -newkey rsa:2048
       -keyout /home/{{ system_user }}/.ssh/privkey.pem
       -out /home/{{ system_user }}/.ssh/cert.pem
+  args:
+    creates: /home/{{ system_user }}/.ssh/*.pem
   with_items: "{{ openssl_self_signed }}"
   when: not letsencrypt
 
