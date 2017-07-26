@@ -97,9 +97,19 @@
 #     permanent: true
 #     state: enabled
 
+- name: check to see if firewalld is installed
+  become: yes
+  command: rpm -q firewalld
+  register: rf_result
+  ignore_errors: True
+
 - name: Turn off Firewall
   become: yes
-  command: service firewalld stop
+  systemd:
+    name: firewalld
+    enabled: no
+    state: stopped
+  when: rf_result.rc == 0
 
 - name: Create SELinux dir
   become: yes
@@ -124,7 +134,7 @@
 
 - name: Update SELinux for Wetty
   become: yes
-  command: sudo semodule -i wetty.pp chdir=/home/{{ system_user }}/.selinux
+  command: semodule -i wetty.pp chdir=/home/{{ system_user }}/.selinux
 
 
 ###########################################################
