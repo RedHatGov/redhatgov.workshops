@@ -1,8 +1,0 @@
-# file: roles/aws.infra.terraform/defaults/main.yml
----
-
-# aws.infra.terraform  |  .terraform working dir 
-# terraform_working_dir:        "{{ lookup('env','PWD') }}/.terraform"
-# aws.infra.terraform  |  SSH Key Vars
-# ssh_key_path:                 "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
-# ansible_ssh_private_key_file: "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"

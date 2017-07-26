@@ -1,8 +1,0 @@
-ansible_ssh_user=centos
-ansible_become=yes
-
-[local_target]
-localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
-
-[vagrant]
-192.168.70.101
