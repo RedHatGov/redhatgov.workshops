@@ -1,0 +1,70 @@
+# file: roles/oc/tasks/main.yml
+---
+# https://github.com/openshift/origin/releases/download/v1.5.0-rc.0/openshift-origin-client-tools-v1.5.0-rc.0-49a4a7a-linux-64bit.tar.gz
+
+- name: Name for get_url module.
+  become: yes
+  get_url: 
+    dest: "/bin"
+    url:  "https://github.com/openshift/origin/releases/download/v1.5.1/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit.tar.gz"
+    validate_certs: false
+
+- name: Unarchive the oc binary
+  become: yes
+  unarchive:
+    src: "/bin/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit.tar.gz"
+    dest: "/bin/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit"
+    remote_src: True
+
+- name: Move OC command
+  become: yes
+  command: mv oc .. chdir=/bin/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit   
+
+# - name: Copy over oc 1.5.0 for ec2-user/vagrant
+#   become: yes
+#   copy:
+#     src: oc
+#     dest: /usr/local/bin/oc
+#     owner: "{{ system_user }}"
+#     group: "{{ system_user }}"
+#     mode: 0755
+
+# - name: Copy over oc 1.5.0 for root
+#   become: yes
+#   copy:
+#     src: oc
+#     dest: /bin/oc
+#     owner: root
+#     group: root
+#     mode: 0755
+
+
+
+
+# Oneliner
+
+# export STUDENT=0; oc cluster up --public-hostname=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4) --routing-suffix=apps.ose.$STUDENT.redhat-fierce.io --host-pv-dir=/data --host-data-dir=/data --metrics=true --logging=true --image=registry.access.redhat.com/openshift3/ose --version=v3.5 
+
+
+# Details:
+# 
+# oc cluster up \
+#    --public-hostname=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4) \
+#    --routing-suffix=apps.ose.$STUDENT.redhat-fierce.io \
+#    --host-pv-dir=/data \
+#    --host-data-dir=/data
+#    --metrics=true \
+#    --logging=true \
+#    --image=registry.access.redhat.com/openshift3/ose \
+#    --version=v3.5 
+
+
+
+#    Only if EC2 instance is t2.large or bigger
+#
+#    --metrics=true 
+#    --logging=true 
+# 
+# 
+#    PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+

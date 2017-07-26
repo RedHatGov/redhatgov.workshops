@@ -1,0 +1,35 @@
+# file: roles/openshift_templates/tasks/main.yml
+---
+
+
+# # MLBparks
+# - name: Copy MLBparks
+#   become: yes
+#   copy:
+#     src: mlbparks-template-wildfly.json 
+#     dest: /root
+#     group: root
+#     owner: root
+#     mode: 0755
+
+- name: Make sure you have Git installed
+  become: yes
+  yum:
+    name:  "git"
+    state: present
+
+
+
+# JBoss Templates
+
+- name: Name for git module.
+  become: yes
+  git:
+    clone: yes
+    dest: /root/jboss-openshift-templates
+    repo: https://github.com/jboss-openshift/application-templates.git
+
+
+
+
+ 

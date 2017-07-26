@@ -1,0 +1,4 @@
+# file: roles/docker/defaults/main.yml
+---
+#
+# foo: default
