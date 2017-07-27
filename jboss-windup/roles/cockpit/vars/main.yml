@@ -1,0 +1,4 @@
+# file: roles/cockpit/vars/main.yml
+---
+#
+# foo: bar

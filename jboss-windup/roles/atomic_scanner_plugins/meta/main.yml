@@ -1,0 +1,18 @@
+# file: roles/atomic_scanner_plugins/meta/main.yml
+---
+galaxy_info:
+  author: Brad Sollar
+  description: Quick and easy Atomic Sample Scanner installer.
+  company: Red Hat
+  license: MIT
+  min_ansible_version: 1.9
+  platforms:
+  - name: EL
+    versions:
+    - all
+  galaxy_tags:
+    - Atomic
+    - Security
+    - SCAP
+
+dependencies:

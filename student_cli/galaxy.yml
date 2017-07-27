@@ -1,0 +1,30 @@
+# file: galaxy.yml
+
+# Usage: ansible-galaxy install -r galaxy.yml
+
+# - src: samdoran.redhat-subscription
+#   name: redhat-subscription
+
+# # from github
+# - src: joshualund.golang
+#   name: golang
+
+# # from github, overriding the name and specifying a specific tag
+# - src: geerlingguy.nodejs
+#   version: master
+#   name: nodejs
+
+# - src: epiloque.epel
+#   name: epel
+
+# # from a webserver, where the role is packaged in a tar.gz
+# - src: https://some.webserver.example.com/files/master.tar.gz
+#   name: http-role
+
+# # from bitbucket, if bitbucket happens to be operational right now :)
+# - src: git+http://bitbucket.org/willthames/git-ansible-galaxy
+#   version: v1.4
+
+# # from bitbucket, alternative syntax and caveats
+# - src: http://bitbucket.org/willthames/hg-ansible-galaxy
+#   scm: hg

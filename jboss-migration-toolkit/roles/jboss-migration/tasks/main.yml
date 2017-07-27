@@ -1,0 +1,67 @@
+---
+- name: Install Java 1.8 and some basic dependencies
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+   - unzip
+   - java-1.8.0-openjdk
+   - libselinux-python
+   - libsemanage-python
+   - httpd
+
+- name: Ensure Apache is always running
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Copy JMT - Offline Version archive
+  become: yes
+  copy:
+    dest: "/tmp/"
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode: 0700
+    src: "migrationtoolkit-rhamt-cli-4.0.0.Beta2.1-offline.zip" 
+
+- name: Extract JMT - Offline Version archive
+  unarchive: 
+    remote_src: true
+    dest: /home/{{ system_user }}
+    src: /tmp/migrationtoolkit-rhamt-cli-4.0.0.Beta2.1-offline.zip
+    creates: /home/{{ system_user }}/migrationtoolkit-rhamt
+
+- name: Copy JMT Console archive
+  become: yes
+  copy:
+    dest: "/tmp/"
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode: 0700
+    src: "migrationtoolkit-rhamt-web-distribution-4.0.0.Beta2.1-with-authentication.zip" 
+
+- name: Extract JMT Console archive
+  unarchive: 
+    remote_src: true
+    dest: /home/{{ system_user }}
+    src: /tmp/migrationtoolkit-rhamt-web-distribution-4.0.0.Beta2.1-with-authentication.zip
+    creates: /home/{{ system_user }}/migrationtoolkit-rhamt-web-distribution
+
+- name: Copy Simple Sample App 
+  become: yes
+  copy:
+    dest: "/tmp/"
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode: 0700
+    src: "simple-sample-app.ear"
+
+- name: Copy JEE Example App EAR
+  become: yes
+  copy:
+    dest: "/tmp/"
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode: 0700
+    src: "jee-example-app-1.0.0.ear"

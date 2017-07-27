@@ -1,0 +1,4 @@
+# file: roles/openshift_templates/defaults/main.yml
+---
+#
+# foo: default

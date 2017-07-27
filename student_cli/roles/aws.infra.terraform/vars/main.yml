@@ -1,0 +1,17 @@
+# file: roles/aws.infra.terraform/vars/main.yml
+---
+
+# Domain Name you own
+# domain_name: ""
+# zone_id: ""
+# ssh_keyname: "openshift"
+# region: "us-east-1"
+
+# OpenShift
+# ose_nodes: "2"
+# master_ami_type: "c3.large"
+# node_ami_type: "c3.large"
+
+# AWS API Keys for terraform.tfvars file
+# aws_access_key: ""
+# aws_secret_key: ""

@@ -1,0 +1,4 @@
+# file: roles/cockpit/defaults/main.yml
+---
+#
+# foo: default
