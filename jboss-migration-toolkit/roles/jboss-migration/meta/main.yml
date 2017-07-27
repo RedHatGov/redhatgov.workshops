@@ -1,0 +1,16 @@
+# file: roles/jboss-migration/meta/main.yml
+---
+galaxy_info:
+  author: Rick Stewart
+  description: Quick and easy jboss windup installer.
+  company: DLT
+  license: MIT
+  min_ansible_version: 2.3
+  platforms:
+  - name: EL
+    versions:
+    - 7
+  galaxy_tags:
+    - jboss-migration
+dependencies:
+  # - { role: xxx }

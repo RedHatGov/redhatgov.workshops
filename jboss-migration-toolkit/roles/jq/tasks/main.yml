@@ -1,0 +1,29 @@
+# file: roles/jq/tasks/main.yml
+---
+# remote_src: "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"
+
+- name: Install the awesome | jq (ec2-user)
+  become: yes
+  copy: 
+    dest: "/usr/local/bin/jq"
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode: 0700
+    src: "jq-linux64"  # Binary April 3 2017
+
+- name: Install the awesome | jq (root)
+  become: yes
+  copy: 
+    dest: "/bin/jq"
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode: 0700
+    src: "jq-linux64"
+
+
+# - name: Download jq
+#   become: yes
+#   get_url: 
+#     dest: "/usr/local/bin"  
+#     url: "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64" 
+#     validate_certs: false  

@@ -1,0 +1,28 @@
+---
+- name: Install dependencies
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+   - unzip
+   - libselinux-python
+   - libsemanage-python
+
+- name: Copy oc Client
+  become: yes
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/home/{{ system_user }}/oc"
+  copy:
+    dest: "/tmp/"
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode: 0700
+    src: "oc-3.5.5.31-linux.tar.gz" 
+
+- name: Extract oc Client
+  unarchive: 
+    remote_src: true
+    dest: /usr/bin
+    src: /tmp/oc-3.5.5.31-linux.tar.gz
+    creates: /usr/bin/oc
+

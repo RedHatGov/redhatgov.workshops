@@ -1,0 +1,77 @@
+# file: group_vars
+#####################################################
+#
+#               ////IMPORTANT////
+#
+# aws.infra.terraform |  Prefix all resources to 
+#                        ensure easy cleanup and 
+#                        identifcation.
+#####################################################
+workshop_prefix:              "changeme"
+
+system_user:                  "ec2-user"    # AWS
+# system_user:                 "vagrant"    # vagrant
+
+#--------------------------------------------------------------------------------------
+# aws.infra.terraform  |  .terraform working dir 
+terraform_working_dir:        "{{ lookup('env','PWD') }}/.terraform"
+# aws.infra.terraform  |  SSH Key Vars
+ssh_key_path:                 "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
+ansible_ssh_private_key_file: "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
+# aws.infra.terraform  |  AWS API KEYS
+aws_access_key:               ""
+aws_secret_key:               ""
+# aws.infra.terraform  | AWS Route 53
+domain_name:                  ""
+zone_id:                      ""
+# aws.infra.terraform  | Red Hat Subscription
+username:                     ""
+password:                     ""
+pool_id:                      ""
+# aws.infra.terraform  | AWS Terraform Vars
+number_master_nodes:          "0"            # Master deployer node
+number_nodes:                 "1"            # Student Nodes
+instance_type:                "t2.large"     # t2.large (best for running oc command)
+aws_region:                   "us-east-1"
+ebs_root_block_size: 50
+ami_id:                       "ami-b63769a1" # RHEL 7.3
+#--------------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------
+# LetsEncrypt
+
+letsencrypt:                  false          # set to false when using vagrant
+letsencrypt_email:            "someone@redhat.com"
+#--------------------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------
+# wetty
+workshop_password:            "redhat!@#"
+#--------------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------
+# sendgrid
+sendgrid_user:                ""
+sendgrid_pass:                ""
+sendgrid_api_key:             ""
+instructor_email:             ""
+email:                        yes
+
+student_emails:
+  - name:          ""
+    email:         ""
+    company:       ""
+    business_unit: ""
+    phone:         ""
+  - name:          ""
+    email:         ""
+    company:       ""
+    business_unit: ""
+    phone:         ""
+#--------------------------------------------------------------------------------------
+
+
+
+
