@@ -1,0 +1,4 @@
+# file: roles/LetsEncrypt/defaults/main.yml
+---
+#
+# foo: default

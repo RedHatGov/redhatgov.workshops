@@ -1,6 +1,8 @@
 # file: roles/wetty/tasks/main.yml
 ---
-
+#-------------------------------------------------------
+# Wetty
+#-------------------------------------------------------
 - name: Install Make & GCC
   become: yes
   yum:
@@ -13,7 +15,6 @@
 - name: Install Wetty Globaly
   become: yes
   command: npm install wetty -g chdir=/home/{{ system_user }}
-
 
 #-------------------------------------------------------
 # Let's Encrypt. 
@@ -55,8 +56,9 @@
     - cert.pem
     - privkey.pem
 
-
+#-------------------------------------------------------
 # SYSTEMD
+#-------------------------------------------------------
 - name: Template Systemd Service File 
   become: yes
   template:
@@ -65,7 +67,6 @@
     group: root 
     owner: root
     mode:  0644
-  notify: wetty
 
 # password_hash requires the passlib python module to generate password hashes
 # pip install passlib
@@ -76,7 +77,6 @@
     password:  "{{ workshop_password |password_hash('sha512') }}"   
     state:     present
     append:    yes
-
 
 - name: Update SSH Config
   become: yes
@@ -89,18 +89,9 @@
   notify: 
     - sshd  
 
-
-# - name: Open port in Firewall 
-#   become: yes
-#   firewalld:
-#     port: 8888/tcp  #"{{ wetty_port }}"
-#     permanent: true
-#     state: enabled
-
-- name: Turn off Firewall
-  become: yes
-  command: service firewalld stop
-
+#-------------------------------------------------------
+# SELinux 
+#-------------------------------------------------------
 - name: Create SELinux dir
   become: yes
   file: 
@@ -125,6 +116,8 @@
 - name: Update SELinux for Wetty
   become: yes
   command: sudo semodule -i wetty.pp chdir=/home/{{ system_user }}/.selinux
+  notify: 
+    - wetty
 
 
 ###########################################################

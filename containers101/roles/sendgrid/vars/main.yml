@@ -1,0 +1,4 @@
+# file: roles/sendgrid/vars/main.yml
+---
+#
+# foo: bar
