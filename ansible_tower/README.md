@@ -30,6 +30,7 @@ To create infrastructure and a Ansible Tower instance via Terraform:
 sudo easy_install pip
 sudo pip install boto
 sudo pip install ansible
+sudo pip install passlib
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 brew install terraform
 ```
@@ -103,5 +104,9 @@ https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
 
 ![Login](img/ansible-tower.png)
 
+## Walkthrough for Scripts
 
+A walkthrough for most of the typewritten steps has been added to the workshop, both to speed up workshops presented within a limited schedule, or to help a studenmt who has made a mistake, or who has fallen far behind.
+
+The walkthrough is deployed on the tower nodes, in `~ec2-user/walkthrough`.
 
