@@ -23,13 +23,40 @@ This repo also requires that Terraform be installed if you are using the aws.inf
 
 ### roles/aws.infra.terraform
 
-To create infrastructure and a Ansible Tower instance via Terraform
+To create infrastructure and a Ansible Tower instance via Terraform:
 
+**** OS X
 ```
+sudo easy_install pip
+sudo pip install boto
+sudo pip install ansible
+sudo pip install passlib
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 brew install terraform
 ```
 
+**** RHEL/CentOS
+```
+sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+# server
+subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms"
+# workstation
+subscription-manager repos --enable="rhel-7-workstation-rpms" --enable="rhel-7-workstation-extras-rpms" --enable="rhel-7-workstation-optional-rpms"
+sudo yum -y install python2-boto ansible
+wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
+sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+```
+
+**** Fedora 25/26
+```
+sudo dnf -y install python2-boto ansible
+wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
+sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+```
+
 Then edit `group_vars/all` and fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53. 
+
+Also, edit `2_configure.yml` and `3_unregister.yml`, and replace the "changeme" tag with the workshop name that you added to the `group_vars/all` file.
 
 
 ```
@@ -77,5 +104,9 @@ https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
 
 ![Login](img/ansible-tower.png)
 
+## Walkthrough for Scripts
 
+A walkthrough for most of the typewritten steps has been added to the workshop, both to speed up workshops presented within a limited schedule, or to help a studenmt who has made a mistake, or who has fallen far behind.
+
+The walkthrough is deployed on the tower nodes, in `~ec2-user/walkthrough`.
 
