@@ -6,6 +6,7 @@ cat << EOF | sudo tee /var/lib/awx/projects/playbooks/800-53.yml
   become: yes
   vars:
     scap_reports_dir: /tmp
+    scap_profile: stig-rhel7-disa
   roles:
     - rhtps.800-53 
 
