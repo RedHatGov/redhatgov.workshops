@@ -13,7 +13,8 @@
 - name: Install Wetty Globaly
   become: yes
   command: npm install wetty -g chdir=/home/{{ system_user }}
-
+  args:
+    creates: /usr/lib/node_modules/wetty/bin/wetty.js
 
 #-------------------------------------------------------
 # Let's Encrypt. 
@@ -21,11 +22,15 @@
 - name: Copy cert.pem to Wetty dir
   become: yes
   command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"  
+  args:
+    creates: /home/{{ system_user }}/.ssh/cert.pem
   when: letsencrypt
 
 - name: Copy privkey.pem to Wetty dir
   become: yes
   command: cp privkey.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/" 
+  args:
+    creates: /home/{{ system_user }}/.ssh/privkey.pem
   when: letsencrypt
 
 #-------------------------------------------------------
@@ -57,9 +62,8 @@
     - cert.pem
     - privkey.pem
 
-
 # SYSTEMD
-- name: Template Systemd Service File 
+- name: Template Systemd Service File for Wetty
   become: yes
   template:
     src:   "wetty.service.j2"
@@ -68,6 +72,12 @@
     owner: root
     mode:  0644
   notify: wetty
+
+- name: enable wetty service
+  become: yes
+  service:
+    name: wetty
+    enabled: yes
 
 # password_hash requires the passlib python module to generate password hashes
 # pip install passlib
@@ -78,7 +88,6 @@
     password:  "{{ workshop_password |password_hash('sha512') }}"   
     state:     present
     append:    yes
-
 
 - name: Update SSH Config
   become: yes
@@ -133,11 +142,17 @@
   with_items: 
     - wetty.pp
     - wetty.te
+  register: result
+
+#- name: debug copy wetty
+#  debug:
+#    var: result
 
 - name: Update SELinux for Wetty
   become: yes
   command: semodule -i wetty.pp chdir=/home/{{ system_user }}/.selinux
-
+  notify: wetty
+  when: result.changed
 
 ###########################################################
 #   Build from Source
