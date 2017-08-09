@@ -24,6 +24,18 @@ zone_id:     ""
 aws_access_key: ""
 aws_secret_key: ""
 region: "us-east-1"
+ami: "ami-b63769a1" # US-EAST-1 RHEL 7.3
+# region: "us-east-2"
+# ami: "ami-0932686c" # US-EAST-2 RHEL 7.3
+# region: "us-west-1"
+# ami: "ami-2cade64c" # US-WEST-1 RHEL 7.3
+# region: "us-west-2"
+# ami: "ami-6f68cf0f" # US-WEST-2 RHEL 7.3
+
+#####################################################
+# aws.infra.terraform  |  Ansible inventory dir 
+#####################################################
+inventory_working_dir: "{{ lookup('env','PWD') }}/inventory"
 
 #####################################################
 # aws.infra.terraform  |  .terraform working dir 
