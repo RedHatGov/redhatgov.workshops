@@ -1,17 +1,43 @@
 # file: 2_aws_ec2.yml
 ---
 
-- name: Configure Nodes 
+- name: Do prep prior to subscription
   become: yes
   hosts: tag_Workshop_changeme
   remote_user: ec2-user
   roles:
+    - { role: subscription_prep }
+
+- name: Subscribe nodes to RHSM
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  serial: 1
+  roles:
     - { role: subscription_manager }
+
+- name: Configure software on nodes
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  roles:
+    - { role: subscription_repos }
+
+- name: Configure EPEL packages on nodes
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  serial: 5
+  roles:
     - { role: epel }
+
+- name: Configure software on nodes
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  roles:
     - { role: LetsEncrypt }
     - { role: nodejs }
     - { role: wetty }
     - { role: ansible.tower }
     - { role: zsh }
-
-
