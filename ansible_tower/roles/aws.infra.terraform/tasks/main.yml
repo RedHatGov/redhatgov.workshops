@@ -1,5 +1,13 @@
 ---
 #---------------------------------------------------
+#  EC2 INI Creation
+#---------------------------------------------------
+- name: Template EC2 INI File
+  template: dest="{{ inventory_working_dir }}/ec2.ini"  src=ec2.ini.j2
+  tags:
+    - tf_create
+
+#---------------------------------------------------
 #  SSH Key
 #---------------------------------------------------
 - name: Check for existing key and remove

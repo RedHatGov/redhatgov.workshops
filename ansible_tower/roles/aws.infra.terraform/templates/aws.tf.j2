@@ -13,9 +13,9 @@ variable "aws_secret_key" {}
 variable "security_group" { default = "{{ workshop_prefix }}-ansible-tower-sg" }
 variable "keypair" { default = "{{ workshop_prefix }}-tower" }
 variable "node_instance_type" { default = "t2.medium" }  # c4.large
-variable "aws_region" { default = "us-east-1" }
+variable "aws_region" { default = "{{ region }}" }
 variable "ebs_root_block_size" { default = "50" }
-variable "aws_node_ami" { default = "ami-b63769a1" }     # US-EAST-1 RHEL 7.3
+variable "aws_node_ami" { default = "{{ ami }}" }
 variable "number_tower_nodes" { default = "{{ number_tower_nodes }}" }
 variable "number_nodes" { default = "{{ number_nodes }}" }
 #----------------------------------------------
