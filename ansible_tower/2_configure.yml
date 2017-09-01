@@ -1,6 +1,16 @@
 # file: 2_aws_ec2.yml
 ---
 
+- name: download EPEL repo file
+  hosts: localhost
+  tasks:
+    - name: download EPEL repo file
+      get_url:
+#        url: http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        url: http://mirror.math.princeton.edu/pub/epel/epel-release-latest-7.noarch.rpm
+        dest: roles/epel/files/epel-release-latest-7.noarch.rpm
+        mode: 0644
+
 - name: Do prep prior to subscription
   become: yes
   hosts: tag_Workshop_changeme
@@ -27,7 +37,6 @@
   become: yes
   hosts: tag_Workshop_changeme
   remote_user: ec2-user
-  serial: 5
   roles:
     - { role: epel }
 
