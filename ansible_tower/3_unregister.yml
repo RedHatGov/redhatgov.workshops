@@ -3,7 +3,7 @@
 
 - name: Unregister Nodes 
   become: yes
-  hosts: tag_Workshop_alextest
+  hosts: tag_Workshop_changeme
   remote_user: ec2-user
   roles:
     - { role: unregister }

@@ -1,17 +1,64 @@
 # file: 2_aws_ec2.yml
 ---
 
-- name: Configure Nodes 
+- name: Do prep prior to subscription
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  vars:
+    prep: yes
+    sub: no
+    repos: no
+  roles:
+    - { role: subscription_manager, tags: [ 'prep' ] }
+
+- name: Subscribe nodes to RHSM
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  serial: 1
+  vars:
+    prep: no
+    sub: yes
+    repos: no
+  roles:
+    - { role: subscription_manager, tags: [ 'sub' ] }
+
+- name: Configure software on nodes
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  vars:
+    prep: no
+    sub: no
+    repos: yes
+  roles:
+    - { role: subscription_manager, tags: [ 'repos' ] }
+
+- name: download EPEL repo file
+  hosts: localhost
+  tasks:
+    - name: download EPEL repo file
+      get_url:
+        url: http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+#        url: http://mirror.math.princeton.edu/pub/epel/epel-release-latest-7.noarch.rpm
+        dest: roles/epel/files/epel-release-latest-7.noarch.rpm
+        mode: 0644
+
+- name: Configure EPEL packages on nodes
   become: yes
   hosts: tag_Workshop_changeme
   remote_user: ec2-user
   roles:
-    - { role: subscription_manager }
     - { role: epel }
+
+- name: Configure software on nodes
+  become: yes
+  hosts: tag_Workshop_changeme
+  remote_user: ec2-user
+  roles:
     - { role: LetsEncrypt }
     - { role: nodejs }
     - { role: wetty }
     - { role: ansible.tower }
     - { role: zsh }
-
-
