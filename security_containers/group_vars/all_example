@@ -28,13 +28,18 @@ zone_id:                      ""
 username:                     ""
 password:                     ""
 pool_id:                      ""
+# aws.infra.terraform  | activation keys
+rhsm_activationkey:           ""
+rhsm_org_id:                  ""
 # aws.infra.terraform  | AWS Terraform Vars
 number_master_nodes:          "0"            # Master deployer node
 number_nodes:                 "1"            # Student Nodes
-instance_type:                "t2.large"     # t2.large (best for running oc command)
+instance_type:                "t2.small"     # t2.large (best for running oc command)
 aws_region:                   "us-east-1"
 ebs_root_block_size: 50
-ami_id:                       "ami-b63769a1" # RHEL 7.3
+ami_id:                       "ami-c998b6b2" # Red Hat Enterprise Linux version 7.4 (HVM),
+                                             # EBS General Purpose (SSD) Volume Type, Root
+                                             # device type: ebs Virtualization type: hvm
 #--------------------------------------------------------------------------------------
 
 
@@ -47,7 +52,7 @@ letsencrypt_email:            "someone@redhat.com"
 
 #--------------------------------------------------------------------------------------
 # wetty
-workshop_password:            "redhat!@#"
+workshop_password:            "redhat123"
 #--------------------------------------------------------------------------------------
 
 
@@ -60,16 +65,16 @@ instructor_email:             ""
 email:                        yes
 
 student_emails:
-  - name:          ""
-    email:         ""
-    company:       ""
-    business_unit: ""
-    phone:         ""
-  - name:          ""
-    email:         ""
-    company:       ""
-    business_unit: ""
-    phone:         ""
+  - name:                     ""
+    email:                    ""
+    company:                  ""
+    business_unit:            ""
+    phone:                    ""
+  - name:                     ""
+    email:                    ""
+    company:                  ""
+    business_unit:            ""
+    phone:                    ""
 #--------------------------------------------------------------------------------------
 
 

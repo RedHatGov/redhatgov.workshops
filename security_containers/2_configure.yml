@@ -3,11 +3,14 @@
 # This playbook uses "workshop_prefix" AWS Tag to 
 # configure the instances. Found in group_vars/all.
 - name: AWS | Install & Configure Instances
+  vars_files:
+      - "group_vars/all"
   remote_user: ec2-user
-  hosts: tag_Workshop_changeme       # AWS: workshop_prefix: 
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}" 
   become: yes
   roles:
     - subscription_manager
+    - ansible_ssh_pipelining
     - openshift_templates
     - atomic_scanner_plugins
     - container_check_stp
@@ -17,7 +20,6 @@
     - epel
     - cockpit
     - vaulttec.zsh
-    - oc 
     - nodejs
     - LetsEncrypt      # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work. 
     - wetty            # Not needed for Vagrant, use vagrant ssh
