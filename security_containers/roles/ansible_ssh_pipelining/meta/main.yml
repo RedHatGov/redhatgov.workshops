@@ -1,0 +1,17 @@
+# file: roles/ansible-ssh-pipelining/meta/main.yml
+---
+galaxy_info:
+  author: John Doe
+  description: Quick and easy acme web installer.
+  company: Acme
+  license: MIT
+  min_ansible_version: 1.9
+  platforms:
+  - name: EL
+    versions:
+    - all
+  galaxy_tags:
+    - acme
+    - installer
+    - web
+dependencies:
