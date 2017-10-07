@@ -11,7 +11,6 @@
   roles:
     - subscription_manager
     - ansible_ssh_pipelining
-    - openshift_templates
     - atomic_scanner_plugins
     - container_check_stp
     - docker
@@ -19,9 +18,9 @@
     - skopeo
     - epel
     - cockpit
-    - vaulttec.zsh
+    - zsh
     - nodejs
-    - LetsEncrypt      # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work. 
     - wetty            # Not needed for Vagrant, use vagrant ssh
+    # - LetsEncrypt    # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work. 
     # - sendgrid       # I send mail if you don't turn me off!
 

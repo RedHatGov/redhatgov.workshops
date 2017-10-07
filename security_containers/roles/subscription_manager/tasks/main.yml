@@ -22,31 +22,14 @@
 #---------------------------------------------------
 # Key Installation
 #---------------------------------------------------
-- name: Import keys
-  shell: rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-  tags:
-    - rhel
+# - name: Import keys
+#   shell: rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+#   tags:
+#     - rhel
 
 #---------------------------------------------------
 # Subscribe to RHN
 #---------------------------------------------------
-# - name: Check RHN subscription status
-#   command: subscription-manager status
-#   register: sm_result
-#   ignore_errors: True
-#   tags:
-#     - rhel
-
-# - name: Subscribe RHN
-#   serial: 5
-#   command: subscription-manager register --username="{{ username }}" --password="{{ password }}" --force
-#   # when: sm_result.rc != 0
-
-# - name: Attach RHN Pool
-#   serial: 5
-#   command: subscription-manager attach --pool "{{ pool_id }}"
-#   # when: sm_result.rc != 0
-
 # - name: Subscribe to RHSM
 #   redhat_subscription:
 #     state: present
@@ -54,6 +37,7 @@
 #     password: "{{ password }}"
 #     pool: "{{ pool_id }}"
 #   # when: sm_result.rc != 0
+#   serial: 1
 #   tags:
 #     - rhel
 
@@ -70,11 +54,12 @@
     pool:           "{{ pool_id }}"
     state:          present
   register: result
-  retries:  10
-  delay:    30
-  # when: sm_result.rc != 0
-  tags:
-    - rhel
+  serial: 1
+#   # retries:  10
+#   # delay:    30
+#   # when: sm_result.rc != 0
+#   tags:
+#     - rhel
 
 # Shell Command
 # - name: Subscribe to RHSM via activation keys
@@ -89,23 +74,23 @@
 #---------------------------------------------------
 # Add Required Repositories
 #---------------------------------------------------
-- name: Check to see if requisite repos are already enabled
-  shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms' | wc -l
-  register: smr_result
-  ignore_errors: True
-  tags: 
-    - rhel
+# - name: Check to see if requisite repos are already enabled
+#   shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms' | wc -l
+#   register: smr_result
+#   ignore_errors: True
+#   tags: 
+#     - rhel
 
 - name: Disable all repos by default
-  serial: 5
-  command: subscription-manager repos --disable "*"
-  when: smr_result.stdout != "3"
+  serial: 1
+  shell: subscription-manager repos --disable '*'
+  # when: smr_result.stdout != "3"
   tags:
     - rhel
 
 - name: Enable the requisite rhel7 repos
   shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-  when: smr_result.stdout != "3"
+  # when: smr_result.stdout != "3"
   tags:
     - rhel
 

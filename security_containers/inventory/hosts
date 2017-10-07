@@ -6,3 +6,6 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env py
 
 [vagrant]
 192.168.70.101
+
+[ptex]
+redhat.[0:40].redhatgov.io

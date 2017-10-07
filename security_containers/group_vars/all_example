@@ -18,19 +18,19 @@ terraform_working_dir:        "{{ lookup('env','PWD') }}/.terraform"
 # aws.infra.terraform  |  SSH Key Vars
 ssh_key_path:                 "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
 ansible_ssh_private_key_file: "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
+# subscription_manager  | Red Hat Subscription
+username:                     ""
+password:                     ""
+pool_id:                      ""
+# subscription_manager  | activation keys
+rhsm_activationkey:           ""
+rhsm_org_id:                  ""
 # aws.infra.terraform  |  AWS API KEYS
 aws_access_key:               ""
 aws_secret_key:               ""
 # aws.infra.terraform  | AWS Route 53
 domain_name:                  ""
 zone_id:                      ""
-# aws.infra.terraform  | Red Hat Subscription
-username:                     ""
-password:                     ""
-pool_id:                      ""
-# aws.infra.terraform  | activation keys
-rhsm_activationkey:           ""
-rhsm_org_id:                  ""
 # aws.infra.terraform  | AWS Terraform Vars
 number_master_nodes:          "0"            # Master deployer node
 number_nodes:                 "1"            # Student Nodes
