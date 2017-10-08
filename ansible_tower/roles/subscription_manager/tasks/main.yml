@@ -25,6 +25,15 @@
 # Key Installation
 #---------------------------------------------------
 
+- name: Check GPG keys
+  shell: rpm -q gpg-pubkey | wc -l
+  register: gpg_result
+  changed_when: False
+  ignore_errors: True
+  when: prep
+  tags:
+    - rhel
+
 - name: Import keys
   shell: rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 # DISABLED BECAUSE IT IS SLOW, ACROSS MANY NODES
@@ -34,7 +43,7 @@
 #  with_items:
 #    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
 #    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-  when: prep
+  when: prep and gpg_result.stdout != "4"
   tags:
     - rhel
 
@@ -45,18 +54,11 @@
 - name: Check RHN subscription status
   command: subscription-manager status
   register: sm_result
+  changed_when: False
   ignore_errors: True
   when: sub
   tags:
     - rhel
-
-#- name: Subscribe RHN
-#  command: subscription-manager register --username="{{ username }}" --password="{{ password }}" --force
-#  when: sm_result.rc != 0 and sub
-
-#- name: Attach RHN Pool
-#  command: subscription-manager attach --pool "{{ pool_id }}"
-#  when: sm_result.rc != 0 and sub
 
 - name: Subscribe to RHSM
   redhat_subscription:
@@ -76,6 +78,7 @@
   become: yes
   shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms' | wc -l
   register: smr_result
+  changed_when: False
   ignore_errors: True
   when: repos
   tags:
@@ -88,7 +91,7 @@
     - rhel
 
 - name: Enable the requisite rhel7 repos
-  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms"
   when: repos and smr_result.stdout != "3"
   tags:
     - rhel
