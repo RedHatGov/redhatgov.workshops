@@ -5,6 +5,11 @@
 - include: nodes_setup.yml
 
 ###################################
+# Deploy walkthrough scripts
+###################################
+- include: walkthroughs.yml
+
+###################################
 # Base setup of Tower
 ###################################
 # - include: tower_setup.yml

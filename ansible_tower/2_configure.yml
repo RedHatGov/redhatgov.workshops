@@ -72,5 +72,27 @@
     - { role: LetsEncrypt }
     - { role: nodejs }
     - { role: wetty }
-    - { role: ansible.tower }
     - { role: zsh }
+
+- name: Prep walkthroughs for deployment
+  vars_files:
+      - "group_vars/all"
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
+  gather_facts: no
+  vars:
+    install: no
+    prep: yes
+  roles:
+    - { role: ansible.tower }
+
+- name: Configure software and deploy walkthroughs
+  vars_files:
+      - "group_vars/all"
+  become: yes
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
+  remote_user: ec2-user
+  vars:
+    install: yes
+    prep: no
+  roles:
+    - { role: ansible.tower }
