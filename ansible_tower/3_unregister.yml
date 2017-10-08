@@ -2,8 +2,10 @@
 ---
 
 - name: Unregister Nodes 
+  vars_files:
+      - "group_vars/all"
   become: yes
-  hosts: tag_Workshop_changeme
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
   remote_user: ec2-user
   roles:
     - { role: unregister }
