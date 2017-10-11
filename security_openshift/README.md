@@ -1,6 +1,6 @@
-# OpenShift Security Playbook
+# Container Security Playbook
 
-![OpenShift](img/openshift.png)
+![Containers](img/containers.jpg)
 
 
 ## Dependencies:
@@ -56,7 +56,13 @@ password:                     ""
 pool_id:                      ""
 ```
 
+Or if you want to use activation keys you can use that too.
 
+```
+# aws.infra.terraform  | activation keys
+rhsm_activationkey:           ""
+rhsm_org_id:                  ""
+```
 
 
 

@@ -1,14 +1,2 @@
-#- name: block IPv6 mirrors
-#  lineinfile:
-#    path: '/etc/yum.conf'
-#    insertafter: '^[main]$'
-#    state: present
-#    line: 'ip_resolve=4'
-
-- name: copy out EPEL repo file
-  copy:
-    src: 'roles/epel/files/epel-release-latest-7.noarch.rpm'
-    dest: '/tmp/epel-release-latest-7.noarch.rpm'
-
 - name: install EPEL Repository
-  action: "{{ ansible_pkg_mgr }} name='/tmp/epel-release-latest-7.noarch.rpm' state=present"
+  action: "{{ ansible_pkg_mgr }} name={{ epel_url }} state=present"
