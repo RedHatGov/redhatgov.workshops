@@ -1,0 +1,12 @@
+---
+#---------------------------------------------------
+# Cloud Access
+#---------------------------------------------------
+- name: Cloud Access | Enable Extras repos
+  shell: yum-config-manager --enable rhui-REGION-rhel-server-extras --save
+  when: cloud_access
+
+- name: Cloud Access | Enable Optional repos
+  shell: yum-config-manager --enable rhui-REGION-rhel-server-optional --save
+  when: cloud_access
+

@@ -6,17 +6,21 @@
 - name: Provision AWS Infrastucture using Terraform 
   hosts: local_target
   roles:
-  - { role: aws.infra.terraform, tags: ["tf_create"] }
+  - { role: aws.infra, tags: ["tf_create"] }
+
+- name: Configure software on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_nodes
+  roles:
+    - { role: subscription_manager }
+    - { role: epel }
+    - { role: nodejs }
+    - { role: wetty }
+    - { role: ansible.tower }
+    - { role: zsh }
 
 
-
-#############################################################
-#  USAGE
-#############################################################
-# Create
-# ansible-playbook -i inventory 1_aws_infra.yml
-#
-# Destroy
-# cd /tmp/terraform
-# terraform destroy
-# yes
+# {{workshop_prefix}}.tower.<student number>.redhatgov.io:8888
+# Username: ec2-user
+# Password: redhat!@#

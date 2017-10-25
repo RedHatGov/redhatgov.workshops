@@ -1,8 +1,10 @@
-ansible_ssh_user=centos
+ansible_ssh_user=ec2-user
 ansible_become=yes
 
 [local_target]
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
 
-[vagrant]
-192.168.70.101
+
+[nodes]
+ChangeMe.[0:4].redhatgov.io
+
