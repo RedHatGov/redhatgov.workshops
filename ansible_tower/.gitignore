@@ -1,9 +1,16 @@
+# Compiled files
+*.tfstate
+*.tfstate.backup
+.*
 secrets.yml
 users.yml
 extra_vars.yml
 *.txt
 .vagrant
 .terraform
-env.sh
+.redhatgov
+.vault.yml
+vault.yml
+group_vars/vault.yml
 group_vars/all
-all
+env.sh

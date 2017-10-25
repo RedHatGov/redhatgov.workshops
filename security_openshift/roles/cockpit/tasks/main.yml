@@ -24,7 +24,10 @@
 
 #############################################################################################
 # To make a SHA512 password run this on a RHEL instance.
-# python -c 'import crypt; print(crypt.crypt("DC17!", crypt.mksalt(crypt.METHOD_SHA512)))'
+# http://passlib.readthedocs.io/en/stable/lib/passlib.hash.sha256_crypt.html
+# http://docs.ansible.com/ansible/latest/faq.html#how-do-i-generate-crypted-passwords-for-the-user-module
+#
+# python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.using(rounds=5000).hash('redhat123')"
 #############################################################################################
 - name: Create Cockpit user
   become: yes
@@ -33,7 +36,7 @@
     shell: "/bin/zsh"
     state: present
     groups: "{{ system_user }},adm"
-    password: "$6$L6v3QJqd5XsakrwN$PB0ahtjuv0L4L0Xg6KAOqeVdpSxhiJM/GbOiSYL2Smh1NrYNAdmc5hkB9TH1lxK4AFoIMSc2J30/2e06Nlvpa1"
+    password: "$6$XhplkGk/5yR/qijY$vBq.u1/8BlGqbz00sA9INstZlvbhtr4uHqJMBKC31Bxxx/NdW8RX2135QGdNRK74/RqnkJqCx9IrxFnumSRjj0"
     createhome: true  
     update_password: always
 

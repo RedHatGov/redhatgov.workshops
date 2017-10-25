@@ -1,12 +1,5 @@
 # file: site.yml
 ---
-
-# Use Redis to cash facts between playbooks:
-#   brew install redis      # macOS
-#   yum install -y redis    # RHEL
-#   pip install redis
-#   redis-server /usr/local/etc/redis.conf &
-
 # password_hash requires the passlib python module to generate password hashes
 # sudo pip install passlib
 
@@ -16,10 +9,30 @@
 - name: Provision AWS Infrastucture using Terraform
   hosts: local_target    
   roles:
-    - aws.infra.terraform
+    - aws.infra
 
 
-
+- name: AWS | Install & Configure Instances
+  remote_user: ec2-user
+  hosts: nodes 
+  become: yes
+  roles:
+    - subscription_manager
+    - ansible_ssh_pipelining
+    - docker
+    - atomic_scanner_plugins
+    - container_check_stp
+    - openshift_templates
+    - jq
+    - skopeo
+    - epel
+    - cockpit
+    - oc
+    - zsh
+    - nodejs
+    - wetty            # Not needed for Vagrant, use vagrant ssh
+    # - LetsEncrypt    # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work. 
+    # - sendgrid       # I send mail if you don't turn me off!
 
 
 
