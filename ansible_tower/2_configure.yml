@@ -2,8 +2,10 @@
 ---
 
 - name: Do prep prior to subscription
+  vars_files:
+      - "group_vars/all"
   become: yes
-  hosts: tag_Workshop_changeme
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
   remote_user: ec2-user
   vars:
     prep: yes
@@ -13,8 +15,10 @@
     - { role: subscription_manager, tags: [ 'prep' ] }
 
 - name: Subscribe nodes to RHSM
+  vars_files:
+      - "group_vars/all"
   become: yes
-  hosts: tag_Workshop_changeme
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
   remote_user: ec2-user
   serial: 1
   vars:
@@ -25,8 +29,10 @@
     - { role: subscription_manager, tags: [ 'sub' ] }
 
 - name: Configure software on nodes
+  vars_files:
+      - "group_vars/all"
   become: yes
-  hosts: tag_Workshop_changeme
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
   remote_user: ec2-user
   vars:
     prep: no
@@ -36,6 +42,8 @@
     - { role: subscription_manager, tags: [ 'repos' ] }
 
 - name: download EPEL repo file
+  vars_files:
+      - "group_vars/all"
   hosts: localhost
   tasks:
     - name: download EPEL repo file
@@ -46,19 +54,45 @@
         mode: 0644
 
 - name: Configure EPEL packages on nodes
+  vars_files:
+      - "group_vars/all"
   become: yes
-  hosts: tag_Workshop_changeme
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
   remote_user: ec2-user
   roles:
     - { role: epel }
 
 - name: Configure software on nodes
+  vars_files:
+      - "group_vars/all"
   become: yes
-  hosts: tag_Workshop_changeme
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
   remote_user: ec2-user
   roles:
     - { role: LetsEncrypt }
     - { role: nodejs }
     - { role: wetty }
-    - { role: ansible.tower }
     - { role: zsh }
+
+- name: Prep walkthroughs for deployment
+  vars_files:
+      - "group_vars/all"
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
+  gather_facts: no
+  vars:
+    install: no
+    prep: yes
+  roles:
+    - { role: ansible.tower }
+
+- name: Configure software and deploy walkthroughs
+  vars_files:
+      - "group_vars/all"
+  become: yes
+  hosts: "{{ 'tag_Workshop_' + workshop_prefix }}"
+  remote_user: ec2-user
+  vars:
+    install: yes
+    prep: no
+  roles:
+    - { role: ansible.tower }
