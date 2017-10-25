@@ -5,11 +5,11 @@ ansible_become=yes
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
 
 [tower_nodes]
-{{workshop_prefix}}.tower.[0:{{number_tower_nodes}}].redhatgov.io
+{{workshop_prefix}}.tower.[0:{{ number_tower_nodes | int - 1 }}].redhatgov.io
 
 [nodes]
-{{workshop_prefix}}.node.[0:{{number_nodes}}].redhatgov.io
+{{workshop_prefix}}.node.[0:{{ number_nodes | int - 1 }}].redhatgov.io
 
 [all_nodes]
-{{workshop_prefix}}.tower.[0:{{number_tower_nodes}}].redhatgov.io
-{{workshop_prefix}}.node.[0:{{number_nodes}}].redhatgov.io
+{{workshop_prefix}}.tower.[0:{{ number_tower_nodes | int - 1 }}].redhatgov.io
+{{workshop_prefix}}.node.[0:{{ number_nodes | int - 1 }}].redhatgov.io

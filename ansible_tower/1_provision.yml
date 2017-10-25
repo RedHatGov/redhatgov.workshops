@@ -17,8 +17,27 @@
     - { role: epel }
     - { role: nodejs }
     - { role: wetty }
-    - { role: ansible.tower }
     - { role: zsh }
+
+- name: Prep walkthroughs for deployment
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_nodes
+  vars:
+    install: no
+    prep: yes
+  roles:
+    - { role: ansible.tower }
+
+- name: Configure software and deploy walkthroughs
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_nodes
+  vars:
+    install: yes
+    prep: no
+  roles:
+    - { role: ansible.tower }
 
 
 # {{workshop_prefix}}.tower.<student number>.redhatgov.io:8888
