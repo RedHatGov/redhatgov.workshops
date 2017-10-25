@@ -13,7 +13,7 @@
   become: yes
   unarchive:
     src: "/bin/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit.tar.gz"
-    dest: "/bin/openshift-origin-client-tools-v1.5.1-7b451fc-linux-64bit"
+    dest: "/bin"
     remote_src: True
 
 - name: Move OC command

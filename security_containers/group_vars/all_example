@@ -1,82 +1,61 @@
 # file: group_vars
-#####################################################
+#######################################################################################
 #
-#               ////IMPORTANT////
+#                  ////IMPORTANT////
 #
-# aws.infra.terraform |  Prefix all resources to 
-#                        ensure easy cleanup and 
-#                        identifcation.
-#####################################################
-workshop_prefix:              "changeme"
+#      Prefixed to all resources for cleanup & identifcation.
+#######################################################################################
 
-system_user:                  "ec2-user"    # AWS
-# system_user:                 "vagrant"    # vagrant
+workshop_prefix:                  "containersecurity"
 
+
+
+#######################################################################################
+# ANSIBLE ROLE KEY         |      VALUE
+#######################################################################################
+# aws.infra                |      .terraform working dir 
+terraform_working_dir:            "{{ lookup('env','PWD') }}/.redhatgov"
+# aws.infra                |      AWS API KEYS
+aws_access_key:                   ""
+aws_secret_key:                   ""
+# aws.infra                |      AWS Route 53
+domain_name:                      ""
+zone_id:                          ""
+# aws.infra                |      AWS Terraform Vars
+number_nodes:                     "4"            # Student Nodes
+node_instance_type:               "t2.small"     # Student Instance Size
+region:                           "us-east-1"    # AWS Region, configures ec2.ini too
+ebs_root_block_size:              50
+ami_id:                           "" # Red Hat Cloud Access RHEL 7.4
+# ami_id:                         "ami-cfdafaaa" # us-east-2 RHEL 7.4 
+# ami_id:                         "ami-c998b6b2" # us-east-1 RHEL 7.4
 #--------------------------------------------------------------------------------------
-# aws.infra.terraform  |  .terraform working dir 
-terraform_working_dir:        "{{ lookup('env','PWD') }}/.terraform"
-# aws.infra.terraform  |  SSH Key Vars
-ssh_key_path:                 "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
-ansible_ssh_private_key_file: "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
-# aws.infra.terraform  |  AWS API KEYS
-aws_access_key:               ""
-aws_secret_key:               ""
-# aws.infra.terraform  | AWS Route 53
-domain_name:                  ""
-zone_id:                      ""
-# aws.infra.terraform  | Red Hat Subscription
-username:                     ""
-password:                     ""
-pool_id:                      ""
-# aws.infra.terraform  | activation keys
-rhsm_activationkey:           ""
-rhsm_org_id:                  ""
-# aws.infra.terraform  | AWS Terraform Vars
-number_master_nodes:          "0"            # Master deployer node
-number_nodes:                 "1"            # Student Nodes
-instance_type:                "t2.small"     # t2.large (best for running oc command)
-aws_region:                   "us-east-1"
-ebs_root_block_size: 50
-ami_id:                       "ami-c998b6b2" # Red Hat Enterprise Linux version 7.4 (HVM),
-                                             # EBS General Purpose (SSD) Volume Type, Root
-                                             # device type: ebs Virtualization type: hvm
+# subscription_manager     |      Red Hat Subscription via Cloud Access
+cloud_access:                      true
+# subscription_manager     |      Red Hat Subscription via username & password
+username:                         ""
+password:                         ""
+pool_id:                          ""
+# subscription_manager     |      Red Hat Subscription via activation keys
+rhsm_activationkey:               ""
+rhsm_org_id:                      ""
 #--------------------------------------------------------------------------------------
-
-
+# LetsEncrypt              |      email
+letsencrypt_email:                "someone@redhat.com"
+letsencrypt:                      false
 #--------------------------------------------------------------------------------------
-# LetsEncrypt
-
-letsencrypt:                  false          # set to false when using vagrant
-letsencrypt_email:            "someone@redhat.com"
+# wetty                    |      password
+workshop_password:                "redhat!@#"
 #--------------------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------
-# wetty
-workshop_password:            "redhat123"
-#--------------------------------------------------------------------------------------
-
-
-#--------------------------------------------------------------------------------------
-# sendgrid
-sendgrid_user:                ""
-sendgrid_pass:                ""
-sendgrid_api_key:             ""
-instructor_email:             ""
-email:                        yes
-
-student_emails:
-  - name:                     ""
-    email:                    ""
-    company:                  ""
-    business_unit:            ""
-    phone:                    ""
-  - name:                     ""
-    email:                    ""
-    company:                  ""
-    business_unit:            ""
-    phone:                    ""
-#--------------------------------------------------------------------------------------
-
-
-
-
+#######################################################################################
+# ANSIBLE config           |      VALUE
+#######################################################################################
+# Dynamic Inventory 
+inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
+# Ansible SSH Key Location |      SSH Key Vars
+ssh_key_path:                     "{{ terraform_working_dir }}/{{ workshop_prefix }}-container"
+ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/{{ workshop_prefix }}-container"
+system_user:                      "ec2-user"    # AWS
+# system_user:                     "vagrant"    # vagrant
+    

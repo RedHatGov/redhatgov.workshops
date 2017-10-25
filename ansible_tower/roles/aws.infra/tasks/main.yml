@@ -1,0 +1,71 @@
+---
+#---------------------------------------------------
+#  EC2 INI Creation
+#---------------------------------------------------
+- name: Template Ansible Hosts File
+  template: dest="{{ inventory_working_dir }}/hosts"  src=hosts.j2
+  tags:
+    - tf_create
+#---------------------------------------------------
+#  EC2 INI Creation
+#---------------------------------------------------
+- name: Template EC2 INI File
+  template: dest="{{ inventory_working_dir }}/ec2.ini"  src=ec2.ini.j2
+  tags:
+    - tf_create
+
+#---------------------------------------------------
+#  SSH Key
+#---------------------------------------------------
+- name: Check for existing key and remove
+  ec2_key: name="{{ workshop_prefix }}-tower" region="{{ region }}" state=absent
+  tags:
+    - tf_create
+
+- name: Create EC2 keypair
+  ec2_key: name="{{ workshop_prefix }}-tower" region="{{ region }}" state=present
+  register: ec2_key
+  tags:
+    - tf_create
+
+- debug: var=ec2_key
+  tags:
+    - tf_create
+
+- name: Make temporary location to run Terraform
+  file: path="{{ terraform_working_dir }}"  state=directory
+  tags:
+    - tf_create
+
+- name: Create ssh keypair
+  copy: content="{{ ec2_key.key.private_key }}"
+        dest="{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
+        mode=0400
+  tags:
+    - tf_create
+
+#---------------------------------------------------
+# Terraform.io
+#---------------------------------------------------
+- name: Template Terraform files locally to run
+  template: dest="{{ terraform_working_dir }}/aws.tf"  src=aws.tf.j2
+  tags:
+    - tf_create
+
+- name: Template terraform.tfvars
+  template: dest="{{ terraform_working_dir }}/terraform.tfvars"  src=terraform.tfvars.j2
+  tags:
+    - tf_create
+
+- name: Initialize Terraform to discover plugins
+  command: terraform init chdir="{{ terraform_working_dir }}"
+  tags:
+    - tf_create
+
+- name: Run Terraform
+  command: terraform apply chdir="{{ terraform_working_dir }}" 
+  tags:
+    - tf_create
+
+- name: Wait for AWS AMIs to become initialized 
+  pause: minutes=2

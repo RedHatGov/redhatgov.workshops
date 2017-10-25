@@ -1,0 +1,10 @@
+# file: roles/ansible-ssh-pipelining/tasks/main.yml
+---
+
+- name: Detect /etc/sudoers
+  stat: path=/etc/sudoers
+  register: etc_sudoers
+
+- name: Disable sudo requiretty for Ansible pipelining
+  lineinfile: dest=/etc/sudoers regexp="^Defaults(\s+)(.*)requiretty(.*)" line="#Defaults\1\2requiretty\3" backrefs=yes
+  when: etc_sudoers.stat.exists
