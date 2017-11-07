@@ -1,0 +1,62 @@
+# file: 2_load.yml
+---
+# https://www.terraform.io/docs/providers/aws/index.html
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items: "{{ groups.all_nodes }}"
+
+- name: Configure repositories on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_nodes
+  roles:
+    - { role: subscription_manager }
+    - { role: epel }
+
+- name: Configure repositories on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: le_node
+  roles:
+    - { role: LetsEncrypt }
+
+- name: Configure software on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_nodes
+  roles:
+    - { role: nodejs }
+    - { role: wetty }
+    - { role: zsh }
+
+- name: Prep walkthroughs for deployment
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_nodes
+  vars:
+    install: no
+    prep: yes
+  roles:
+    - { role: ansible.tower }
+
+- name: Configure software and deploy walkthroughs
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_nodes
+  vars:
+    install: yes
+    prep: no
+  roles:
+    - { role: ansible.tower }
+
+
+# {{workshop_prefix}}.tower.<student number>.redhatgov.io:8888
+# Username: ec2-user
+# Password: redhat!@#

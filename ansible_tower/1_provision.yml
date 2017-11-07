@@ -1,4 +1,4 @@
-# file: 1_aws_infra.yml
+# file: 1_provision.yml
 ---
 # https://www.terraform.io/docs/providers/aws/index.html
 
@@ -7,38 +7,6 @@
   hosts: local_target
   roles:
   - { role: aws.infra, tags: ["tf_create"] }
-
-- name: Configure software on nodes
-  become: yes
-  remote_user: ec2-user
-  hosts: tower_nodes
-  roles:
-    - { role: subscription_manager }
-    - { role: epel }
-    - { role: nodejs }
-    - { role: wetty }
-    - { role: zsh }
-
-- name: Prep walkthroughs for deployment
-  become: yes
-  remote_user: ec2-user
-  hosts: tower_nodes
-  vars:
-    install: no
-    prep: yes
-  roles:
-    - { role: ansible.tower }
-
-- name: Configure software and deploy walkthroughs
-  become: yes
-  remote_user: ec2-user
-  hosts: tower_nodes
-  vars:
-    install: yes
-    prep: no
-  roles:
-    - { role: ansible.tower }
-
 
 # {{workshop_prefix}}.tower.<student number>.redhatgov.io:8888
 # Username: ec2-user

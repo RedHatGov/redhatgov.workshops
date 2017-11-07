@@ -66,11 +66,3 @@
   command: terraform apply chdir="{{ terraform_working_dir }}" 
   tags:
     - tf_create
-
-- name: Wait for AWS AMIs to become initialized
-  wait_for:
-    host: "{{ item }}"
-    port: 22
-    state: started
-    timeout: 300
-  with_items: "{{ groups.all_nodes }}"
