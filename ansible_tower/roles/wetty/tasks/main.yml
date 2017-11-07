@@ -1,13 +1,14 @@
 # file: roles/wetty/tasks/main.yml
 ---
 
-- name: Install Make & GCC
+- name: Install required packages
   become: yes
   yum:
     name: "{{ item }}"
     state: present
   with_items:
     - make
+    - nmap-ncat
     - gcc-c++
 
 - name: Install Wetty Globaly
@@ -72,12 +73,6 @@
     owner: root
     mode:  0644
   notify: wetty
-
-- name: enable wetty service
-  become: yes
-  service:
-    name: wetty
-    enabled: yes
 
 # password_hash requires the passlib python module to generate password hashes
 # pip install passlib
@@ -149,6 +144,13 @@
   notify: wetty
   when: result.changed
 
+- name: enable and start wetty service
+  become: yes
+  service:
+    name: wetty
+    enabled: yes
+    state: started
+
 ###########################################################
 #   Build from Source
 ###########################################################
@@ -170,3 +172,11 @@
 #
 # - name: Install wetty
 #   command: npm install chdir="/home/{{ system_user }}/.wetty"
+
+#-------------------------------------------------------
+# verify that wetty is running
+#-------------------------------------------------------
+- name: Verify that wetty is listening
+  shell: ncat -v -C --ssl localhost 8888 < /dev/null
+  register: wetty_status
+  changed_when: "wetty_status.rc != 0"
