@@ -102,7 +102,11 @@ Browse to the URL of the EC2 instance and enter the `ec2-user`'s password (works
 https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
 ```
 
-![Login](img/ansible-tower.png)
+![Tower Login](img/ansible-tower.png)
+
+There is a web-based IDE running on port 8443 of each tower node.  That IDE can be used to edit Ansible playbooks, rather than using a command line editor, like `vim` or `nano`.
+
+![Codiad Login](img/codiad.png)
 
 ## Walkthrough for Scripts
 

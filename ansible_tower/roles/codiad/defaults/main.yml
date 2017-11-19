@@ -1,0 +1,33 @@
+---
+# defaults file for codiad
+
+# edit these
+codiad_dir: "/usr/share/nginx/codiad"
+codiad_port: "8443"
+codiad_ssl_cert_src_file: "/home/ec2-user/.ssh/cert.pem"
+codiad_ssl_key_src_file: "/home/ec2-user/.ssh/privkey.pem"
+# http://php.net/manual/en/timezones.others.php
+#codiad_timezone: "Etc/UTC"
+codiad_timezone: "US/Eastern"
+#codiad_timezone: "US/Central"
+#codiad_timezone: "US/Mountain"
+#codiad_timezone: "US/Pacific"
+# Here is the list of users.  Use the following algorithm to hash passwords:
+# $ php -r 'print_r(sha(md5("password")));echo "\n";'
+#codiad_users:
+#- { name: "ec2-user", pass: "0a161200ebeadfd24001682f05f16359b74bb55f" }
+codiad_version: "HEAD"
+
+# leave these alone
+codiad_ssl_cert_dir: "/etc/pki/nginx"
+codiad_ssl_key_dir: "/etc/pki/nginx/private"
+codiad_ssl_cert_file: "server.crt"
+codiad_ssl_key_file: "server.key"
+codiad_ssl_cert: "{{ codiad_ssl_cert_dir }}/{{ codiad_ssl_cert_file }}"
+codiad_ssl_key: "{{ codiad_ssl_key_dir }}/{{ codiad_ssl_key_file }}"
+codiad_pkgs:
+- nginx
+- php
+- php-fpm
+- php-mbstring
+- php-pclzip

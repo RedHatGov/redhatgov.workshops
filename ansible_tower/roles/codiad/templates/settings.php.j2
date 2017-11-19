@@ -1,0 +1,9 @@
+<?php/*|{
+{% for user in codiad_users %}
+{% if loop.index < 2 %}
+  "{{ user.name }}":{"codiad.settings.system.sync":false,"codiad.settings.plugin.sync":false,"codiad.editor.tabSize":2,"codiad.editor.softTabs":true,"username":"{{ user.name }}"}
+{% else %}
+  ,"{{ user.name }}":{"codiad.settings.system.sync":false,"codiad.settings.plugin.sync":false,"codiad.editor.tabSize":2,"codiad.editor.softTabs":true,"username":"{{ user.name }}"}
+{% endif %}
+{% endfor %}
+}|*/?>

@@ -60,5 +60,9 @@ inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 ssh_key_path:                     "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
 ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
 system_user:                      "ec2-user"    # AWS
+# Here is the list of users for codiad.  It is suggested to use the same password as you specified as the `workshop_password`, above.  Use the following algorithm to hash passwords:
+# $ php -r 'print_r(sha(md5("password")));echo "\n";'
+codiad_users:
+- { name: "ec2-user", pass: "0a161200ebeadfd24001682f05f16359b74bb55f" }
 # system_user:                     "vagrant"    # vagrant
     
