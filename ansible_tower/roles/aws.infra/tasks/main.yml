@@ -66,6 +66,3 @@
   command: terraform apply chdir="{{ terraform_working_dir }}" 
   tags:
     - tf_create
-
-- name: Wait for AWS AMIs to become initialized 
-  pause: minutes=2

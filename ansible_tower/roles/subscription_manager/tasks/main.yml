@@ -1,11 +1,11 @@
 # file: roles/subscription_manager/tasks/main.yml
 ---
 # Red Hat Cloud Access
-- include: cloud_access.yml
+- import_tasks: cloud_access.yml
 
 # Subscribe machines via username & password 
 # or activation keys
-- include: subscribe.yml
+- import_tasks: subscribe.yml
 
 
 
