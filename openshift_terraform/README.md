@@ -81,6 +81,15 @@ You will be prompted to create a password and once complete, you can put this pa
 
 ### Provision
 
+Before you launch the provisioning script, copy the file `env.sh_example` to `env.sh`, and replace the placeholders with your AWS access key ID and secret access key.  Then, source that file, to place the variables into your environment.
+
+```
+source env.sh
+AWS Keys exported
+AWS_SECRET_ACCESS_KEY=01234567890abcdefghijlkmnopqrstuvwxyz!@#
+AWS_ACCESS_KEY_ID=0123456789abcdefghij
+```
+
 ```
 ansible-playbook -i inventory site.yml
 ```

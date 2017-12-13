@@ -25,6 +25,9 @@
 - name: Create user data template
   template: dest="{{ terraform_workspace }}/init.tpl" src=init.tpl.j2
 
+- name: Terraform init (build/change infrastructure)
+  command: terraform init chdir="{{ terraform_workspace }}"
+
 - name: Terraform apply (build/change infrastructure)
   command: terraform apply chdir="{{ terraform_workspace }}"
 
