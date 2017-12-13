@@ -9,7 +9,7 @@ default_wildcard: "apps.{{ default_subdomain }}"
 default_user: "ec2-user"
 default_home: "/home/{{ default_user }}"
 default_ssh: "{{ default_home }}/.ssh"
-default_keypair: "{{ vault_default_keypair }}"
+default_keypair: "{{ vault_cluster_name }}"
 
 #####################################################
 # AWS access keys
@@ -34,7 +34,10 @@ os_docker_vol_type: "gp2"
 #####################################################
 # OpenShift configuration
 #####################################################
-openshift_release: "3.5"
+openshift_release: "{{ vault_openshift_release }}"
+openshift_cluster_name: "{{ vault_cluster_name }}"
+openshift_cluster_id: "{{ vault_cluster_id }}"
+openshift_test_users_count: "{{ vault_users_count }}"
 
 #####################################################
 # Ansible configuration

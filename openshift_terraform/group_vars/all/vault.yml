@@ -4,7 +4,10 @@
 # Default vault configuration
 #####################################################
 vault_default_domain: "${INSERT_VALUE_HERE}"
-vault_default_keypair: "${INSERT_VALUE_HERE}"
+vault_cluster_name: "${INSERT_VALUE_HERE}"
+vault_cluster_id: "bdsa"
+vault_openshift_release: "3.7"
+vault_users_count: 20
 
 #####################################################
 # AWS access keys
