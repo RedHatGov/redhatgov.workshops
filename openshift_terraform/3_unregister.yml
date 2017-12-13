@@ -1,0 +1,10 @@
+# file: 3_unregister.yml
+---
+
+# Do not use with Cloud Access
+- name: Unregister Nodes 
+  become: yes
+  hosts:  masters, nodes
+  remote_user: ec2-user
+  roles:
+    - { role: unregister }
