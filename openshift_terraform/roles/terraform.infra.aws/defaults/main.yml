@@ -43,7 +43,7 @@ ec2_master_image: "ami-b63769a1"                    # RHEL7
 ec2_master_group_name: "ose-master"
 ec2_master_tag_name: "master"
 ec2_master_tag_role: "masters"
-os_master_root_vol_size: "40"
+os_master_root_vol_size: "72"
 os_master_root_vol_type: "gp2"
 
 #####################################################
@@ -71,5 +71,5 @@ ec2_node_group_name: "ose-node"
 ec2_node_tag_name: "node"
 ec2_node_tag_role: "nodes"
 ec2_node_count: "2"
-os_node_root_vol_size: "15"
+os_node_root_vol_size: "72"
 os_node_root_vol_type: "gp2"

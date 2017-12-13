@@ -7,6 +7,7 @@
     regexp: '.*'
     replace: '{{ inventory_hostname }}'
     backup: yes
+  register: hostname_replace
 
 - name: Set hosts FQDN
   lineinfile:
@@ -20,6 +21,7 @@
 
 - name: Read system hostname
   shell: hostname -F /etc/hostname
+  changed_when: False
 
 # [TODO]: Replace EC2 facts with ansible IPv4.
 
@@ -38,9 +40,11 @@
   shell: sleep 2 && shutdown -r now "Ansible updates triggered"
   async: 1
   poll: 0
-  sudo: True
+  become: True
   ignore_errors: True
+  when: hostname_replace.changed
 
 - name: Waiting for host to come back
   local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
-  sudo: false
+  become: false
+  when: hostname_replace.changed

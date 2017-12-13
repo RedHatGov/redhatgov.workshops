@@ -30,6 +30,3 @@
 
 - name: Terraform apply (build/change infrastructure)
   command: terraform apply chdir="{{ terraform_workspace }}"
-
-- name: Wait for host initialization
-  pause: minutes=4
