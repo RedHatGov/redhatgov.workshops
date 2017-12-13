@@ -44,3 +44,11 @@ openshift_test_users_count: "{{ vault_users_count }}"
 #####################################################
 ansible_user: "{{ default_user }}"
 ansible_ssh_private_key_file: "{{ terraform_workspace }}/{{ default_keypair }}"
+
+#####################################################
+# Wetty configuration
+#####################################################
+system_user: ec2-user
+letsencrypt: false
+domain_name: "{{ vault_default_domain }}"
+workshop_password: "{{ vault_openshift_cluster_admin_password }}"
