@@ -91,7 +91,8 @@ AWS_ACCESS_KEY_ID=0123456789abcdefghij
 ```
 
 ```
-ansible-playbook -i inventory site.yml
+ansible-playbook -i inventory 1_provision.yml
+ansible-playbook -i inventory 2_load.yml
 ```
 
 ### Destroy
@@ -99,6 +100,7 @@ ansible-playbook -i inventory site.yml
 **[NOTE]:** This hidden directory contains the key pair for SSH access to instantiated host systems.
 
 ```
+ansible-playbook -i inventory 3_unregister.yml
 cd $(pwd)/.{{ default_domain }}
 terraform destroy
 
