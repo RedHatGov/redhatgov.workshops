@@ -41,8 +41,11 @@
 - name: Enable ssh-agent
   shell: eval $(ssh-agent)
 
-- name: Run advanced installation method
-  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml chdir={{ default_home }}
+- name: Run advanced installation method (runtime ~45 minutes)
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml && touch /var/opt/.openshift-complete
+  args:
+    chdir: {{ default_home }}
+    creates: /var/opt/.openshift-complete
 
 # [TODO]: Apply to masters and nodes (both)
 # - name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed

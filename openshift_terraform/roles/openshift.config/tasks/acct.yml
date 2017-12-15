@@ -12,6 +12,13 @@
 - name: Add cluster role to admin account
   shell: oadm --config=/etc/origin/master/admin.kubeconfig policy add-cluster-role-to-user cluster-admin {{ openshift_cluster_admin_username }}
 
-- name: Create some test users
+- name: Create users for OpenShift web interface
   shell: htpasswd -b /etc/origin/master/htpasswd user{{ item }} {{ openshift_test_users_password }}
+  with_sequence: count={{ openshift_test_users_count }}
+
+- name: Create users for shell/OC client access
+  user:
+    name:      "user{{ item }}"
+    password:  "{{ workshop_password |password_hash('sha512') }}"
+    state:     present
   with_sequence: count={{ openshift_test_users_count }}
