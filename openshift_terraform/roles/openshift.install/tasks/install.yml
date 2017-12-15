@@ -3,18 +3,28 @@
 
 - name: Curl get pip
   become: yes
-  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir={{ default_home }}
+  get_url:
+    url: "https://bootstrap.pypa.io/get-pip.py"
+    dest: "{{ default_home }}/get-pip.py"
+#  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir={{ default_home }}
 
 - name: Python install pip
   become: yes
-  command: python {{ default_home }}/get-pip.py chdir={{ default_home }}
+  command: python {{ default_home }}/get-pip.py
+  args:
+    chdir: "{{ default_home }}"
 
 - name: Install passlib
   become: yes
-  pip: name=passlib state=present
+  pip:
+    name: passlib
+    state: present
 
 - name: Copy over key pair
-  copy: dest="{{ default_ssh }}/{{ default_keypair }}"  mode=0400  src="{{ terraform_workspace }}/{{ default_keypair }}"
+  copy:
+    dest: "{{ default_ssh }}/{{ default_keypair }}"
+    mode: 0400
+    src: "{{ terraform_workspace }}/{{ default_keypair }}"
 
 - name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
   file:
@@ -41,10 +51,23 @@
 - name: Enable ssh-agent
   shell: eval $(ssh-agent)
 
+- name: Check to see if patch is needed to openshift-ansible
+  shell: rpm -q openshift-ansible
+  register: osansible
+
+# see https://bugzilla.redhat.com/show_bug.cgi?id=1512793
+- name: Install patch to openshift-ansible-3.7.9-1.git.7.eedd332
+  become: yes
+  patch:
+    src: openshift-ansible-3.7.9-1.git.7.eedd332.patch
+    basedir: /usr/share/ansible/openshift-ansible
+    strip: 1
+  when: osansible.stdout == "openshift-ansible-3.7.9-1.git.7.eedd332.el7.noarch"
+
 - name: Run advanced installation method (runtime ~45 minutes)
-  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvv -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml && touch /var/opt/.openshift-complete
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml && sudo touch /var/opt/.openshift-complete
   args:
-    chdir: {{ default_home }}
+    chdir: "{{ default_home }}"
     creates: /var/opt/.openshift-complete
 
 # [TODO]: Apply to masters and nodes (both)
