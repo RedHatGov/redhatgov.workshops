@@ -29,4 +29,4 @@
   command: terraform init chdir="{{ terraform_workspace }}"
 
 - name: Terraform apply (build/change infrastructure)
-  command: terraform apply chdir="{{ terraform_workspace }}"
+  command: terraform apply -auto-approve chdir="{{ terraform_workspace }}"
