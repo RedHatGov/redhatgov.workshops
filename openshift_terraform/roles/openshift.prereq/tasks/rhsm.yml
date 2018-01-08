@@ -16,12 +16,21 @@
   lineinfile: dest={{ item }} regexp='^enabled' line='enabled=1' state=present
   with_items: "{{ rhel_rhsm_plugins }}"
 
+- name: Check RHSM registration status
+  shell: subscription-manager status
+  register: sm
+  ignore_errors: true
+
 - name: Register with RHSM
+#  redhat_subscription:
+#    activationkey: "{{ rhel_rhsm_activationkey }}"
+#    org_id: "{{ rhel_rhsm_org_id }}"
   shell: subscription-manager register --org={{ rhel_rhsm_org_id }} --activationkey={{ rhel_rhsm_activationkey }}
   register: result
   retries: 10
   delay: 30
   until: result.rc == 0
+  when: sm.rc != 0
 
 - name: Disable all RHSM repositories
   shell: subscription-manager repos --disable="*"
@@ -33,13 +42,21 @@
   shell: subscription-manager repos --enable {{ item }}
   with_items: "{{ rhel_rhsm_repos }}"
 
-- name: Enable only the repositories required
+- name: Enable only the {{ rhel_rhsm_repo_ocp_v3_4 }} repository for v3.4
   shell: subscription-manager repos --enable {{ rhel_rhsm_repo_ocp_v3_4 }}
   when: openshift_release == "3.4"
 
-- name: Enable only the repositories required
+- name: Enable only the {{ rhel_rhsm_repo_ocp_v3_5 }} repository for v3.5
   shell: subscription-manager repos --enable {{ rhel_rhsm_repo_ocp_v3_5 }}
   when: openshift_release == "3.5"
+
+- name: Enable only the {{ rhel_rhsm_repo_ocp_v3_6 }} repository for v3.6
+  shell: subscription-manager repos --enable {{ rhel_rhsm_repo_ocp_v3_6 }}
+  when: openshift_release == "3.6"
+
+- name: Enable only the {{ rhel_rhsm_repo_ocp_v3_7 }} repository for v3.7
+  shell: subscription-manager repos --enable {{ rhel_rhsm_repo_ocp_v3_7 }}
+  when: openshift_release == "3.7"
 
 # - name: Import Red Hat beta test products key
 #   rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta

@@ -11,5 +11,8 @@
 - name: Restart master service
   become: yes
   service:
-    name: atomic-openshift-master.service
+    name: "{{ item }}"
     state: restarted
+  with_items:
+  - atomic-openshift-master-api
+  - atomic-openshift-master-controllers

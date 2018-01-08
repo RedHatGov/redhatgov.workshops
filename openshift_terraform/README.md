@@ -81,8 +81,18 @@ You will be prompted to create a password and once complete, you can put this pa
 
 ### Provision
 
+Before you launch the provisioning script, copy the file `env.sh_example` to `env.sh`, and replace the placeholders with your AWS access key ID and secret access key.  Then, source that file, to place the variables into your environment.
+
 ```
-ansible-playbook -i inventory site.yml
+source env.sh
+AWS Keys exported
+AWS_SECRET_ACCESS_KEY=01234567890abcdefghijlkmnopqrstuvwxyz!@#
+AWS_ACCESS_KEY_ID=0123456789abcdefghij
+```
+
+```
+ansible-playbook -i inventory 1_provision.yml
+ansible-playbook -i inventory 2_load.yml
 ```
 
 ### Destroy
@@ -90,6 +100,7 @@ ansible-playbook -i inventory site.yml
 **[NOTE]:** This hidden directory contains the key pair for SSH access to instantiated host systems.
 
 ```
+ansible-playbook -i inventory 3_unregister.yml
 cd $(pwd)/.{{ default_domain }}
 terraform destroy
 

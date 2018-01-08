@@ -1,17 +1,15 @@
-# file: site.yml
+# file: 2_load.yml
 ---
 
-#---------------------------------------------------
-# Terraform Providers
-#---------------------------------------------------
-- name: Terraform AWS Provider
-  hosts: targets
-  roles:
-    - terraform.infra.aws
-
-# [TODO]: Add Terraform Google Cloud Platform provider support.
-# [TODO]: Add Terraform Microsoft Azure provider support.
-# [TODO]: Add Atomic Host support.
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items: "{{ groups.all }}"
 
 #---------------------------------------------------
 # OpenShift Pre- Installation
@@ -38,3 +36,12 @@
   become: yes
   roles:
     - openshift.config
+
+#---------------------------------------------------
+# Wetty Installation
+#---------------------------------------------------
+- name: Wetty Installation
+  hosts: masters, nodes
+  become: yes
+  roles:
+    - wetty
