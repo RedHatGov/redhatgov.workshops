@@ -13,7 +13,7 @@ workshop_prefix:                  "containersecurity"
 #######################################################################################
 # ANSIBLE ROLE KEY         |      VALUE
 #######################################################################################
-# aws.infra                |      .terraform working dir 
+# aws.infra                |      .terraform working dir
 terraform_working_dir:            "{{ lookup('env','PWD') }}/.redhatgov"
 # aws.infra                |      AWS API KEYS
 aws_access_key:                   ""
@@ -27,7 +27,7 @@ node_instance_type:               "t2.small"     # Student Instance Size
 region:                           "us-east-1"    # AWS Region, configures ec2.ini too
 ebs_root_block_size:              50
 ami_id:                           "" # Red Hat Cloud Access RHEL 7.4
-# ami_id:                         "ami-cfdafaaa" # us-east-2 RHEL 7.4 
+# ami_id:                         "ami-cfdafaaa" # us-east-2 RHEL 7.4
 # ami_id:                         "ami-c998b6b2" # us-east-1 RHEL 7.4
 #--------------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
@@ -51,11 +51,10 @@ workshop_password:                "redhat!@#"
 #######################################################################################
 # ANSIBLE config           |      VALUE
 #######################################################################################
-# Dynamic Inventory 
+# Dynamic Inventory
 inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars
-ssh_key_path:                     "{{ terraform_working_dir }}/{{ workshop_prefix }}-container"
-ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/{{ workshop_prefix }}-container"
+ssh_key_path:                     "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
+ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
 system_user:                      "ec2-user"    # AWS
 # system_user:                     "vagrant"    # vagrant
-    

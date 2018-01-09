@@ -18,12 +18,12 @@
 #  SSH Key
 #---------------------------------------------------
 - name: Check for existing key and remove
-  ec2_key: name="{{ workshop_prefix }}-tower" region="{{ region }}" state=absent
+  ec2_key: name="{{ workshop_prefix }}-key" region="{{ region }}" state=absent
   tags:
     - tf_create
 
 - name: Create EC2 keypair
-  ec2_key: name="{{ workshop_prefix }}-tower" region="{{ region }}" state=present
+  ec2_key: name="{{ workshop_prefix }}-key" region="{{ region }}" state=present
   register: ec2_key
   tags:
     - tf_create
@@ -39,7 +39,7 @@
 
 - name: Create ssh keypair
   copy: content="{{ ec2_key.key.private_key }}"
-        dest="{{ terraform_working_dir }}/{{ workshop_prefix }}-container"
+        dest="{{ terraform_working_dir }}/{{ workshop_prefix }}-key"
         mode=0400
   tags:
     - tf_create
@@ -58,9 +58,9 @@
     - tf_create
 
 - name: Run Terraform
-  command: terraform apply chdir="{{ terraform_working_dir }}" 
+  command: terraform apply chdir="{{ terraform_working_dir }}"
   tags:
     - tf_create
 
-- name: Wait for AWS AMIs to become initialized 
+- name: Wait for AWS AMIs to become initialized
   pause: minutes=2
