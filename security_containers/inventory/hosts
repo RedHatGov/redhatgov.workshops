@@ -6,5 +6,5 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env py
 
 
 [nodes]
-ChangeMe.[0:4].redhatgov.io
-
+# mobytest.[0:1].redhatgov.io
+mobytest.[0:2].redhatgov.io

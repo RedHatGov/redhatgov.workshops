@@ -57,6 +57,11 @@
   tags:
     - tf_create
 
+- name: Initialize Terraform
+  command: terraform init chdir="{{ terraform_working_dir }}"
+  tags:
+    - tf_create
+
 - name: Run Terraform
   command: terraform apply chdir="{{ terraform_working_dir }}"
   tags:

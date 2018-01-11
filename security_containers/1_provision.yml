@@ -7,14 +7,14 @@
 # Make sure to export the AWS Keys `source env.sh`
 #------------------------------------------------------
 - name: Provision AWS Infrastucture using Terraform
-  hosts: local_target    
+  hosts: local_target
   roles:
     - aws.infra
 
 
 - name: AWS | Install & Configure Instances
   remote_user: ec2-user
-  hosts: nodes 
+  hosts: nodes
   become: yes
   roles:
     - subscription_manager
@@ -29,12 +29,5 @@
     - zsh
     - nodejs
     - wetty            # Not needed for Vagrant, use vagrant ssh
-    # - LetsEncrypt    # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work. 
+    # - LetsEncrypt    # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work.
     # - sendgrid       # I send mail if you don't turn me off!
-
-
-
-
-
-
- 
