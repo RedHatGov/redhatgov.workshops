@@ -13,4 +13,5 @@ extra_vars.yml
 vault.yml
 group_vars/vault.yml
 group_vars/all
+inventory/hosts
 env.sh

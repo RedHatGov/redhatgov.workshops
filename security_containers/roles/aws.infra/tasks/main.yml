@@ -63,7 +63,7 @@
     - tf_create
 
 - name: Run Terraform
-  command: terraform apply chdir="{{ terraform_working_dir }}"
+  command: terraform apply -auto-approve chdir="{{ terraform_working_dir }}"
   tags:
     - tf_create
 

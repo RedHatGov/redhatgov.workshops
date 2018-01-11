@@ -28,6 +28,8 @@ This repo also requires that you have Ansible installed on your local machine. F
 
 This repo also requires that Terraform be installed if you are using the aws.infra.terraform role. For the most upto data methods of installing Terraform for your operating system [check here](https://www.terraform.io/downloads.html).
 
+This workshop has been tested with Terraform v0.10.7.
+
 ## group_vars/all
 
 #### Workshop prefix
