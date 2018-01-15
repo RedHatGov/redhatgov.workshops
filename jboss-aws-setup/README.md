@@ -19,8 +19,6 @@ openshift-aws-setup playbooks/aws-deploy-application.yml
 
 The HelloWorld application will be available at `http://<jboss server>:<http_port>/helloworld`
 
-The Ticket Monster application will be available at `http://<jboss server>:<http_port>/ticket-monster`
-
 ## Credits
 
 Originally inspired by Ansible's [jboss-standalone][2] example project. Thanks!
