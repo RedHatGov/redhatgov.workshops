@@ -1,0 +1,112 @@
+---
+
+- name: Install Java 1.7 and some basic dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items:
+   - unzip
+   - java-1.7.0-openjdk
+   - libselinux-python
+   - libsemanage-python
+
+- name: Download JBoss from jboss.org
+  get_url:
+    url: http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.zip
+    dest: /opt/jboss-as-7.1.1.Final.zip
+  become: true
+
+- name: Extract archive
+  unarchive:
+    dest: /usr/share
+    src: /opt/jboss-as-7.1.1.Final.zip
+    creates: /usr/share/jboss-as
+    copy: no
+  become: true
+
+  # Rename the dir to avoid encoding the version in the init script
+- name: Rename install directory
+  command: chdir=/usr/share /bin/mv jboss-as-7.1.1.Final jboss-as creates=/usr/share/jboss-as
+  become: true
+
+- name: Copying standalone.xml configuration file
+  template:
+    src: standalone.xml
+    dest: /usr/share/jboss-as/standalone/configuration/
+  become: true
+  notify: restart jboss
+
+- name: Add group 'jboss'
+  group:
+    name: jboss
+  become: true
+
+- name: Add user 'jboss'
+  user:
+    name: jboss
+    group: jboss
+    home: /usr/share/jboss-as
+  become: true
+
+- name: Change ownership of JBoss installation
+  file:
+    path: /usr/share/jboss-as/
+    owner: jboss
+    group: jboss
+    state: directory
+    recurse: yes
+  become: true
+
+- name: Copy the init script
+  copy:
+    src: jboss-as-standalone.sh
+    dest: /etc/init.d/jboss
+    mode: 0755
+  become: true
+
+- name: Workaround for systemd bug
+  shell: service jboss start && chkconfig jboss on
+  become: true
+  ignore_errors: yes
+
+- name: Enable JBoss to be started at boot
+  service:
+    name: jboss
+    enabled: yes
+    state: started
+  become: true
+
+- name: Deploy iptables rules
+  template:
+    src: iptables-save
+    dest: /etc/sysconfig/iptables
+  become: true
+  when: ansible_distribution_major_version != "7"
+  notify: restart iptables
+
+- name: Ensure that firewalld is installed
+  yum:
+    name: firewalld
+    state: present
+  become: true
+  when: ansible_distribution_major_version == "7"
+
+- name: Ensure that firewalld is started
+  service:
+    name: firewalld
+    state: started
+  become: true
+  when: ansible_distribution_major_version == "7"
+
+- name: deploy firewalld rules
+  firewalld:
+    immediate: yes
+    port: "{{ item }}"
+    state: enabled
+    permanent: yes
+  become: true
+  when: ansible_distribution_major_version == "7"
+  with_items:
+  - "{{ http_proxy_port }}/tcp"
+  - "{{ https_proxy_port }}/tcp"

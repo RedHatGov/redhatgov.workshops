@@ -1,0 +1,9 @@
+---
+
+- name: restart jboss
+  service: name=jboss state=restarted
+  become: true
+
+- name: restart iptables
+  service: name=iptables state=restarted
+  become: true

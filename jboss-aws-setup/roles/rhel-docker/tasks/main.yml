@@ -1,0 +1,22 @@
+---
+
+- name: Configure docker storage
+  template:
+    src: "../files/docker-storage-setup"
+    dest: "/etc/sysconfig/docker-storage-setup"
+  become: true
+
+- name: Configure docker storage
+  command: "docker-storage-setup"
+  become: true
+
+- name: Update docker options
+  shell: "sed -i '/OPTIONS=.*/c\\OPTIONS=\"--selinux-enabled --insecure-registry 172.30.0.0/16\"' /etc/sysconfig/docker"
+  become: true
+
+- name: Enable docker on master and nodes
+  systemd:
+     name: docker
+     enabled: yes
+     state: started
+  become: true

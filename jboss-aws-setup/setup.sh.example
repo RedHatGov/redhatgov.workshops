@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-'INSERT_VALUE_HERE'}
+export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-'INSERT_VALUE_HERE'}
+export INVENTORY=${INVENTORY:-'inventory/hosts'}
+export VARSVAULT=${VARSVAULT:-'group_vars/all/vault'}
+
+function openshift-aws-setup() {
+ local playbook=$1; shift || { printf "%s\n" "Usage: openshift-aws-setup [PLAYBOOK]" >&2; return 1; }
+
+ : ${AWS_ACCESS_KEY_ID?"[FAIL]: env 'AWS_ACCESS_KEY_ID' is not set"}
+ : ${AWS_SECRET_ACCESS_KEY?"[FAIL]: env 'AWS_SECRET_ACCESS_KEY' is not set"}
+
+ [[ -f ${VARSVAULT:-} ]] && ansible-vault encrypt ${VAULT_FILE:-} &>/dev/null;
+ [[ -f ${INVENTORY:-} ]] && [[ ! ${DEBUG:-false} ]] && time ansible-playbook ${playbook:-} -i ${INVENTORY:-} "$@"
+ [[ -f ${INVENTORY:-} ]] && [[ ${DEBUG:-false} ]] && time ansible-playbook -vvv ${playbook:-} -i ${INVENTORY:-} "$@"
+ [[ -f ${VARSVAULT:-} ]] && ansible-vault decrypt ${VAULT_FILE:-} &>/dev/null
+}
