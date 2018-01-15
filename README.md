@@ -1,4 +1,10 @@
-### Install
+# Getting Started
+
+To use this project, you'll need (at minimum):
+
+- Python 2 >=2.7.9 or Python 3 >=3.4
+
+## Install
 
 #### GNU/Linux, or macOS
 
