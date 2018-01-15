@@ -3,8 +3,6 @@
 The playbook `aws-jboss-eap-playbook.yml` may be used to provision hosts in preparation for running this JBoss deployment example.
 
 ```sh
-#!/bin/bash
-
 source setup.sh.example
 openshift-aws-setup playbooks/aws-jboss-eap-playbook.yml
 ```
@@ -15,8 +13,6 @@ The playbook `aws-deploy-application.yml` may be used to deploy the HelloWorld d
 Run the playbook using:
 
 ```sh
-#!/bin/bash
-
 source setup.sh.example
 openshift-aws-setup playbooks/aws-deploy-application.yml
 ```
