@@ -45,9 +45,9 @@ upstream        https://github.com/RedHatGov/redhatgov.workshops (fetch)
 upstream        no_push (push)
 ```
 
-### 4 Modify your `docs`
+### 4 Modify your  `master`
 
-Get your local `docs` [branch][git-branch], up to date:
+Get your local  `master`  [branch][git-branch], up to date:
 
 ```sh
 git fetch upstream
@@ -55,16 +55,16 @@ git checkout docs
 git merge upstream/docs
 ```
 
-Then build your local `docs` branch, make changes, etc.
+Then build your local  `master`  branch, make changes, etc.
 
-### 5 Keep your `docs` in sync
+### 5 Keep your  `master`  in sync
 
 ```sh
 git fetch upstream
 git merge upstream/docs
 ```
 
-### 6 [Commit][git-commit] your `docs`
+### 6 [Commit][git-commit] your  `master`
 
 ```sh
 git commit
@@ -72,7 +72,7 @@ git commit
 
 Likely you'll go back and edit, build, test, etc.
 
-### 7 [Push][git-push] your `docs`
+### 7 [Push][git-push] your  `master`
 
 When ready to review (or just to establish an offsite backup of your work),
 push your branch to your fork on `github.com`:
@@ -84,7 +84,7 @@ git push
 ### 8 Submit a [pull request][pr]
 
 1. Visit your fork at https://github.com/your-username/redhatgov.workshops.git
-2. Click the `Compare & Pull Request` button next to your `docs` branch.
+2. Click the `Compare & Pull Request` button next to your  `master`  branch.
 
 At this point you're waiting on us. We may suggest some changes or improvements
 or alternatives. We'll do our best to review and at least comment within 3
