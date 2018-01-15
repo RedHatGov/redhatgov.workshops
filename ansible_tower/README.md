@@ -6,7 +6,9 @@
 
 These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up you AWS environment on you local machine.
 
-Fill out `env.sh` & Export the AWS API Keys ;
+Fill out `env.sh` & Export the AWS API Keys
+
+First, copy env.sh_example to env.sh, and then fill in your API keys.  Once that is complete, source the script, to export your AWS environment variables.
 
 ```
 source env.sh
@@ -54,9 +56,7 @@ wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd6
 sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
 ```
 
-Then edit `group_vars/all` and fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53. 
-
-Also, edit `2_configure.yml` and `3_unregister.yml`, and replace the "changeme" tag with the workshop name that you added to the `group_vars/all` file.
+Then edit `group_vars/all` and fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53.  You can get the zone ID from the DNS domain stored in Route 53.
 
 
 ```
@@ -74,24 +74,23 @@ aws_secret_key: ""
 ```
 
 ```
-ansible-playbook -i inventory 1_provision.yml  
+ansible-playbook 1_provision.yml  
+ansible-playbook 2_load.yml -K
 ```
 
 To destroy
 
 ```
-cd .terraform
+ansible-playbook 3_unregister.yml # only need to run this if you aren't using Cloud Access
+cd .redhatgov
 terraform destroy
 ```
 
 ## Configure Workshop Nodes
 
-
-To target the newly created EC2 instance use the `ec2.py` module located in the `/inventory/` folder. The [ec2.py](http://docs.ansible.com/ansible/intro_dynamic_inventory.html) is a dynamic script that queries Amazon for your instances. 
-
+To install and configure the necessary software, on the newly created nodes, run the second playbook.  It may be re-run as many times as necessary.
 
 ```
-ansible-playbook -i inventory 2_aws_ec2.yml
 ```
 
 ## Login to Ansible Tower
@@ -102,7 +101,11 @@ Browse to the URL of the EC2 instance and enter the `ec2-user`'s password (works
 https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
 ```
 
-![Login](img/ansible-tower.png)
+![Tower Login](img/ansible-tower.png)
+
+There is a web-based IDE running on port 8443 of each tower node.  That IDE can be used to edit Ansible playbooks, rather than using a command line editor, like `vim` or `nano`.
+
+![Codiad Login](img/codiad.png)
 
 ## Walkthrough for Scripts
 

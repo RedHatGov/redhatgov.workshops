@@ -127,17 +127,21 @@ resource "aws_instance" "{{ ec2_master_group_name }}" {
     security_groups         = [ "${aws_security_group.{{ aws_security_group_name }}.id}" ]
     root_block_device {
       volume_size           = "{{ os_master_root_vol_size }}"
-		  volume_type           = "{{ os_master_root_vol_type }}"
-	  }
+      volume_type           = "{{ os_master_root_vol_type }}"
+    }
     ebs_block_device {
       device_name           = "{{ os_docker_block_device }}"
       volume_size           = "{{ os_docker_vol_size }}"
       volume_type           = "{{ os_docker_vol_type }}"
     }
     tags {
-        Name                = "{{ ec2_master_tag_name }}"
-        sshUser             = "{{ default_user }}"
-        role                = "{{ ec2_master_tag_role }}"
+      Name                = "{{ ec2_master_tag_name }}"
+      sshUser             = "{{ default_user }}"
+      role                = "{{ ec2_master_tag_role }}"
+      "kubernetes.io/cluster/{{ openshift_cluster_name }}" = "{{ openshift_cluster_id }}"
+    }
+    volume_tags {
+      "kubernetes.io/cluster/{{ openshift_cluster_name }}" = "{{ openshift_cluster_id }}"
     }
     provisioner "file" {
       source                = "{{ terraform_workspace }}/{{ default_keypair }}"
@@ -158,27 +162,30 @@ resource "aws_instance" "{{ ec2_node_group_name }}" {
     subnet_id               = "${aws_subnet.public.id}"
     key_name                = "{{ default_keypair }}"
     security_groups         = [ "${aws_security_group.{{ aws_security_group_name }}.id}" ]
-	  root_block_device {
-      volume_size           = "{{ os_node_root_vol_size }}"
-		  volume_type           = "{{ os_node_root_vol_type }}"
-	  }
+    root_block_device {
+      volume_size             = "{{ os_node_root_vol_size }}"
+      volume_type           = "{{ os_node_root_vol_type }}"
+    }
     ebs_block_device {
       device_name           = "{{ os_docker_block_device }}"
       volume_size           = "{{ os_docker_vol_size }}"
       volume_type           = "{{ os_docker_vol_type }}"
     }
     tags {
-        Name                = "{{ ec2_node_tag_name }}-${count.index}"
-        sshUser             = "{{ default_user }}"
-        role                = "{{ ec2_node_tag_role }}"
+      Name                = "{{ ec2_node_tag_name }}-${count.index}"
+      sshUser             = "{{ default_user }}"
+      role                = "{{ ec2_node_tag_role }}"
+      "kubernetes.io/cluster/{{ openshift_cluster_name }}" = "{{ openshift_cluster_id }}" }
+    volume_tags {
+      "kubernetes.io/cluster/{{ openshift_cluster_name }}" = "{{ openshift_cluster_id }}"
     }
     provisioner "file" {
-        source              = "{{ terraform_workspace }}/{{ default_keypair }}"
-        destination         = "{{ default_ssh }}/{{ default_keypair }}"
-        connection {
-          type              = "{{ terraform_provisioner_connection_type }}"
-          user              = "{{ default_user }}"
-          private_key       = "${file("{{ terraform_workspace }}/{{ default_keypair }}")}"
-        }
+      source              = "{{ terraform_workspace }}/{{ default_keypair }}"
+      destination         = "{{ default_ssh }}/{{ default_keypair }}"
+      connection {
+        type              = "{{ terraform_provisioner_connection_type }}"
+        user              = "{{ default_user }}"
+        private_key       = "${file("{{ terraform_workspace }}/{{ default_keypair }}")}"
+      }
     }
 }

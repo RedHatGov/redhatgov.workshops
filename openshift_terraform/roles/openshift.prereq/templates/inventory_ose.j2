@@ -6,6 +6,9 @@ nfs
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
+# Cluster ID
+openshift_clusterid={{ openshift_cluster_id }}
+
 # SSH user, this user should allow ssh based auth without requiring a password
 ansible_ssh_user={{ default_user }}
 ansible_become=true
@@ -52,6 +55,14 @@ openshift_hosted_logging_storage_volume_size=2Gi
 
 # Host group for masters
 [masters]
+{% for host in inventory_ose_masters %}
+{% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true ansible_connection=local ansible_become=yes
+{% endif %}
+{% endfor %}
+
+# Host group for etcd
+[etcd]
 {% for host in inventory_ose_masters %}
 {% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
 {{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_ip={{ hostvars[host]['ansible_ec2_local_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_labels="{'region': 'infra', 'zone': 'default'}" openshift_schedulable=true ansible_connection=local ansible_become=yes

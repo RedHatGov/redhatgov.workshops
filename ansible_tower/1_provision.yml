@@ -1,4 +1,4 @@
-# file: 1_aws_infra.yml
+# file: 1_provision.yml
 ---
 # https://www.terraform.io/docs/providers/aws/index.html
 
@@ -6,17 +6,8 @@
 - name: Provision AWS Infrastucture using Terraform 
   hosts: local_target
   roles:
-  - { role: aws.infra.terraform, tags: ["tf_create"] }
+  - { role: aws.infra, tags: ["tf_create"] }
 
-
-
-#############################################################
-#  USAGE
-#############################################################
-# Create
-# ansible-playbook -i inventory 1_aws_infra.yml
-#
-# Destroy
-# cd /tmp/terraform
-# terraform destroy
-# yes
+# {{workshop_prefix}}.tower.<student number>.redhatgov.io:8888
+# Username: ec2-user
+# Password: redhat!@#

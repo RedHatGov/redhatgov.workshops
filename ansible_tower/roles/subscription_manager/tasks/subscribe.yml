@@ -1,0 +1,87 @@
+---
+#---------------------------------------------------
+# DNS Setup
+#---------------------------------------------------
+- name: Add DNS entries for subscription
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      209.132.183.44   xmlrpc.rhn.redhat.com
+      23.204.148.218   content-xmlrpc.rhn.redhat.com
+      209.132.183.49   subscription.rhn.redhat.com
+      209.132.183.108  subscription.rhsm.redhat.com
+      209.132.182.63   registry.access.redhat.com
+      209.132.182.33   repository.jboss.org
+    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+    insertafter: EOF
+  when: not cloud_access
+  tags:
+    - rhel
+
+#---------------------------------------------------
+# Key Installation
+#---------------------------------------------------
+- name: Import keys
+  shell: rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+# DISABLED BECAUSE IT IS SLOW, ACROSS MANY NODES
+#  rpm_key:
+#    state: present
+#    key: "{{ item }}"
+#  with_items:
+#    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+#    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  when: not cloud_access
+  tags:
+    - rhel
+#---------------------------------------------------
+# Subscribe to RHN
+#---------------------------------------------------
+- name: Check RHN subscription status
+  command: subscription-manager status
+  register: sm_result
+  ignore_errors: True
+  when: not cloud_access
+  tags:
+    - rhel
+
+- name: Subscribe to RHSM
+  redhat_subscription:
+    state: present
+    username: "{{ username }}"
+    password: "{{ password }}"
+    pool: "{{ pool_id }}"
+  when: not cloud_access and sm_result.rc != 0
+  tags:
+    - rhel
+
+#- name: Subscribe RHN
+#  command: subscription-manager register --username="{{ username }}" --password="{{ password }}" --force
+#  when: sm_result.rc != 0 and sub
+
+#- name: Attach RHN Pool
+#  command: subscription-manager attach --pool "{{ pool_id }}"
+#  when: sm_result.rc != 0 and sub
+
+#---------------------------------------------------
+# Add Required Repositories
+#---------------------------------------------------
+- name: Check to see if requisite repos are already enabled
+  become: yes
+  shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms' | wc -l
+  register: smr_result
+  ignore_errors: True
+  when: not cloud_access
+  tags:
+    - rhel
+
+- name: Disable all repos by default
+  command: subscription-manager repos --disable "*"
+  when: not cloud_access and smr_result.stdout != "3"
+  tags:
+    - rhel
+
+- name: Enable the requisite rhel7 repos
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
+  when: not cloud_access and smr_result.stdout != "3"
+  tags:
+    - rhel

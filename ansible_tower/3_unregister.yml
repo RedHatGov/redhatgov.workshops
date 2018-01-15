@@ -1,9 +1,10 @@
-# file: 2_aws_ec2.yml
+# file: 3_unregister.yml
 ---
 
+# Do not use with Cloud Access
 - name: Unregister Nodes 
   become: yes
-  hosts: tag_Workshop_changeme
+  hosts: all_nodes
   remote_user: ec2-user
   roles:
     - { role: unregister }

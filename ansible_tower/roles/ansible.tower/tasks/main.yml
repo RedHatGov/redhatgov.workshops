@@ -2,15 +2,20 @@
 ###################################
 # Common Packages
 ###################################
-- include: nodes_setup.yml
+- include_tasks: nodes_setup.yml
+
+###################################
+# Deploy walkthrough scripts
+###################################
+- include_tasks: walkthroughs.yml
 
 ###################################
 # Base setup of Tower
 ###################################
-# - include: tower_setup.yml
+# - import_tasks: tower_setup.yml
 
 ###################################
 # tower-cli users setup
 ###################################
-# - include: user_setup.yml
+# - import_tasks: user_setup.yml
 
