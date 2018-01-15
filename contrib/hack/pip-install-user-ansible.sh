@@ -1,4 +1,4 @@
-pip-install-user-() {
+pip-install-user-ansible() {
  local flagset
 
  [[ ! $(shopt checkhash &>/dev/null) ]] && shopt -s checkhash; flagset=true
