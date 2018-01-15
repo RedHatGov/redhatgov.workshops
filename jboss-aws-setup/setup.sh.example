@@ -5,8 +5,8 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-'INSERT_VALUE_HERE'}
 export INVENTORY=${INVENTORY:-'inventory/hosts'}
 export VARSVAULT=${VARSVAULT:-'group_vars/all/vault'}
 
-function openshift-aws-setup() {
- local playbook=$1; shift || { printf "%s\n" "Usage: openshift-aws-setup [PLAYBOOK]" >&2; return 1; }
+function jboss-aws-setup() {
+ local playbook=$1; shift || { printf "%s\n" "Usage: jboss-aws-setup [PLAYBOOK]" >&2; return 1; }
 
  : ${AWS_ACCESS_KEY_ID?"[FAIL]: env 'AWS_ACCESS_KEY_ID' is not set"}
  : ${AWS_SECRET_ACCESS_KEY?"[FAIL]: env 'AWS_SECRET_ACCESS_KEY' is not set"}
