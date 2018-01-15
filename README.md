@@ -14,7 +14,7 @@ cd redhatgov.workshops
 ```sh
 #!/bin/bash
 
-DIRPATH="${HOME}/Downloads/redhatgov.workshops"; GITUSER="your-username"
+DIRPATH="${HOME}/Downloads/redhatgov.workshops"; GITUSER="RedHatGov"
 GITREPO="https://github.com/${GITUSER}/redhatgov.workshops/archive/master.zip"
 ARCHIVE="$(printf "%s" "${GITREPO##*/}")"
 
