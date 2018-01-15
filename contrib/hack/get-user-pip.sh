@@ -1,4 +1,8 @@
 get-user-pip() {
+ local flagset
+
+ [[ ! $(shopt checkhash &>/dev/null) ]] && shopt -s checkhash; flagset=true
+
  if ! hash pip 2>/dev/null; then
   temp=$(mktemp -d) \
   && pushd ${temp} \
@@ -6,4 +10,6 @@ get-user-pip() {
   && python get-pip.py --user \
   && popd && rm -rf ${temp}
  fi
+
+ [[ ${flagset:-} ]] && shopt -u checkhash; flagset=false
 }
