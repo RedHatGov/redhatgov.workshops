@@ -7,9 +7,9 @@
 > This warning will be removed once we have settled on a reasonable set of
 > guidelines for contributions.
 
-### 1 Fork the redhatgov.workshops repo
+### 1 Fork the `redhatgov.workshops` repo
 
-Forking redhatgov.workshops is a simple two-step process.
+Forking `redhatgov.workshops` is a simple two-step process.
 
 1. On GitHub, navigate to the https://github.com/RedHatGov/redhatgov.workshops
 repo.
@@ -20,7 +20,7 @@ repo.
 
 ### 2 Create a local clone of your fork
 
-Right now, you have a fork of the redhatgov.workshops repo, but you don't have the files in that repo on your computer. Let's create a [clone][git-clone] of your fork locally on your computer.
+Right now, you have a fork of the `redhatgov.workshops` repo, but you don't have the files in that repo on your computer. Let's create a [clone][git-clone] of your fork locally on your computer.
 
 ```sh
 git clone git@github.com:your-username/redhatgov.workshops.git
