@@ -23,7 +23,7 @@ repo.
 Right now, you have a fork of the redhatgov.workshops repo, but you don't have the files in that repo on your computer. Let's create a [clone][git-clone] of your fork locally on your computer.
 
 ```sh
-git clone git@github.com:your-username/redhatgov.github.io.git
+git clone git@github.com:your-username/redhatgov.workshops.git
 cd redhatgov.github.io
 
 # Configure git to sync your fork with the original repo
@@ -39,8 +39,8 @@ To verify the new upstream repo you've specified for your fork, type
 `git remote -v`. You should see the URL for your fork as `origin`, and the URL for the original repo as `upstream`.
 
 ```sh
-origin  git@github.com:your-username/redhatgov.github.io.git (fetch)
-origin  git@github.com:your-username/redhatgov.github.io.git (push)
+origin  git@github.com:your-username/redhatgov.workshops.git (fetch)
+origin  git@github.com:your-username/redhatgov.workshops.git (push)
 upstream        https://github.com/RedHatGov/redhatgov.workshops (fetch)
 upstream        no_push (push)
 ```
@@ -83,7 +83,7 @@ git push
 
 ### 8 Submit a [pull request][pr]
 
-1. Visit your fork at https://github.com/your-username/redhatgov.github.io.git
+1. Visit your fork at https://github.com/your-username/redhatgov.workshops.git
 2. Click the `Compare & Pull Request` button next to your `docs` branch.
 
 At this point you're waiting on us. We may suggest some changes or improvements
