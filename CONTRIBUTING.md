@@ -9,7 +9,7 @@
 
 ### 1 Fork the `redhatgov.workshops` repo
 
-Forking `redhatgov.workshops` is a simple two-step process.
+Forking is a simple two-step process.
 
 1. On GitHub, navigate to the https://github.com/RedHatGov/redhatgov.workshops
 repo.
