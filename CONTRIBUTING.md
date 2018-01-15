@@ -51,8 +51,8 @@ Get your local  `master`  [branch][git-branch], up to date:
 
 ```sh
 git fetch upstream
-git checkout docs
-git merge upstream/docs
+git checkout master
+git merge upstream/master
 ```
 
 Then build your local  `master`  branch, make changes, etc.
@@ -61,7 +61,7 @@ Then build your local  `master`  branch, make changes, etc.
 
 ```sh
 git fetch upstream
-git merge upstream/docs
+git merge upstream/master
 ```
 
 ### 6 [Commit][git-commit] your  `master`
