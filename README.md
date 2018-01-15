@@ -9,8 +9,6 @@ To use this project, you'll need (at minimum):
 #### GNU/Linux, or macOS
 
 ```sh
-#!/bin/bash
-
 git clone https://github.com/RedHatGov/redhatgov.workshops
 cd redhatgov.workshops
 ```
@@ -18,8 +16,6 @@ cd redhatgov.workshops
 ##### No `git`? No problem!
 
 ```sh
-#!/bin/bash
-
 DIRPATH="${HOME}/Downloads/redhatgov.workshops"; GITUSER="RedHatGov"
 GITREPO="https://github.com/${GITUSER}/redhatgov.workshops/archive/master.zip"
 ARCHIVE="$(printf "%s" "${GITREPO##*/}")"
