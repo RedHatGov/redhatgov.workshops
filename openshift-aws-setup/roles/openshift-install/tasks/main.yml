@@ -1,0 +1,61 @@
+---
+
+- name: Install pre-req packages on bastion
+  yum:
+    name:
+      - "git"
+      - "@Development Tools"
+      - "openssl-devel"
+      - "python-devel"
+      - "gcc"
+      - "libffi-devel"
+      - "ansible"
+      - "atomic-openshift-utils"
+    state: "present"
+  delegate_to: "{{ bastion_public_ip }}"
+  remote_user: "{{ remote_user_name }}"
+  become: true
+  when: platform == 'origin'
+
+- name: Install pre-req packages on bastion
+  yum:
+    name:
+      - "atomic-openshift-utils"
+    state: "present"
+  delegate_to: "{{ bastion_public_ip }}"
+  remote_user: "{{ remote_user_name }}"
+  become: true
+  when: platform != 'origin'
+
+- name: Copy inventory for openshift istallation
+  template:
+    src: "../files/openshift_inventory.cfg"
+    dest: "/home/{{ remote_user_name }}/openshift_inventory.cfg"
+  delegate_to: "{{ bastion_public_ip }}"
+  remote_user: "{{ remote_user_name }}"
+
+- name: Checkout openshift ansible repo on bastion
+  git:
+    repo: "https://github.com/openshift/openshift-ansible"
+    dest: "/home/{{ remote_user_name }}/openshift-ansible"
+    version: "release-{{ version }}"
+  delegate_to: "{{ bastion_public_ip }}"
+  remote_user: "{{ remote_user_name }}"
+  when: platform == 'origin'
+
+- name: Copy script for openshift istallation
+  template:
+    src: "../files/install-openshift.sh"
+    dest: "/home/{{ remote_user_name }}/install-openshift.sh"
+    mode: "0775"
+  delegate_to: "{{ bastion_public_ip }}"
+  remote_user: "{{ remote_user_name }}"
+
+- name: Provide details to check installation
+  debug:
+   msg: "Check file install-openshift.log in Bastion 'ssh ec2-user@{{ bastion_public_ip }}' "
+
+- name: Run openshift installation script
+  shell: /home/{{ remote_user_name }}/install-openshift.sh {{ platform }} |& tee install-openshift.log
+  delegate_to: "{{ bastion_public_ip }}"
+  remote_user: "{{ remote_user_name }}"

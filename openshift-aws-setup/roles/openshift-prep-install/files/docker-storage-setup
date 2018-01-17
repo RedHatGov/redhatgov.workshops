@@ -1,0 +1,2 @@
+DEVS={{ os_docker_block_device }}
+VG={{ os_docker_volume_group }}

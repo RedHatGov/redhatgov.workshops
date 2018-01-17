@@ -1,0 +1,111 @@
+---
+
+- name: Disable rhui plugins
+  lineinfile: dest={{ item }} regexp='^enabled' line='enabled=0' state=present
+  become: true
+  with_items:
+   - /etc/yum/pluginconf.d/amazon-id.conf
+   - /etc/yum/pluginconf.d/rhui-lb.conf
+
+- name: Disable rhui repos
+  replace:
+    dest: "{{ item }}"
+    regexp: 'enabled=1'
+    replace: 'enabled=0'
+  become: true
+  with_items:
+   - /etc/yum.repos.d/redhat-rhui.repo
+   - /etc/yum.repos.d/redhat-rhui-client-config.repo
+
+- name: Enable rhsm plugins
+  lineinfile: dest={{ item }} regexp='^enabled' line='enabled=1' state=present
+  become: true
+  with_items:
+   - /etc/yum/pluginconf.d/product-id.conf
+   - /etc/yum/pluginconf.d/subscription-manager.conf
+
+- name: Add dns entries
+  blockinfile:
+   path: /etc/hosts
+   block: |
+    209.132.183.44   xmlrpc.rhn.redhat.com
+    23.204.148.218   content-xmlrpc.rhn.redhat.com
+    209.132.183.49   subscription.rhn.redhat.com
+    209.132.183.108  subscription.rhsm.redhat.com
+    209.132.182.63   registry.access.redhat.com
+    209.132.182.33   repository.jboss.org
+  marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+  insertafter: EOF
+  become: true
+
+#---------------------------------------------------
+# Red Hat product signing (GPG) keys, see https://access.redhat.com/security/team/key
+#---------------------------------------------------
+
+- name: Import package-signing keys
+  shell: /usr/bin/rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  become: true
+
+- name: Force unregister before
+  redhat_subscription:
+    state: "absent"
+  ignore_errors: true
+  become: true
+
+- name: Customer portal registration
+  redhat_subscription:
+   state: "present"
+   username: "{{ rhsm_user_name }}"
+   password: "{{ rhsm_user_pass }}"
+   autosubscribe: false
+  register: result
+  until: result | succeeded
+  retries: 10
+  delay: 5
+  become: true
+  when: (rhsm_user_name is defined) and
+        (rhsm_user_pass is defined)
+
+- name: Activation key registration
+  redhat_subscription:
+    state: "present"
+    activationkey: "{{ rhsm_key_id }}"
+    org_id: "{{ rhsm_org_id }}"
+    autosubscribe: false
+  register: result
+  until: result | succeeded
+  retries: 10
+  delay: 5
+  become: true
+  when: (rhsm_key_id is defined) and
+        (rhsm_org_id is defined)
+
+- name: Subscribe pool id
+  shell: /usr/bin/subscription-manager attach --pool={{ rhsm_pool_id }}
+  register: task_result
+  until: task_result.rc == 0
+  retries: 10
+  delay: 5
+  ignore_errors: no
+  become: true
+  when: rhsm_pool_id is defined
+
+- name: Disable all rhsm repos
+  shell: /usr/bin/subscription-manager repos --disable="*"
+  register: result
+  until: result | succeeded
+  retries: 10
+  delay: 5
+  become: true
+
+- name: Disable all yum repos
+  shell: /usr/bin/yum-config-manager --disable \*
+  become: true
+
+- name: Enable required repos
+  shell: /usr/bin/subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-ose-{{ version }}-rpms" --enable="rhel-7-fast-datapath-rpms"
+  register: result
+  until: result | succeeded
+  retries: 10
+  delay: 5
+  become: true
