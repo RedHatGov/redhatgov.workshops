@@ -25,6 +25,7 @@ multi_ec2.yaml
 .eggs
 cover/
 vault
-ec2.py
-ec2.ini
-setup.*
+setup.sh.example
+ansible.cfg
+callback_plugins/
+inventory/
