@@ -101,9 +101,9 @@ redhat_owner_id: 309956199498
 # ec2_master_image: # Look up image manually
 # ec2_node_image: # Look up image manually
 # ec2_bastion_image: # Look up image manually
-ec2_master_instance_type: m4.xlarge
-ec2_node_instance_type: t2.large
-ec2_bastion_instance_type: t2.small
+ec2_master_instance_type: m4.2xlarge
+ec2_node_instance_type: m4.xlarge
+ec2_bastion_instance_type: t2.medium
 ec2_gluster_instance_type: m4.xlarge
 ec2_instance_count: 3
 
