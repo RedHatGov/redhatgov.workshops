@@ -12,7 +12,7 @@ The playbook can deploy either Origin or Container Platform.
 2. Before deploying, make sure the following files are available on your local machine:
 
   - `$HOME/.aws/credentials` - your AWS credentials
-  - `$HOME/.ssh/libra.pem` - the SSH private key to use for AWS
+  - `$HOME/.ansible/vault` - your Ansible Vault password file
 
 ## Configure
 
@@ -43,7 +43,17 @@ This is currently disabled since there is a bug using osm_default_node_selector 
 This action requires a [subscription with Red Hat][5] with account credentials, or an [activation key][6].
 
 ```sh
-source run-tasks.sh
+cp playbooks/bring-up-playbook.yml .
+source setup.sh.example
+openshift-aws-setup bring-up-playbook.yml
+```
+
+## Delete Red Hat OpenShift Container Platform (OCP)
+
+```sh
+cp playbooks/teardown-playbook.yml .
+source setup.sh.example
+openshift-aws-setup teardown-playbook.yml
 ```
 
 ### Network Topology
