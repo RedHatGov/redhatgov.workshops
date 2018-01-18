@@ -62,6 +62,10 @@
        from_port: "{{ etcd_proxy_port }}"
        to_port: "{{ etcd_proxy_port }}"
        cidr_ip: "{{ public_route_cidr_block }}"
+     - proto: "tcp"
+       from_port: "{{ cockpit_port }}"
+       to_port: "{{ cockpit_port }}"
+       cidr_ip: "{{ public_route_cidr_block }}"
    rules_egress: []
 
 - name: Create egress security group
