@@ -25,6 +25,7 @@ etcd_proxy_port: 2379
 kubelet_port: 10250
 ssh_port: 22
 cockpit_port: 9090
+asb_port: 1338
 
 #---------------------------------------------------
 # Remote User
