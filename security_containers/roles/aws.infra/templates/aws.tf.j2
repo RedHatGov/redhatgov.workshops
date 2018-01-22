@@ -1,6 +1,6 @@
 # LAUNCH TOWER IN AMAZON EC2 (Public Tower Image)
 # ------------------------------------------------
-# EC2 Region  Location      AMI TYPE  AMI ID    
+# EC2 Region  Location      AMI TYPE  AMI ID
 # us-east-1   N. Virginia   PV        ami-a86614bf
 # us-west-1   N. California PV        ami-cdd79aad
 # us-west-2   Oregon        PV        ami-028f5e62
@@ -11,8 +11,8 @@
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
 variable "security_group" { default = "{{ workshop_prefix }}-sg" }
-variable "keypair" { default = "{{ workshop_prefix }}-container" }
-variable "node_instance_type" { default = "{{ node_instance_type }}" } 
+variable "keypair" { default = "{{ workshop_prefix }}-key" }
+variable "node_instance_type" { default = "{{ node_instance_type }}" }
 variable "aws_region" { default = "{{ region }}" }
 variable "ebs_root_block_size" { default = "50" }
 variable "aws_node_ami" { default = "{{ ami_id }}" }
@@ -33,9 +33,9 @@ resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
- 
-  tags { 
-    Name = "{{ workshop_prefix }}-ansible-tower-vpc" 
+
+  tags {
+    Name = "{{ workshop_prefix }}-ansible-tower-vpc"
   }
 }
 
@@ -122,6 +122,13 @@ resource "aws_security_group" "ansible-tower-sg" {
     to_port     = 8888
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 9090
+    to_port     = 9090
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 #----------------------------------------------
@@ -130,7 +137,7 @@ resource "aws_security_group" "ansible-tower-sg" {
 resource "aws_route53_record" "nodes" {
   # same number of records as instances
   count = "${var.number_nodes}"
-  zone_id = "{{ zone_id }}"                       
+  zone_id = "{{ zone_id }}"
   name = "{{ workshop_prefix }}.${count.index}.{{ domain_name }}"
   type = "A"
   ttl = "300"
@@ -162,6 +169,3 @@ resource "aws_instance" "node" {
 
     }
 }
-
-
-

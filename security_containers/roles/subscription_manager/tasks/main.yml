@@ -3,14 +3,6 @@
 # Red Hat Cloud Access
 - include: cloud_access.yml
 
-# Subscribe machines via username & password 
+# Subscribe machines via username & password
 # or activation keys
 - include: subscribe.yml
-
-
-
-
-
-
-
-

@@ -28,11 +28,13 @@ This repo also requires that you have Ansible installed on your local machine. F
 
 This repo also requires that Terraform be installed if you are using the aws.infra.terraform role. For the most upto data methods of installing Terraform for your operating system [check here](https://www.terraform.io/downloads.html).
 
+This workshop has been tested with Terraform v0.10.7.
+
 ## group_vars/all
 
 #### Workshop prefix
 
-Change the workshop prefix in `group_vars/all`. This allows multiple people to operatin in AWS without stepping on each others resources. I t also flows down to all AWS Tags as well.  
+Change the workshop prefix in `group_vars/all`. This allows multiple people to operatin in AWS without stepping on each others resources. I t also flows down to all AWS Tags as well.
 
 ```
 workshop_prefix:              "changeme"
@@ -41,7 +43,7 @@ workshop_prefix:              "changeme"
 #### AWS Settings
 
 
-Fill in this vars file with your AWS API keys, Red Hat subscription, and domain names. 
+Fill in this vars file with your AWS API keys, Red Hat subscription, and domain names.
 
 ```
 # aws.infra.terraform  |  AWS API KEYS
@@ -72,26 +74,27 @@ rhsm_org_id:                  ""
 ansible-playbook -i inventory 1_provision.yml
 ```
 
-## Configure
-
-```
-ansible-playbook -i inventory 2_configure.yml
-```
-
 
 ## Access the instance in AWS:
 
-Browse to the URL of the EC2 instance and enter the `ec2-user`'s password (workshop_password:) located in `group_vars/all`. 
+Browse to the URL of the EC2 instance and enter the `ec2-user`'s password (workshop_password:) located in `group_vars/all`.
 
 ```
-https://{{ workshop_prefix }}.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
+https://{{ workshop_prefix }}.0.{{ domain_name }}:8888
 ```
 
-## Destroy All
+## Remove workshop resources
 
+### Unregister RHEL EC2 instances
+
+```
+ansible-playbook -i inventory 2_unregister.yml
+```
+
+### Terraform destroy AWS resources
 To destroy only the resources you provisioned via terraform
 
 ```
-cd .terraform
+cd .redhatgov
 terraform destroy
 ```

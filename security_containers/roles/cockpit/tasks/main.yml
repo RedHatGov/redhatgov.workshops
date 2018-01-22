@@ -7,20 +7,23 @@
 
 - name: Install Cockpit
   become: yes
-  yum: name="{{item}}" state=present
-  with_items: 
-    - cockpit 
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - cockpit
     - cockpit-docker
     - zsh
     - rsync
     - vim
     - wget
 
-- name: Enable Cockpit
+- name: Enable and Start Cockpit
   become: yes
-  systemd: 
-    name: cockpit  
+  systemd:
+    name: cockpit
     state: started
+    enabled: yes
 
 #############################################################################################
 # To make a SHA512 password run this on a RHEL instance.
@@ -37,7 +40,7 @@
     state: present
     groups: "{{ system_user }},adm"
     password: "$6$XhplkGk/5yR/qijY$vBq.u1/8BlGqbz00sA9INstZlvbhtr4uHqJMBKC31Bxxx/NdW8RX2135QGdNRK74/RqnkJqCx9IrxFnumSRjj0"
-    createhome: true  
+    createhome: true
     update_password: always
 
 - name: Add Cockpit User to /etc/sudoers
@@ -59,14 +62,13 @@
 #     group: ec2-user
 #     mode: 0755
 #     recurse: true
-#     state: directory 
+#     state: directory
 
 # NOT enabled be default on RHEL 7.3 AMI
 # - name: Firewalld setup
 #   become: yes
-#   firewalld: 
+#   firewalld:
 #     permanent: true
 #     port: 9090/tcp
 #     service: cockpit
 #     state: enabled
-

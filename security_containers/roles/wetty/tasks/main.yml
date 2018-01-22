@@ -17,24 +17,24 @@
     creates: /usr/lib/node_modules/wetty/bin/wetty.js
 
 #-------------------------------------------------------
-# Let's Encrypt. 
+# Let's Encrypt.
 #-------------------------------------------------------
 - name: Copy cert.pem to Wetty dir
   become: yes
-  command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"  
+  command: cp cert.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"
   args:
     creates: /home/{{ system_user }}/.ssh/cert.pem
   when: letsencrypt
 
 - name: Copy privkey.pem to Wetty dir
   become: yes
-  command: cp privkey.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/" 
+  command: cp privkey.pem /home/{{ system_user }}/.ssh/ chdir="/etc/letsencrypt/live/{{ workshop_prefix | lower }}.{{ hostvars[inventory_hostname]['ec2_tag_Index'] }}.{{ domain_name }}/"
   args:
     creates: /home/{{ system_user }}/.ssh/privkey.pem
   when: letsencrypt
 
 #-------------------------------------------------------
-# Self-Signed Certs 
+# Self-Signed Certs
 #-------------------------------------------------------
 - name: Generate Self Signed Certs
   command: >
@@ -53,12 +53,12 @@
 
 - name: Set permissions on SSL certs
   become: yes
-  file: 
+  file:
     path:    "/home/{{ system_user }}/.ssh/{{ item }}"
-    group:   "{{ system_user }}"  
+    group:   "{{ system_user }}"
     owner:   "{{ system_user }}"
     mode:    0400
-  with_items: 
+  with_items:
     - cert.pem
     - privkey.pem
 
@@ -68,7 +68,7 @@
   template:
     src:   "wetty.service.j2"
     dest:  "/etc/systemd/system/wetty.service"
-    group: root 
+    group: root
     owner: root
     mode:  0644
   notify: wetty
@@ -83,9 +83,9 @@
 # pip install passlib
 - name: Set ec2-user password
   become: yes
-  user:   
+  user:
     name:      "ec2-user"
-    password:  "{{ workshop_password |password_hash('sha512') }}"   
+    password:  "{{ workshop_password |password_hash('sha512') }}"
     state:     present
     append:    yes
 
@@ -96,11 +96,11 @@
     dest: "/etc/ssh/sshd_config"
     group: root
     owner: root
-    mode: 0644 
-  notify: 
-    - sshd  
+    mode: 0644
+  notify:
+    - sshd
 
-# - name: Open port in Firewall 
+# - name: Open port in Firewall
 #   become: yes
 #   firewalld:
 #     port: 8888/tcp  #"{{ wetty_port }}"
@@ -111,6 +111,7 @@
   become: yes
   command: rpm -q firewalld
   register: rf_result
+  failed_when: rf_result.rc >= 2
   ignore_errors: True
 
 - name: Turn off Firewall
@@ -123,12 +124,12 @@
 
 - name: Create SELinux dir
   become: yes
-  file: 
+  file:
     group: "{{ system_user }}"
     owner: "{{ system_user }}"
     mode:  0700
     path:  "/home/{{ system_user }}/.selinux"
-    state: directory  
+    state: directory
 
 - name: Copy over SELinux modules for Wetty
   become: yes
@@ -138,7 +139,7 @@
     group: "{{system_user}}"
     owner: "{{system_user}}"
     mode:  0700
-  with_items: 
+  with_items:
     - wetty.pp
     - wetty.te
   register: result
@@ -161,10 +162,10 @@
 #
 # - name: Set permissions on repo
 #   become: yes
-#   file: 
+#   file:
 #     recurse: yes
 #     path:    "/home/{{ system_user }}/.wetty"
-#     group:   "{{ system_user }}"  
+#     group:   "{{ system_user }}"
 #     owner:   "{{ system_user }}"
 #     mode:    0700
 #
