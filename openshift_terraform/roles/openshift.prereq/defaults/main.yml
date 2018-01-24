@@ -25,7 +25,7 @@ rhel_rhsm_plugins:
 rhel_rhsm_repos:
   - rhel-7-server-rpms
   - rhel-7-server-extras-rpms
-  - rhel-7-server-ose-"{{ openshift_release }}"-rpms
+  - rhel-7-server-ose-{{ openshift_release }}-rpms
 
 rhel_rhsm_repo_ocp_v3_4: rhel-7-server-optional-rpms
 rhel_rhsm_repo_ocp_v3_5: rhel-7-fast-datapath-rpms
@@ -58,12 +58,15 @@ rhel_base_pkgs:
   - bridge-utils
   - bash-completion
   - iptables-services
+  - kexec-tools 
+  - sos 
+  - psacct
 
 #####################################################
 # OpenShift packages
 #####################################################
 rhel_ose_pkgs:
   - atomic-openshift-utils
-  - docker
+  - docker-1.12.6
   - atomic-openshift-excluder
   - atomic-openshift-docker-excluder

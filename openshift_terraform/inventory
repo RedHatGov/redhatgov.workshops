@@ -11,4 +11,4 @@ localhost ansible_connection=local
 master.ocp.${INSERT_VALUE_HERE}
 
 [nodes]
-node.[0:1].ocp.${INSERT_VALUE_HERE}
+node.[0:2].ocp.${INSERT_VALUE_HERE}

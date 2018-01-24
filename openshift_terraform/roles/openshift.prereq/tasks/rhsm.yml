@@ -22,18 +22,25 @@
   ignore_errors: true
 
 - name: Register with RHSM
-#  redhat_subscription:
-#    activationkey: "{{ rhel_rhsm_activationkey }}"
-#    org_id: "{{ rhel_rhsm_org_id }}"
-  shell: subscription-manager register --org={{ rhel_rhsm_org_id }} --activationkey={{ rhel_rhsm_activationkey }}
-  register: result
-  retries: 10
-  delay: 30
-  until: result.rc == 0
-  when: sm.rc != 0
+  command: sudo subscription-manager register --username {{ rhsm_username }} --password {{ rhsm_password }} 
+
+- name: Attach Pool Id
+  command: sudo subscription-manager attach --pool="{{ rhsm_pool_id }}"
+
+
+# - name: Register with RHSM
+#   # redhat_subscription:
+#   #   activationkey: "{{ rhel_rhsm_activationkey }}"
+#   #   org_id: "{{ rhel_rhsm_org_id }}"
+#   shell: subscription-manager register --org={{ rhel_rhsm_org_id }} --activationkey={{ rhel_rhsm_activationkey }}
+#   register: result
+#   retries: 10
+#   delay: 30
+#   until: result.rc == 0
+#   when: sm.rc != 0
 
 - name: Disable all RHSM repositories
-  shell: subscription-manager repos --disable="*"
+  command: subscription-manager repos --disable="*"
 
 - name: Disable all yum repositories
   shell: /usr/bin/yum-config-manager --disable \*
@@ -58,6 +65,6 @@
   shell: subscription-manager repos --enable {{ rhel_rhsm_repo_ocp_v3_7 }}
   when: openshift_release == "3.7"
 
-# - name: Import Red Hat beta test products key
-#   rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
-#   ignore_errors: True
+- name: Import Red Hat beta test products key
+  rpm_key: state=present key=/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+  ignore_errors: True

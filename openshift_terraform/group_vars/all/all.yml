@@ -3,24 +3,24 @@
 #####################################################
 # Default configuration
 #####################################################
-default_domain: "{{ vault_default_domain }}"
+default_domain:    "{{ vault_default_domain }}"
 default_subdomain: "ocp.{{ default_domain }}"
-default_wildcard: "apps.{{ default_subdomain }}"
-default_user: "ec2-user"
-default_home: "/home/{{ default_user }}"
-default_ssh: "{{ default_home }}/.ssh"
-default_keypair: "{{ vault_cluster_name }}"
+default_wildcard:  "apps.{{ default_subdomain }}"
+default_user:      "ec2-user"
+default_home:      "/home/{{ default_user }}"
+default_ssh:       "{{ default_home }}/.ssh"
+default_keypair:   "{{ vault_cluster_name }}"
 
 #####################################################
 # AWS access keys
 #####################################################
-aws_access_key_id: "{{ vault_aws_access_key_id }}"
+aws_access_key_id:     "{{ vault_aws_access_key_id }}"
 aws_secret_access_key: "{{ vault_aws_secret_access_key }}"
 
 #####################################################
 # Terraform configuration
 #####################################################
-terraform_workspace: "{{ lookup('env','PWD') }}/.{{ default_domain }}"
+terraform_workspace:   "{{ lookup('env','PWD') }}/.{{ default_domain }}"
 terraform_provisioner_connection_type: "ssh"
 
 #####################################################
@@ -28,22 +28,22 @@ terraform_provisioner_connection_type: "ssh"
 #####################################################
 os_docker_block_device: "/dev/xvdb"
 os_docker_volume_group: "docker-vg"
-os_docker_vol_size: "50"
-os_docker_vol_type: "gp2"
+os_docker_vol_size:     "50"
+os_docker_vol_type:     "gp2"
 
 #####################################################
 # OpenShift configuration
 #####################################################
-openshift_release: "{{ vault_openshift_release }}"
-openshift_cluster_name: "{{ vault_cluster_name }}"
-openshift_cluster_id: "{{ vault_cluster_id }}"
-openshift_test_users_count: "{{ vault_users_count }}"
+openshift_release:             "{{ vault_openshift_release }}"
+openshift_cluster_name:        "{{ vault_cluster_name }}"
+openshift_cluster_id:          "{{ vault_cluster_id }}"
+openshift_test_users_count:    "{{ vault_users_count }}"
 openshift_test_users_password: "{{ vault_openshift_cluster_admin_password }}"
 
 #####################################################
 # Ansible configuration
 #####################################################
-ansible_user: "{{ default_user }}"
+ansible_user:                 "{{ default_user }}"
 ansible_ssh_private_key_file: "{{ terraform_workspace }}/{{ default_keypair }}"
 
 #####################################################
@@ -51,5 +51,5 @@ ansible_ssh_private_key_file: "{{ terraform_workspace }}/{{ default_keypair }}"
 #####################################################
 system_user: ec2-user
 letsencrypt: false
-domain_name: "{{ vault_default_domain }}"
+domain_name:       "{{ vault_default_domain }}"
 workshop_password: "{{ vault_openshift_cluster_admin_password }}"
