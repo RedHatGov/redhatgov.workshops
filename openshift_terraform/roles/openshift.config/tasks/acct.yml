@@ -9,8 +9,8 @@
     path: "/etc/origin/master/htpasswd"
     state: present
 
-- name: Add cluster role to admin account
-  shell: oadm --config=/etc/origin/master/admin.kubeconfig policy add-cluster-role-to-user cluster-admin {{ openshift_cluster_admin_username }}
+- name: Add caluster role to admin account
+  shell: oc aadm --config=/etc/origin/master/admin.kubeconfig policy add-cluster-role-to-user cluster-admin {{ openshift_cluster_admin_username }}
 
 - name: Create users for OpenShift web interface
   shell: htpasswd -b /etc/origin/master/htpasswd user{{ item }} {{ openshift_test_users_password }}

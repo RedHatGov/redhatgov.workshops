@@ -1,16 +1,5 @@
 # file: 2_load.yml
 ---
-
-- name: Wait for AWS AMIs to become initialized
-  hosts: localhost
-  tasks:
-    - wait_for:
-        host: "{{ item }}"
-        port: 22
-        state: started
-        timeout: 300
-      with_items: "{{ groups.all }}"
-
 #---------------------------------------------------
 # OpenShift Pre- Installation
 #---------------------------------------------------

@@ -6,6 +6,7 @@
   get_url:
     url: "https://bootstrap.pypa.io/get-pip.py"
     dest: "{{ default_home }}/get-pip.py"
+    validate_certs: False
 #  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir={{ default_home }}
 
 - name: Python install pip
