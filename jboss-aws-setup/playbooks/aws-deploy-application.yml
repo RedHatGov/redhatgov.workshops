@@ -1,0 +1,18 @@
+---
+
+- name: Provision instances
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  roles:
+   - aws-provision
+
+- name: Refresh hosts
+  hosts: localhost
+
+- name: Install JBoss EAP & deploy
+  hosts: created_nodes
+  vars:
+   state: 'present'
+  roles:
+    - java-app

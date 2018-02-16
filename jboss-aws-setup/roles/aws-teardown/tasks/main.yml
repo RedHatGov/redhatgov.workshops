@@ -1,0 +1,152 @@
+---
+
+#---------------------------------------------------
+# EC2
+#---------------------------------------------------
+- name: Gather ec2 facts
+  ec2_remote_facts:
+    region: "{{ aws_region }}"
+    filters:
+      "tag:namespace": "{{ namespace }}"
+  register: ec2_facts
+
+- name: Unsubscribe systems
+  include: unregister-vm.yml public_ip={{ item.public_ip_address }}
+  with_items: "{{ ec2_facts.instances }}"
+  when: item.state == 'running'
+  ignore_errors: yes
+
+- name: Notify of VMs that could not be unsubscribed
+  debug:
+    msg: "The VM {{ item.private_dns_name }} could not be unsubscribed because it was stopped."
+  with_items: "{{ ec2_facts.instances }}"
+  when: item.state == 'stopped'
+  ignore_errors: yes
+
+- name: Disassociate elastic ip
+  ec2_eip:
+    device_id: "{{item.id}}"
+    ip: "{{ item.public_ip_address }}"
+    region: "{{ aws_region }}"
+    state: absent
+  with_items: "{{ ec2_facts.instances }}"
+  when: (item.tags.Name == '{{ ec2_tag }}') and
+        (item.tags.namespace == '{{ namespace }}') and
+        (item.state != 'terminated')
+
+- name: Terminate ec2 instances
+  ec2:
+    state: absent
+    region: "{{ aws_region }}"
+    instance_ids: "{{ item.id }}"
+    wait: yes
+  with_items: "{{ ec2_facts.instances }}"
+  when: item.state != 'terminated'
+
+#---------------------------------------------------
+# Gateway
+#---------------------------------------------------
+# - name: Gather internet gateway facts
+#   ec2_vpc_igw_facts:
+#    region: "{{ aws_region }}"
+#    filters:
+#      "tag:Name": "{{ vpc_subnet_tag }}"
+#   register: igw_facts
+
+#---------------------------------------------------
+# Route Table
+#---------------------------------------------------
+- name: Gather route table facts
+  ec2_vpc_route_table_facts:
+   region: "{{ aws_region }}"
+   filters:
+     "tag:Name": "{{ vpc_route_tag }}"
+  register: route_facts
+
+- name: Remove route table
+  ec2_vpc_route_table:
+   region: "{{ aws_region }}"
+   state: absent
+   vpc_id: "{{ item.id }}"
+  with_items: "{{ route_facts.route_tables }}"
+
+#---------------------------------------------------
+# Subnet
+#---------------------------------------------------
+- name: Gather subnet facts
+  ec2_vpc_subnet_facts:
+   region: "{{ aws_region }}"
+   filters:
+     "tag:Name": "{{ vpc_subnet_tag }}"
+  register: subnet_facts
+
+- name: Remove subnet
+  ec2_vpc_subnet:
+   region: "{{ aws_region }}"
+   state: absent
+   vpc_id: "{{ item.id }}"
+   cidr: "{{ item.cidr_block }}"
+  with_items: "{{ subnet_facts.subnets }}"
+
+#---------------------------------------------------
+# VPC
+#---------------------------------------------------
+- name: Gather vpc facts
+  ec2_vpc_net_facts:
+   region: "{{ aws_region }}"
+   filters:
+     "tag:Name": "{{ vpc_tag }}"
+  register: vpc_facts
+
+- name: Remove vpc
+  ec2_vpc:
+   region: "{{ aws_region }}"
+   vpc_id: "{{ item.id }}"
+   cidr_block: "{{ item.cidr_block }}"
+   state: absent
+   resource_tags:
+     Name: "{{ vpc_route_tag }}"
+     namespace: "{{ namespace }}"
+  with_items: "{{ vpc_facts.vpcs }}"
+
+# - name: Delete VPC
+#   ec2_vpc_net:
+#    name: "{{ vpc_name }}"
+#    cidr_block: "{{ vpc_cidr_block }}"
+#    region: "{{ aws_region }}"
+#    state: "absent"
+#    aws_access_key: "{{ aws_access_key }}"
+#    aws_secret_key: "{{ aws_secret_key }}"
+#    tags:
+#     Name: "{{ tag_vpc }}"
+#     namespace: "{{ namespace }}"
+#
+# #---------------------------------------------------
+# # Groups
+# #---------------------------------------------------
+# - name: Delete vpc security group
+#   ec2_group:
+#     name: "{{ ec2_security_group }}"
+#     region: "{{ aws_region }}"
+#     state: "absent"
+#
+# - name: Delete ingress security group
+#   ec2_group:
+#     name: "{{ ec2_security_group_ingress }}"
+#     region: "{{ aws_region }}"
+#     state: "absent"
+#
+# - name: Delete egress security group
+#   ec2_group:
+#     name: "{{ ec2_security_group_egress }}"
+#     region: "{{ aws_region }}"
+#     state: "absent"
+#
+# - name: Delete ssh security group
+#   ec2_group:
+#     name: "{{ ec2_security_group_ssh }}"
+#     region: "{{ aws_region }}"
+#     state: "absent"
+
+# - include: 02_vpc.yml
+# - include: 04_dns.yml

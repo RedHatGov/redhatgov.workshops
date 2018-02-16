@@ -1,0 +1,25 @@
+---
+
+- name: Delete vpc security group
+  ec2_group:
+    name: "{{ ec2_security_group }}"
+    region: "{{ aws_region }}"
+    state: "absent"
+
+- name: Delete ingress security group
+  ec2_group:
+    name: "{{ ec2_security_group_ingress }}"
+    region: "{{ aws_region }}"
+    state: "absent"
+
+- name: Delete egress security group
+  ec2_group:
+    name: "{{ ec2_security_group_egress }}"
+    region: "{{ aws_region }}"
+    state: "absent"
+
+- name: Delete ssh security group
+  ec2_group:
+    name: "{{ ec2_security_group_ssh }}"
+    region: "{{ aws_region }}"
+    state: "absent"

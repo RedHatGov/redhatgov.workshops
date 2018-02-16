@@ -1,0 +1,89 @@
+---
+
+domain: "{{ vault_domain }}"
+prefix: "{{ vault_prefix }}"
+namespace: "{{ vault_namespace }}"
+suffix: "{{ vault_suffix }}"
+intranet: "{{ vault_intranet }}"
+app_id: "{{ vault_app_id }}"
+role: "{{ vault_role }}"
+cluster: "{{ vault_cluster }}"
+deploy_env: "{{ vault_deploy_env }}"
+release: "{{ vault_release }}"
+workspace: "{{ lookup('env','PWD') }}/.{{ domain }}"
+http_port: 80
+http_proxy_port: 8080
+https_port: 443
+https_proxy_port: 8443
+ssh_port: 22
+
+#---------------------------------------------------
+# Remote User
+#---------------------------------------------------
+remote_user_name: "{{ vault_remote_user_name }}"
+remote_user_key: "{{ vault_remote_user_key }}"
+remote_user_key_file: "{{ workspace }}/{{ remote_user_key }}"
+remote_user_home: "/home/{{ remote_user_name }}"
+remote_user_ssh_path: "{{ remote_user_home }}/.ssh"
+remote_user_ssh_conf: "{{ remote_user_ssh_path }}/config"
+
+#---------------------------------------------------
+# Subscription Manager
+#---------------------------------------------------
+# rhsm_user_name: "{{ vault_rhsm_user_name }}"
+# rhsm_user_pass: "{{ vault_rhsm_user_pass }}"
+# rhsm_pool_id: "{{ vault_rhsm_pool_id }}"
+
+rhsm_key_id: "{{ vault_rhsm_key_id }}"
+rhsm_org_id: "{{ vault_rhsm_org_id }}"
+
+#---------------------------------------------------
+# Ansible Engine
+#---------------------------------------------------
+ansible_user: "{{ remote_user_name }}"
+ansible_ssh_private_key_file: "{{ remote_user_key_file }}"
+
+#---------------------------------------------------
+# Ansible Tower
+#---------------------------------------------------
+awx_user_name: "{{ vault_awx_user_name }}"
+awx_user_pass: "{{ vault_awx_user_pass }}"
+
+#---------------------------------------------------
+# Amazon web Services
+#---------------------------------------------------
+aws_access_key: "{{ vault_aws_access_key }}"
+aws_secret_key: "{{ vault_aws_secret_key }}"
+
+# Network
+aws_region: "{{ vault_aws_region }}"
+route53_hosted_zone_id: "{{ vault_route53_hosted_zone_id }}"
+vpc_cidr_block: 10.0.0.0/16
+public_subnet_1_cidr: 10.0.0.0/24
+public_route_cidr_block: 0.0.0.0/0
+
+# Tags
+ec2_tag: "{{ prefix }}-{{ namespace }}-{{ suffix }}"
+vpc_tag: "{{ namespace }}-vpc"
+vpc_subnet_tag: "{{ namespace }}-subnet"
+vpc_route_tag: "{{ namespace }}-route"
+
+# Groups
+ec2_security_group: "{{ namespace }}-default-sg"
+ec2_security_group_ingress: "{{ namespace }}-ingress-sg"
+ec2_security_group_egress: "{{ namespace }}-egress-sg"
+ec2_security_group_ssh: "{{ namespace }}-ssh-sg"
+
+# Instance
+ec2_image: ami-b63769a1
+# redhat_owner_id: 309956199498 # Look up image automatically
+ec2_instance_type: t2.medium
+ec2_instance_count: 1
+
+# System
+os_root_vol_size: 25
+
+# Docker
+# os_docker_block_device: /dev/xvdb
+# os_docker_volume_group: docker-vg
+# os_docker_vol_size: 15

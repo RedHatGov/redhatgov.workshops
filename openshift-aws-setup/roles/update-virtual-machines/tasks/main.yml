@@ -1,0 +1,5 @@
+---
+
+- name: Upgrade packages on all nodes
+  yum: name=* state=latest
+  become: true
