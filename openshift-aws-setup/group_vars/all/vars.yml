@@ -1,17 +1,28 @@
 ---
 
+#---------------------------------------------------
+# Domain Name
+#---------------------------------------------------
 domain: "{{ vault_domain }}"
 prefix: "{{ vault_prefix }}"
-wildcard: "{{ prefix }}.{{ domain }}"
 namespace: "{{ vault_namespace }}"
+wildcard: "{{ prefix }}.{{ domain }}"
+intranet: "{{ namespace }}.{{ domain }}"
+workspace: "{{ lookup('env','PWD') }}/.{{ domain }}"
+
+#---------------------------------------------------
+# Resource Tag
+#---------------------------------------------------
 suffix: "{{ vault_suffix }}"
-intranet: "{{ vault_intranet }}"
 app_id: "{{ vault_app_id }}"
 role: "{{ vault_role }}"
 cluster: "{{ vault_cluster }}"
 deploy_env: "{{ vault_deploy_env }}"
 release: "{{ vault_release }}"
-workspace: "{{ lookup('env','PWD') }}/.{{ domain }}"
+
+#---------------------------------------------------
+# Port Number
+#---------------------------------------------------
 http_port: 80
 http_proxy_port: 8080
 https_port: 443
