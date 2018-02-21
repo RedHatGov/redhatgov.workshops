@@ -11,8 +11,7 @@ The playbook can deploy either Origin or Container Platform.
 1. Setup an [AWS account][1] with privileges to a `route53` registered domain
 2. Before deploying, make sure the following files are available on your local machine:
 
-  - `$HOME/.aws/credentials` - your AWS credentials
-  - `$HOME/.ansible/vault` - your Ansible Vault password file
+  - `~/.aws/credentials` - your AWS credentials
 
 ## Configure
 
@@ -38,7 +37,7 @@ This is currently disabled since there is a bug using osm_default_node_selector 
 
 # Usage
 
-## Provision Amazon Web Services Infrastructure
+## Provision Amazon Web Services EC2 Infrastructure
 
 ```sh
 source setup.sh.example
