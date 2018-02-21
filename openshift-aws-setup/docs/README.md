@@ -38,22 +38,33 @@ This is currently disabled since there is a bug using osm_default_node_selector 
 
 # Usage
 
+## Provision Amazon Web Services Infrastructure
+
+```sh
+source setup.sh.example
+ansible-vault encrypt group_vars/all/vault
+ansible-playbook -vvv provision.yml
+ansible-vault decrypt group_vars/all/vault
+```
+
 ## Deploy Red Hat OpenShift Container Platform (OCP)
 
 This action requires a [subscription with Red Hat][5] with account credentials, or an [activation key][6].
 
 ```sh
-cp playbooks/bring-up-playbook.yml .
 source setup.sh.example
-openshift-aws-setup bring-up-playbook.yml
+ansible-vault encrypt group_vars/all/vault
+ansible-playbook -vvv playbook.yml
+ansible-vault decrypt group_vars/all/vault
 ```
 
 ## Delete Red Hat OpenShift Container Platform (OCP)
 
 ```sh
-cp playbooks/teardown-playbook.yml .
 source setup.sh.example
-openshift-aws-setup teardown-playbook.yml
+ansible-vault encrypt group_vars/all/vault
+ansible-playbook -vvv destroy.yml
+ansible-vault decrypt group_vars/all/vault
 ```
 
 ### Network Topology
