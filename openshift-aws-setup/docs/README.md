@@ -58,7 +58,7 @@ openshift-aws-setup teardown-playbook.yml
 
 ### Network Topology
 
-![Network Diagram](./docs/network-topology-openshift.jpg)
+![Network Diagram](./network-topology-openshift.jpg)
 
 A private VPC and DNS is used, OpenShift is installed using the private IP addresses. This means the IP addresses never change, unlike EC2 public addresses, and the environment can be stopped and started as needed.
 
