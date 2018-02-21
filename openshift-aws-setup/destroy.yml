@@ -1,0 +1,30 @@
+---
+
+- name: Teardown Environment
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  roles:
+  - teardown-virtual-machines
+  - teardown-security-groups
+  - teardown-vpc
+  - teardown-dns
+  pre_tasks:
+    - name: Verify Ansible Version
+      assert:
+        that:
+          - "ansible_version.major == 2"
+          - "ansible_version.minor == 4"
+        msg: "This script is only supported with the 2.4 version of Ansible"
+    - fail: msg="Variable '{{ item }}' is not defined or is empty"
+      when: (platform == 'openshift-enterprise') and ((item not in vars) or vars[item] == '')
+      with_items:
+        # - rhsm_username
+        # - rhsm_password
+        # - rhsm_pool
+        - rhsm_key_id
+        - rhsm_org_id
+  post_tasks:
+    - name: Completed
+      debug:
+        msg: 'Finished tearing down environment {{ namespace }}'
