@@ -4,7 +4,6 @@ vault_domain:
 vault_prefix:
 vault_namespace:
 vault_suffix:
-vault_intranet:
 vault_app_id:
 vault_role:
 vault_cluster:
