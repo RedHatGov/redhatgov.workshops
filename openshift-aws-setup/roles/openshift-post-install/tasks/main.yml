@@ -1,14 +1,14 @@
 ---
 
-- name: Add loggingPublicURL to master-config
-  lineinfile:
-    dest: /etc/origin/master/master-config.yaml
-    insertafter: "assetConfig:"
-    line:  "  loggingPublicURL: https://kibana.{{ wildcard }}"
-  delegate_to: "{{ master_public_ip }}"
-  remote_user: "{{ remote_user_name }}"
-  become: true
-  when: install_logging
+# - name: Add loggingPublicURL to master-config
+#   lineinfile:
+#     dest: /etc/origin/master/master-config.yaml
+#     insertafter: "assetConfig:"
+#     line:  "  loggingPublicURL: https://kibana.{{ wildcard }}"
+#   delegate_to: "{{ master_public_ip }}"
+#   remote_user: "{{ remote_user_name }}"
+#   become: true
+#   when: install_logging
 
 - name: OpenShift login system:admin
   shell: /usr/bin/oc login -u system:admin
