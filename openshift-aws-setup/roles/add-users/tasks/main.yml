@@ -43,10 +43,3 @@
   remote_user: "{{ remote_user_name }}"
   become: true
   ignore_errors: true
-
-- name: Verify admin user account
-  shell: /usr/bin/oc login https://{{ domain }}:{{ https_proxy_port }} --insecure-skip-tls-verify=false -u {{ admin_username }} -p {{ admin_password }}
-  delegate_to: "{{ master_public_ip }}"
-  remote_user: "{{ remote_user_name }}"
-  become: true
-  ignore_errors: true
