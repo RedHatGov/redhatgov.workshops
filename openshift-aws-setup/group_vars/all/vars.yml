@@ -135,21 +135,15 @@ os_gluster_block_device: /dev/xvdc
 os_gluster_vol_size: 100
 
 #---------------------------------------------------
-# Ansible Tower
-#---------------------------------------------------
-# awx_user_name: "{{ vault_awx_user_name }}"
-# awx_user_pass: "{{ vault_awx_user_pass }}"
-
-#---------------------------------------------------
 # OpenShift Container Platform
 #---------------------------------------------------
 # Must be either origin or openshift-enterprise
 platform: openshift-enterprise
 version: 3.7
 htpasswd_path: /etc/origin/master/htpasswd
-install_metrics: true
+install_metrics: false
 install_prometheus: false
-install_logging: true
+install_logging: false
 install_gluster: false
 
 admin_username: "{{ vault_admin_username }}"
