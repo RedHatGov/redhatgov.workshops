@@ -5,7 +5,7 @@
 
 - name: Register and update virtual machines
   hosts: created_vms
-  remote_user: "{{ ec2_instance_user }}"
+  remote_user: "{{ remote_user_name }}"
   vars:
     state: 'present'
   roles:
@@ -17,7 +17,7 @@
 
 - name: OpenShift Prerequisites
   hosts: created_nodes
-  remote_user: "{{ ec2_instance_user }}"
+  remote_user: "{{ remote_user_name }}"
   vars:
     state: 'present'
   roles:
