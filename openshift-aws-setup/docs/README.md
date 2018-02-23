@@ -9,9 +9,7 @@ The playbook can deploy either Origin or Container Platform.
 ### Amazon Web Services (AWS)
 
 1. Setup an [AWS account][1] with privileges to a `route53` registered domain
-2. Before deploying, make sure the following files are available on your local machine:
-
-  - `~/.aws/credentials` - your AWS credentials
+2. Before continuing, make sure to [configure settings that the AWS Command Line Interface uses when interacting with AWS][2].
 
 ## Configure
 
@@ -85,7 +83,7 @@ Cockpit is available on port 9090 so you can access it using the same URL as the
 Originally inspired by Gerald Nunn's [openshift-aws-setup][7] project. Thanks!
 
 [1]: https://aws.amazon.com/
-[2]: http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html
+[2]: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 [3]: https://pypi.python.org/pypi/virtualenv
 [4]: http://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
 [5]: https://www.redhat.com/en/about/value-of-subscription
