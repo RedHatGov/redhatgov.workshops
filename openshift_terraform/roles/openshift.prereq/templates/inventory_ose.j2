@@ -45,13 +45,13 @@ openshift_hosted_metrics_storage_volume_size=2Gi
 
 # Logging deployment
 # See: https://docs.openshift.com/enterprise/latest/install_config/aggregate_logging.html
-openshift_hosted_logging_deploy=true
-openshift_hosted_logging_storage_kind=nfs
-openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
-openshift_hosted_logging_storage_nfs_directory=/srv
-openshift_hosted_logging_storage_nfs_options='*(rw,root_squash)'
-openshift_hosted_logging_storage_volume_name=logging
-openshift_hosted_logging_storage_volume_size=2Gi
+# openshift_hosted_logging_deploy=true
+# openshift_hosted_logging_storage_kind=nfs
+# openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+# openshift_hosted_logging_storage_nfs_directory=/srv
+# openshift_hosted_logging_storage_nfs_options='*(rw,root_squash)'
+# openshift_hosted_logging_storage_volume_name=logging
+# openshift_hosted_logging_storage_volume_size=2Gi
 
 # Host group for masters
 [masters]
