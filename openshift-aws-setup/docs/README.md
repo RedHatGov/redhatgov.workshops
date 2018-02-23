@@ -8,7 +8,7 @@ The playbook can deploy either Origin or Container Platform.
 
 ### Ansible by Red Hat
 
-1. This project is only supported with the Ansible version >=2.4
+1. This project is only supported with the [Ansible][0] version >=2.4
 
 ### Amazon Web Services
 
@@ -84,6 +84,7 @@ Cockpit is available on port 9090 so you can access it using the same URL as the
 
 Originally inspired by Gerald Nunn's [openshift-aws-setup][7] project. Thanks!
 
+[0]: https://www.ansible.com/
 [1]: https://aws.amazon.com/
 [2]: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 [3]: https://pypi.python.org/pypi/virtualenv
