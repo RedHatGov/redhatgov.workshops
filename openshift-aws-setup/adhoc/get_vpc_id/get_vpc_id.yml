@@ -1,0 +1,31 @@
+---
+
+# This playbook retrieves an AWS vpc ID based on tag name and region.
+#
+#  To run:
+#  1. Source your AWS credentials (make sure it's the corresponding AWS account) into your environment
+#    export AWS_ACCESS_KEY_ID='XXXXX'
+#    export AWS_SECRET_ACCESS_KEY='XXXXXX'
+#
+#  2. run the playbook:
+#    ansible-playbook -e 'region=<aws-region>' -e 'vpc_tag=<vpc-name>' get_vpc_id.yml
+#
+#  Example:
+#    ansible-playbook 'region=us-east-1' -e 'vpc_tag=myvpcname' get_vpc_id.yml
+
+- name: Get VPC id
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Filter VPC Facts
+      ec2_vpc_net_facts:
+        region: "{{ region }}"
+        filters:
+          "tag:Name": "{{ vpc_tag }}"
+      register: vpc_facts
+
+    - set_fact:
+        myvpc_id: "{{ vpc_facts|json_query('vpcs[*].id') }}"
+
+    - debug: var=myvpc_id[0]
