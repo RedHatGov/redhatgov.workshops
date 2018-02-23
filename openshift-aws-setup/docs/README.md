@@ -15,7 +15,7 @@ The playbook can deploy either Origin or Container Platform.
 1. Create an [AWS account][1] with privileges to a `route53` registered domain
 2. Make sure to setup [AWS Command Line Interface for use when interacting with AWS][2].
 
-## General Overview
+## Configuration
 
 AWS related configuration can be customized by modifying `group_vars/all/vars.yaml`, and the number of default application nodes is three.
 
