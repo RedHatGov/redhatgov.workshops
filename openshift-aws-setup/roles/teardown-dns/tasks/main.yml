@@ -20,6 +20,7 @@
   include: delete-route.yml zone={{ intranet }} record="{{ ec2_gluster_tag }}{{ item }}.{{ intranet }}" private_zone="true"
   with_sequence: start=1 end={{ ec2_instance_count|int }}
   ignore_errors: true
+  when: install_gluster
 
 - name: Get private DNS hosted zone ID
   shell: aws route53 list-hosted-zones --query 'HostedZones[*]' --output text | grep '\/hostedzone\/.*{{ intranet }}' | sed -e 's/.*\///' -e 's/[^a-zA-Z0-9].*//'
