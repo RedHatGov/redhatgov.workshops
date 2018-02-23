@@ -1,11 +1,5 @@
 ---
 
-- name: Setup cockpit account
-  shell: /usr/sbin/useradd --home /home/{{ admin_username }} {{ admin_username }} && echo {{ admin_username }}:{{ admin_password }} | chpasswd –crypt-method=SHA512
-  delegate_to: "{{ master_public_ip }}"
-  remote_user: "{{ remote_user_name }}"
-  become: true
-
 - name: Download get-pip.py script
   command: /usr/bin/curl 'https://bootstrap.pypa.io/get-pip.py' -O chdir={{ remote_user_home }}
   delegate_to: "{{ master_public_ip }}"
@@ -20,6 +14,12 @@
 
 - name: Pip install passlib
   pip: name=passlib state=present
+  delegate_to: "{{ master_public_ip }}"
+  remote_user: "{{ remote_user_name }}"
+  become: true
+  
+- name: Setup cockpit account
+  shell: /usr/sbin/useradd --home /home/{{ admin_username }} {{ admin_username }} && echo {{ admin_username }}:{{ admin_password }} | chpasswd –crypt-method=SHA512
   delegate_to: "{{ master_public_ip }}"
   remote_user: "{{ remote_user_name }}"
   become: true
