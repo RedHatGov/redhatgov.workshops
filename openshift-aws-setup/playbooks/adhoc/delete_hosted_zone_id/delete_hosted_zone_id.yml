@@ -1,6 +1,6 @@
 ---
 
-# This playbook retrieves an AWS hosted zone ID based on domain name.
+# This playbook deletes an AWS hosted zone ID based on domain name.
 #
 #  To run:
 #  1. Source your AWS credentials (make sure it's the corresponding AWS account) into your environment
