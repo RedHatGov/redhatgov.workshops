@@ -1,6 +1,6 @@
 ---
 
-# This playbook retrieves an AWS vpc ID based on hosted zone name.
+# This playbook retrieves an AWS vpc ID based on tag name and region.
 #
 #  To run:
 #  1. Source your AWS credentials (make sure it's the corresponding AWS account) into your environment
