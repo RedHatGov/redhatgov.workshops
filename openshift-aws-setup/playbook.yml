@@ -34,7 +34,6 @@
   - openshift-install
   - add-users
   - openshift-post-install
-  - openshift-restart-master
   post_tasks:
    - name: Confirmation message
      debug:
