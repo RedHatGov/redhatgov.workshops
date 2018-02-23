@@ -6,7 +6,7 @@
   register: hosted_zones
 
 - name: Delete master and bastion routes
-  include: delete-route.yml zone={{ intranet }} record=""{{ item }}".{{ intranet }}" private_zone="true"
+  include: delete-route.yml zone={{ intranet }} record="{{ item }}.{{ intranet }}" private_zone="true"
   with_items:
     - "{{ ec2_bastion_tag }}"
     - "{{ ec2_master_tag }}"
