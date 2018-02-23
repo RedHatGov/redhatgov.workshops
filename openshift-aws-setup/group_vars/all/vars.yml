@@ -122,7 +122,7 @@ ec2_instance_count: 3
 
 # System
 os_master_root_vol_size: 50
-os_node_root_vol_size: 30
+os_node_root_vol_size: 40
 os_bastion_root_vol_size: 15
 
 # Docker
@@ -137,13 +137,18 @@ os_gluster_vol_size: 100
 #---------------------------------------------------
 # OpenShift Container Platform
 #---------------------------------------------------
-# Must be either origin or openshift-enterprise
+# Either openshift-enterprise or origin
 platform: openshift-enterprise
+
 version: 3.7
+
 htpasswd_path: /etc/origin/master/htpasswd
+
 install_metrics: false
-install_prometheus: false
 install_logging: false
+install_prometheus: false
+
+install_nfs: false
 install_gluster: false
 
 admin_username: "{{ vault_admin_username }}"
