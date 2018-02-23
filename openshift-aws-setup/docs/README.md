@@ -9,7 +9,7 @@ The playbook can deploy either Origin or Container Platform.
 ### Amazon Web Services (AWS)
 
 1. Setup an [AWS account][1] with privileges to a `route53` registered domain
-2. Before continuing, make sure to [configure settings that the AWS Command Line Interface uses when interacting with AWS][2].
+2. Make sure to [configure settings that the AWS Command Line Interface uses when interacting with AWS][2].
 
 ## Configure
 
