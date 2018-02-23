@@ -11,5 +11,5 @@
       become: true
 
     - name: Ensure NTP is running
-      service: name=ntp state=started enabled=yes
+      service: name=ntpd state=started enabled=yes
       become: true
