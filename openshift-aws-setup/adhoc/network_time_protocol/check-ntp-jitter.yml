@@ -14,7 +14,7 @@
       command: ntpq -p
       register: myntpq
 
-    - debug: var=remote.stdout_lines[0]
+    - debug: var=myntpq.stdout_lines[0]
 
     - name: Print system time
       command: date -R
@@ -25,6 +25,8 @@
     - name: Synchronize server time
       command: ntpdate -q  0.rhel.pool.ntp.org
       register: myntpdate
+
+    - debug: var=myntpdate.stdout_lines[0]
 
     - name: Start NTP service
       service: name=ntpd state=started enabled=yes
