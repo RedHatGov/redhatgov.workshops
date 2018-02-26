@@ -48,7 +48,7 @@ ansible-playbook -vvv provision.yml
 ansible-vault decrypt group_vars/all/vault
 ```
 
-### Deploy Red Hat OpenShift Container Platform (OCP)
+### Deploy Red Hat OpenShift Container Platform
 
 ```sh
 source setup.sh.example
@@ -57,7 +57,16 @@ ansible-playbook -vvv playbook.yml
 ansible-vault decrypt group_vars/all/vault
 ```
 
-### Delete Red Hat OpenShift Container Platform (OCP)
+### Configure Red Hat OpenShift Container Platform
+
+```sh
+source setup.sh.example
+ansible-vault encrypt group_vars/all/vault
+ansible-playbook -vvv configure.yml
+ansible-vault decrypt group_vars/all/vault
+```
+
+### Delete Red Hat OpenShift Container Platform
 
 ```sh
 source setup.sh.example
