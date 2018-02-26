@@ -32,8 +32,6 @@
     state: 'present'
   roles:
   - openshift-install
-  - add-users
-  - openshift-post-install
   post_tasks:
    - name: Confirmation message
      debug:
