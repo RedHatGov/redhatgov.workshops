@@ -17,3 +17,5 @@
        - registry.access.redhat.com/rhscl/php-70-rhel7
        - registry.access.redhat.com/openshift3/jenkins-1-rhel7
        - registry.access.redhat.com/openshift3/jenkins-2-rhel7
+       - registry.access.redhat.com/jboss-eap-6/eap64-openshift
+       - registry.access.redhat.com/openshift3/mongodb-24-rhel7
