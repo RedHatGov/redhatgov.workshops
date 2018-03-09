@@ -147,7 +147,7 @@ htpasswd_path: /etc/origin/master/htpasswd
 install_metrics: false
 install_logging: false
 install_prometheus: false
-
+install_node_selector: false
 install_nfs: false
 install_gluster: false
 
