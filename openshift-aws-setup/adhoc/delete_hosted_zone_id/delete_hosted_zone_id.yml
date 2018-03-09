@@ -1,0 +1,39 @@
+---
+
+# This playbook deletes an AWS hosted zone ID based on domain name.
+#
+#  To run:
+#  1. Source your AWS credentials (make sure it's the corresponding AWS account) into your environment
+#    export AWS_ACCESS_KEY_ID='XXXXX'
+#    export AWS_SECRET_ACCESS_KEY='XXXXXX'
+#
+#  2. run the playbook:
+#    ansible-playbook -e 'domain=<tag-name>' delete_hosted_zone_id.yml
+#
+#  Example:
+#   ansible-playbook -e 'domain=example.com' delete_hosted_zone_id.yml
+
+- name: Private hosted zone id
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+
+    - name: List all hosted zones
+      route53_facts:
+        query: hosted_zone
+      register: hosted_zones
+      when: "{{ list_hosted_zones | default() }}"
+
+    - debug: var=hosted_zones
+      when: "{{ list_hosted_zones | default() }}"
+
+    - name: Get hosted zone ID
+      shell: aws route53 list-hosted-zones --query 'HostedZones[*]' --output text | grep '\/hostedzone\/.*{{ domain }}' | sed -e 's/.*\///' -e 's/[^a-zA-Z0-9].*//'
+      register: hosted_zone_id
+
+    - debug: var=hosted_zone_id.stdout_lines[0]
+
+    - name: Delete hosted zone ID
+      shell: aws route53 delete-hosted-zone --id '{{ hosted_zone_id.stdout_lines[0] }}'
+      when: hosted_zone_id.stdout_lines[0] is defined

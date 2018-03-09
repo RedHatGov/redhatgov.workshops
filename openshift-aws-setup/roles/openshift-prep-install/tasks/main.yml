@@ -14,9 +14,14 @@
       - "sos"
       - "psacct"
       - "docker-1.12.6"
+      - "ntp"
     state: "present"
   become: true
 
+- name: Ensure NTP (for time synchronization) is running
+  service: name=ntpd state=started enabled=yes
+  become: true
+  
 - name: Create AWS directory
   file:
     path: /etc/aws

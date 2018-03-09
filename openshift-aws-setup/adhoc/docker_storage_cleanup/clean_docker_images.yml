@@ -1,0 +1,12 @@
+---
+
+- name: Clean docker images
+  hosts: nodes
+  remote_user: ec2-user
+  vars:
+    state: 'present'
+  tasks:
+    - name: Docker remove one or more images
+      shell: docker rmi $(docker images -f dangling=true -q)
+      become: true
+      ignore_errors: yes
