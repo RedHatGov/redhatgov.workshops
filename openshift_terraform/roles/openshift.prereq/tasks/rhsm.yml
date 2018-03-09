@@ -23,10 +23,11 @@
 
 - name: Register with RHSM
   command: sudo subscription-manager register --username {{ rhsm_username }} --password {{ rhsm_password }} 
+  ignore_errors: true
 
 - name: Attach Pool Id
   command: sudo subscription-manager attach --pool="{{ rhsm_pool_id }}"
-
+  ignore_errors: true
 
 # - name: Register with RHSM
 #   # redhat_subscription:
