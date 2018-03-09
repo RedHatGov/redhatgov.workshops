@@ -67,6 +67,8 @@ master.{{ default_subdomain }}
 node.[0:1].{{ default_subdomain }}
 ```
 
+You also need to update the `vault_number_nodes` variable in `group_vars/all/vault.yml` to match.
+
 **[NOTE]:** The value `[0:1]` is a [pattern](http://docs.ansible.com/ansible/intro_patterns.html#patterns) that declares how many OpenShift nodes to create. In this case it will create `node0` and `node1`.
 
 # Usage

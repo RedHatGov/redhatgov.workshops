@@ -1,3 +1,4 @@
+variable "ec2_node_count" { default = "{{ number_nodes }}" }
 #----------------------------------------------
 # API Keys
 #----------------------------------------------
@@ -91,7 +92,7 @@ resource "aws_route53_record" "{{ ec2_master_tag_name }}" {
 }
 
 resource "aws_route53_record" "{{ ec2_node_tag_name }}" {
-  count                     = "{{ ec2_node_count }}"
+  count                     = "{{ number_nodes }}"
   zone_id                   = "{{ aws_route53_zone_id }}"
   name                      = "node.${count.index}.{{ default_subdomain }}"
   type                      = "A"
@@ -155,7 +156,7 @@ resource "aws_instance" "{{ ec2_master_group_name }}" {
 }
 
 resource "aws_instance" "{{ ec2_node_group_name }}" {
-    count                   = "{{ ec2_node_count }}"
+    count                   = "{{ number_nodes }}"
     ami                     = "{{ ec2_node_image }}"
     instance_type           = "{{ ec2_node_instance_type }}"
     user_data               = "${data.template_file.init.rendered}"

@@ -37,3 +37,7 @@ rhsm_pool_id:                  "${INSERT_VALUE_HERE}"
 vault_openshift_cluster_admin_username: "${INSERT_VALUE_HERE}"
 vault_openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
+#####################################################
+# Node information
+#####################################################
+vault_number_nodes: "2"
