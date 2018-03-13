@@ -45,7 +45,7 @@ Set shell session variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` prio
 source setup.sh.example
 ```
 
-Optionally, to encrypt the `group_vars/all/vars.yml` vault file, you must set the `vault_password_file` parameter within `ansible.cfg`. Afterwards, you can encrypt/decrypt the vault file, like so:
+Optionally, to encrypt the `group_vars/all/vars.yml` vault parameters, you must set the `vault_password_file` parameter within `ansible.cfg`. Afterwards, you can encrypt/decrypt the vault file, like so:
 
 ```sh
 # Encrypt vault variables
