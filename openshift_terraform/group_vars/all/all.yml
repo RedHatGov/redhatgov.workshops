@@ -10,6 +10,7 @@ default_user:      "ec2-user"
 default_home:      "/home/{{ default_user }}"
 default_ssh:       "{{ default_home }}/.ssh"
 default_keypair:   "{{ vault_cluster_name }}"
+number_nodes:      "{{ vault_number_nodes }}"
 
 #####################################################
 # AWS access keys
