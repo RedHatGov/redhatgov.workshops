@@ -30,7 +30,7 @@
 
 # [TODO]: Create a 'action_plugin/sethosts.py' that updates 'inventory/hosts'
 # file with 'ec2_master_tag', 'ec2_bastion_tag', 'created_vms', and
-# 'created_nodes' groups that are store in session from 'setup-host-groups' in
+# 'created_nodes' groups that are stored in session from 'setup-host-groups' in
 # role above.
 
 - name: Setup VM hosts
