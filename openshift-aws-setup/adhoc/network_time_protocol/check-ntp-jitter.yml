@@ -1,0 +1,33 @@
+---
+
+- name: Checking Server Time Sync
+  hosts: nodes
+  remote_user: ec2-user
+  vars:
+    state: 'present'
+  tasks:
+    - name: Verify NTP peers synchronization status
+      command: ntpq -p
+      register: myntpq
+
+    - debug: var=myntpq.stdout_lines[0]
+
+    - name: Print system time
+      command: date -R
+      register: mydate
+
+    - debug: var=mydate.stdout_lines[0]
+
+    - name: Stop NTP service
+      service: name=ntpd state=stop
+      become: true
+
+    - name: Synchronize server time
+      command: ntpdate -q 0.rhel.pool.ntp.org 1.ro.pool.ntp.org
+      register: myntpdate
+
+    - debug: var=myntpdate.stdout_lines[0]
+
+    - name: Start NTP service
+      service: name=ntpd state=started enabled=yes
+      become: true

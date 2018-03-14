@@ -1,17 +1,28 @@
 ---
 
+#---------------------------------------------------
+# Domain Name
+#---------------------------------------------------
 domain: "{{ vault_domain }}"
 prefix: "{{ vault_prefix }}"
-wildcard: "{{ prefix }}.{{ domain }}"
 namespace: "{{ vault_namespace }}"
+wildcard: "{{ prefix }}.{{ domain }}"
+intranet: "{{ namespace }}.{{ domain }}"
+workspace: "{{ lookup('env','PWD') }}/.{{ domain }}"
+
+#---------------------------------------------------
+# Resource Tag
+#---------------------------------------------------
 suffix: "{{ vault_suffix }}"
-intranet: "{{ vault_intranet }}"
 app_id: "{{ vault_app_id }}"
 role: "{{ vault_role }}"
 cluster: "{{ vault_cluster }}"
 deploy_env: "{{ vault_deploy_env }}"
 release: "{{ vault_release }}"
-workspace: "{{ lookup('env','PWD') }}/.{{ domain }}"
+
+#---------------------------------------------------
+# Port Number
+#---------------------------------------------------
 http_port: 80
 http_proxy_port: 8080
 https_port: 443
@@ -111,7 +122,7 @@ ec2_instance_count: 3
 
 # System
 os_master_root_vol_size: 50
-os_node_root_vol_size: 30
+os_node_root_vol_size: 40
 os_bastion_root_vol_size: 15
 
 # Docker
@@ -124,21 +135,20 @@ os_gluster_block_device: /dev/xvdc
 os_gluster_vol_size: 100
 
 #---------------------------------------------------
-# Ansible Tower
-#---------------------------------------------------
-# awx_user_name: "{{ vault_awx_user_name }}"
-# awx_user_pass: "{{ vault_awx_user_pass }}"
-
-#---------------------------------------------------
 # OpenShift Container Platform
 #---------------------------------------------------
-# Must be either origin or openshift-enterprise
+# Either openshift-enterprise or origin
 platform: openshift-enterprise
+
 version: 3.7
+
 htpasswd_path: /etc/origin/master/htpasswd
-install_metrics: true
+
+install_metrics: false
+install_logging: false
 install_prometheus: false
-install_logging: true
+install_node_selector: false
+install_nfs: false
 install_gluster: false
 
 admin_username: "{{ vault_admin_username }}"

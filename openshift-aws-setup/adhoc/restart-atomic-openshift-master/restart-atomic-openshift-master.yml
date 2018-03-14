@@ -1,0 +1,18 @@
+---
+- name: Cache docker images
+  hosts: masters
+  remote_user: ec2-user
+  vars:
+    state: 'present'
+  tasks:
+    - name: Restart master controllers service
+      service:
+        name: atomic-openshift-master-controllers.service
+        state: restarted
+      become: true
+
+    - name: Restart master api service
+      service:
+        name: atomic-openshift-master-api.service
+        state: restarted
+      become: true

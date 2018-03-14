@@ -1,0 +1,45 @@
+---
+
+# This playbook retrieves an AWS EC2 Elastic IP based on tag name and region.
+#
+#  To run:
+#  1. Source your AWS credentials (make sure it's the corresponding AWS account) into your environment
+#    export AWS_ACCESS_KEY_ID='XXXXX'
+#    export AWS_SECRET_ACCESS_KEY='XXXXXX'
+#
+#  2. run the playbook:
+#    ansible-playbook -e 'region=<aws-region>' -e 'ec2_tag=<instance-name>' delete_ec2_eip.yml
+#
+#  Example:
+#    ansible-playbook -e 'region=us-east-1' -e 'ec2_tag=myinstance' delete_ec2_eip.yml
+
+- name: Get EC2 Elastic IP
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Gather EC2 facts
+      ec2_instance_facts:
+        region: "{{ region }}"
+        filters:
+          "tag:Name": "{{ ec2_tag }}"
+      register: ec2_facts
+
+    - set_fact:
+        master_ip_address: "{{ item|json_query('public_ip_address') }}"
+        master_instance_id: "{{ item|json_query('instance_id') }}"
+        master_vpc_id: "{{ item|json_query('network_interfaces[*].vpc_id') }}"
+      with_items: "{{ ec2_facts.instances }}"
+      when: ((item is defined) and ('master' in item.tags.Name) and (item.state != 'terminated'))
+
+    - debug: var=master_ip_address
+    - debug: var=master_instance_id
+    - debug: var=master_vpc_id
+
+    - name: Disassociate an elastic IP from instance
+      ec2_eip:
+        device_id: "{{ master_instance_id }}"
+        ip: "{{ master_ip_address }}"
+        region: "{{ region }}"
+        release_on_disassociation: yes
+        state: absent
