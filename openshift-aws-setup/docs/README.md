@@ -39,40 +39,46 @@ This is currently disabled since there is a bug using osm_default_node_selector 
 
 ## Usage
 
-### Provision Amazon Web Services EC2 Infrastructure
+Set shell session variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` prior to running playbooks below.
 
 ```sh
 source setup.sh.example
+```
+
+Optionally, to encrypt the `group_vars/all/vars.yml` vault parameters, you must set the `vault_password_file` parameter within `ansible.cfg`. Afterwards, you can encrypt/decrypt the vault file, like so:
+
+```sh
+# Encrypt vault variables
 ansible-vault encrypt group_vars/all/vault
-ansible-playbook -vvv provision.yml
+
+# Decrypt vault variables
 ansible-vault decrypt group_vars/all/vault
+```
+
+See documentation for further information on [Ansible Vault][10].
+
+### Provision Amazon Web Services EC2 Infrastructure
+
+```sh
+ansible-playbook -vvv provision.yml
 ```
 
 ### Deploy Red Hat OpenShift Container Platform
 
 ```sh
-source setup.sh.example
-ansible-vault encrypt group_vars/all/vault
 ansible-playbook -vvv playbook.yml
-ansible-vault decrypt group_vars/all/vault
 ```
 
 ### Configure Red Hat OpenShift Container Platform
 
 ```sh
-source setup.sh.example
-ansible-vault encrypt group_vars/all/vault
 ansible-playbook -vvv configure.yml
-ansible-vault decrypt group_vars/all/vault
 ```
 
 ### Delete Red Hat OpenShift Container Platform
 
 ```sh
-source setup.sh.example
-ansible-vault encrypt group_vars/all/vault
 ansible-playbook -vvv destroy.yml
-ansible-vault decrypt group_vars/all/vault
 ```
 
 ## Network Topology
@@ -103,3 +109,4 @@ Originally inspired by Gerald Nunn's [openshift-aws-setup][7] project. Thanks!
 [7]: https://github.com/gnunn1/openshift-aws-setup
 [8]: http://docs.ansible.com/ansible/latest/playbooks_vault.html
 [9]: http://docs.ansible.com/ansible/intro_installation.html
+[10]: https://docs.ansible.com/ansible/2.4/vault.html
