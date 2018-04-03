@@ -33,6 +33,7 @@ ebs_root_block_size:              50
 # ami_id:                         "" # Cloud Access RHEL 7.4 (Ohio us-east-2)
 # ami_id:                         "ami-cfdafaaa" # us-east-2 RHEL 7.4 
 # ami_id:                         "ami-c998b6b2" # us-east-1 RHEL 7.4
+# ami_id:                         "ami-a4791ede" # us-east-1 RHEL 7.4 with JBoss EAP 7.1
 #--------------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                      true

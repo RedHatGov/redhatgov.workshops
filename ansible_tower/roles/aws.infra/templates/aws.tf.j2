@@ -120,6 +120,13 @@ resource "aws_security_group" "ansible-tower-sg" {
 
   ingress {
     protocol    = "tcp"
+    from_port   = 8080
+    to_port     = 8080
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    protocol    = "tcp"
     from_port   = 8888
     to_port     = 8888
     cidr_blocks = ["0.0.0.0/0"]
