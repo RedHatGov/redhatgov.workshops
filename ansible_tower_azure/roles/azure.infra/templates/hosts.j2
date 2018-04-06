@@ -1,0 +1,15 @@
+ansible_ssh_user=azure-user
+ansible_become=yes
+
+[local_target]
+localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
+
+[tower_nodes]
+{{workshop_prefix}}-tower[0:{{ number_tower_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
+
+[nodes]
+{{workshop_prefix}}-node[0:{{ number_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
+
+[all_nodes]
+{{workshop_prefix}}-tower[0:{{ number_tower_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
+{{workshop_prefix}}-node[0:{{ number_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
