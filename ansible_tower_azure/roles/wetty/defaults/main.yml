@@ -1,0 +1,20 @@
+# file: roles/wetty/defaults/main.yml
+---
+
+
+openssl_self_signed:
+  - name: '{{ workshop_prefix }}'
+    domains: ['*.{{ region }}.cloudapp.azure.com', '{{ region }}.cloudapp.azure.com']
+    country: 'US'
+    state: 'SC'
+    city: 'Greenville'
+    organization: 'SYNNEX'
+    unit: 'Red Hat'
+    email: 'joela@synnex.com'
+    days: 3650
+
+  
+key_path:   "home/{{ system_user }}/.wetty/privkey.pem"
+cert_path:  "home/{{ system_user }}/.wetty/cert.pem"
+wetty_port:  8888
+wetty_user: "azure-user" # "cockpit"

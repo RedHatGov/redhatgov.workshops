@@ -1,0 +1,29 @@
+# # install_roles.yml
+
+# from galaxy
+- src: epiloque.epel
+  name: epel
+
+# from github
+# - src: https://github.com/bennojoy/nginx
+
+# from github installing to a relative path
+# - src: https://github.com/bennojoy/nginx
+#   path: vagrant/roles/
+
+# # from github, overriding the name and specifying a specific tag
+# - src: https://github.com/bennojoy/nginx
+#   version: master
+#   name: nginx_role
+
+# # from a webserver, where the role is packaged in a tar.gz
+# - src: https://some.webserver.example.com/files/master.tar.gz
+#   name: http-role
+
+# # from bitbucket, if bitbucket happens to be operational right now :)
+# - src: git+http://bitbucket.org/willthames/git-ansible-galaxy
+#   version: v1.4
+
+# # from bitbucket, alternative syntax and caveats
+# - src: http://bitbucket.org/willthames/hg-ansible-galaxy
+#   scm: hg

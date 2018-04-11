@@ -1,0 +1,41 @@
+#--------------------------------------------------
+# Install Ansible
+#--------------------------------------------------
+
+- name: Install base packages
+  become: yes
+  yum: name={{ item }} state=latest enablerepo=epel-testing
+  with_items: 
+      - vim
+      - git
+      - ansible
+      - nano
+  when: install
+
+- name: Install ansible.cfg and vimrc in home directory
+  copy:
+    src="{{ item }}"
+    dest="/home/{{ system_user }}/"
+    owner="{{ system_user }}"
+    group="{{ system_user }}"
+  with_items:
+    - vimrc
+    - license
+  when: install
+
+- name: Copy over SSH Key to {{ system_user }} home
+  copy: 
+    src: "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower" 
+    dest: "/home/{{ system_user }}/.ssh/{{ workshop_prefix }}-tower" 
+    mode: 0400 
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+  when: install
+
+- name: Template over ansible.cfg
+  template:
+    dest="/home/{{ system_user }}/ansible.cfg"
+    src=ansible.cfg.j2  
+    owner="{{ system_user }}"
+    group="{{ system_user }}"
+  when: install
