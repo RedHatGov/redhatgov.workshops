@@ -2,7 +2,7 @@
 ---
 
 # Do not use with Cloud Access
-- name: Unregister Nodes 
+- name: Unregister Nodes
   become: yes
   hosts: all_nodes
   remote_user: azure-user

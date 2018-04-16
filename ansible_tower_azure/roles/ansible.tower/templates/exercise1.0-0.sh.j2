@@ -2,5 +2,5 @@
 #!/usr/bin/bash
 cat << EOF | tee hosts
 [web]
-node-1 ansible_host=[% workshop_prefix %]-node0.{{ region }}.cloudapp.azure.com
+node-1 ansible_host=[% workshop_prefix %].node.0.redhatgov.io
 EOF

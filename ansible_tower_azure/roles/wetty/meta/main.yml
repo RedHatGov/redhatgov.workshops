@@ -1,9 +1,9 @@
 # file: roles/wetty/meta/main.yml
 ---
 galaxy_info:
-  author: Joel Adams
+  author: Brad Sollar
   description: Quick and easy wetty installer.
-  company: SYNNEX
+  company: Red Hat
   license: MIT
   min_ansible_version: 2.3
   platforms:

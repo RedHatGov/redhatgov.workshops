@@ -34,34 +34,6 @@ resource "azurerm_resource_group" "AzureRG"{
     }
 }
 #----------------------------------------------
-# Create a Key Vault
-#----------------------------------------------
-resource "azurerm_key_vault" "keyvault"{
-    name     = "{{ workshop_prefix }}-mykey"
-    location = "${var.azure_region}"
-    resource_group_name = "${azurerm_resource_group.AzureRG.name}"
-
-sku {
-    name = "standard"
-  }
-
-tenant_id       = "${var.azure_tenant_id}"
-
-access_policy {
-    tenant_id = "${var.azure_tenant_id}"
-    object_id = "${var.azure_client_id}"
-    
-    key_permissions = [
-      "get",
-    ]
-
-    secret_permissions = [
-      "get",
-    ]
-  }
-
-}
-#----------------------------------------------
 # Virtual Network
 #----------------------------------------------
 # Create virtual network
@@ -224,6 +196,17 @@ security_rule {
         source_address_prefix      = "*"
         destination_address_prefix = "*"
     }
+security_rule {
+        name                       = "Port8080"
+        priority                   = 800
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "8080"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
 }
 
 #----------------------------------------------
@@ -281,7 +264,6 @@ resource "azurerm_virtual_machine" "tower-node" {
     os_profile {
         computer_name  = "{{ workshop_prefix }}-tower-${count.index}"
         admin_username = "azure-user"
-#	admin_password = "RedHat2018!"
     }
     os_profile_linux_config {
         disable_password_authentication = true
@@ -318,7 +300,6 @@ resource "azurerm_virtual_machine" "node" {
     os_profile {
         computer_name  = "{{ workshop_prefix }}-node-${count.index}"
         admin_username = "azure-user"
-#	admin_password = "RedHat2018!"
     }
     os_profile_linux_config {
         disable_password_authentication = true

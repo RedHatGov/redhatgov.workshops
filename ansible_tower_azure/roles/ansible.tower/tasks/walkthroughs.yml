@@ -12,19 +12,13 @@
   when: install
 
 - name: Create directory for walkthrough scripts
-  file:
-    path: "/tmp/{{ inventory_hostname }}"
-    state: directory
-    mode: 0755
+  local_action:
+    file path="/tmp/{{ inventory_hostname }}" state=directory mode=0755
   when: prep
 
 - name: create templates for each host
-  template:
-    src: "{{ item.src }}" 
-    dest: "/home/{{ system_user }}/walkthrough/{{ item.dest }}"
-    mode: 0755
-    owner: "{{ system_user }}"
-    group: "{{ system_user }}"
+  local_action:
+    template src="{{ item.src }}" dest="/tmp/{{ inventory_hostname }}/{{ item.dest }}"
   with_items: 
     - { src: "exercise1.0-0.sh.j2", dest: "exercise1.0-0.sh" }
     - { src: "exercise1.0-1.sh.j2", dest: "exercise1.0-1.sh" }
@@ -73,17 +67,15 @@
   when: prep
 
 - name: create template archives for each host
-  archive:
-    path: "/tmp/{{ inventory_hostname }}/*sh" 
-    dest: "/tmp/{{ inventory_hostname }}.tgz" 
-    remove: no
+  local_action:
+    archive path="/tmp/{{ inventory_hostname }}/*sh" dest="/tmp/{{ inventory_hostname }}.tgz" remove=no
   when: prep
 
-#- name: Copy archive and extract scripts
-#  unarchive:
-#    src: "/tmp/{{ inventory_hostname }}.tgz"
-#    dest: "/home/{{ system_user }}/walkthrough/"
-#    mode: 0755
-#    owner: "{{ system_user }}"
-#    group: "{{ system_user }}"
-#  when: install
+- name: Copy archive and extract scripts
+  unarchive:
+    src: "/tmp/{{ inventory_hostname }}.tgz"
+    dest: "/home/{{ system_user }}/walkthrough/"
+    mode: 0755
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+  when: install

@@ -15,7 +15,7 @@ codiad_timezone: "US/Eastern"
 # Here is the list of users.  Use the following algorithm to hash passwords:
 # $ php -r 'print_r(sha(md5("password")));echo "\n";'
 #codiad_users:
-#- { name: "ec2-user", pass: "0a161200ebeadfd24001682f05f16359b74bb55f" }
+#- { name: "azure-user", pass: "0a161200ebeadfd24001682f05f16359b74bb55f" }
 codiad_version: "HEAD"
 
 # leave these alone

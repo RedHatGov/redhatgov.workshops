@@ -22,6 +22,12 @@
     state: directory
     mode: 0755
 
+- name: Create working directory
+  file:
+    path: "{{ terraform_working_dir }}"
+    state: directory
+    mode: 0755
+
 - name: ensure SSH key is removed
   file:
     path: "~/.ssh/ansible/{{ item }}"
@@ -31,7 +37,7 @@
     - id_rsa.pub
 
 - name: ensure SSH key is generated
-  command: ssh-keygen -b 4096 -t rsa -f ~/.ssh/ansible/id_rsa -N ''
+  command: ssh-keygen -b 2048 -t rsa -f ~/.ssh/ansible/id_rsa -N ''
   register: azure_key
   args:
     creates: ~/.ssh/asnible/id_rsa
@@ -92,7 +98,7 @@
 - name: Run Terraform ( >= 0.11.0 )
   command: terraform apply -auto-approve
   args:
-    chdir: "{{ terraform_working_dir }}" 
+    chdir: "{{ terraform_working_dir }}"
   when: tf_version | version_compare('0.11.0', '>=')
   tags:
     - tf_create
