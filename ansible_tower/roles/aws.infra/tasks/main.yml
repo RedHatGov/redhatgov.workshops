@@ -69,7 +69,7 @@
   command: terraform init
   args:
     chdir: "{{ terraform_working_dir }}"
-  when: tf_version | version_compare('0.10.0', '>=')
+  when: tf_version is version('0.10.0', '>=')
   tags:
     - tf_create
 
@@ -77,7 +77,7 @@
   command: terraform apply
   args:
     chdir: "{{ terraform_working_dir }}"
-  when: tf_version | version_compare('0.11.0', '<')
+  when: tf_version is version('0.11.0', '<')
   tags:
     - tf_create
 
@@ -85,6 +85,6 @@
   command: terraform apply -auto-approve
   args:
     chdir: "{{ terraform_working_dir }}" 
-  when: tf_version | version_compare('0.11.0', '>=')
+  when: tf_version is version('0.11.0', '>=')
   tags:
     - tf_create
