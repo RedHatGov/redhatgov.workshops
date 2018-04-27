@@ -6,7 +6,6 @@
   get_url:
     url: "https://bootstrap.pypa.io/get-pip.py"
     dest: "{{ default_home }}/get-pip.py"
-    validate_certs: False
 #  command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" chdir={{ default_home }}
 
 - name: Python install pip
@@ -65,11 +64,49 @@
     strip: 1
   when: osansible.stdout == "openshift-ansible-3.7.9-1.git.7.eedd332.el7.noarch"
 
+- name: Check to see if patch is needed to openshift-ansible
+  shell: rpm -q openshift-ansible-roles
+  register: osansibleroles
+
+# Ensure patch package is installed (if needed)
+- name: Ensure patch package is installed
+  become: yes
+  yum:
+    name: patch
+    state: present
+  when: osansibleroles.stdout == "openshift-ansible-roles-3.7.23-1.git.0.bc406aa.el7.noarch"
+
+# see https://bugzilla.redhat.com/show_bug.cgi?id=1521218 – [RFE] Allow deploy logging with no-default storageclass
+- name: Install patch to openshift-ansible-roles-3.7.23-1.git.0.bc406aa
+  become: yes
+  patch:
+    src: openshift-ansible-roles-3.7.23-1.git.0.bc406aa.aos_version.py.patch
+    dest: /usr/share/ansible/openshift-ansible/roles/openshift_health_checker/library/aos_version.py
+  when: osansibleroles.stdout == "openshift-ansible-roles-3.7.23-1.git.0.bc406aa.el7.noarch"
+
+# Allow for newer packages to be installed
+- name: Install patch to openshift-ansible-roles-3.7.23-1.git.0.bc406aa
+  become: yes
+  patch:
+    src: openshift-ansible-roles-3.7.23-1.git.0.bc406aa.install_logging.yaml.patch
+    dest: /usr/share/ansible/openshift-ansible/roles/openshift_logging/tasks/install_logging.yaml
+  when: osansibleroles.stdout == "openshift-ansible-roles-3.7.23-1.git.0.bc406aa.el7.noarch"
+
 - name: Run advanced installation method (runtime ~45 minutes)
-  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml && sudo touch /var/opt/.openshift-complete
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml 2>&1 | sudo tee -a /var/log/openshift-install && sudo touch /var/opt/.openshift-complete
   args:
     chdir: "{{ default_home }}"
     creates: /var/opt/.openshift-complete
+  async: 10800
+  poll: 0
+  register: ose_install_status
+
+- name: 'Check on OpenShift install ...'
+  async_status: jid={{ ose_install_status.ansible_job_id }}
+  register: job_result
+  until: job_result.finished
+  delay: 30
+  retries: 180
 
 # [TODO]: Apply to masters and nodes (both)
 # - name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed

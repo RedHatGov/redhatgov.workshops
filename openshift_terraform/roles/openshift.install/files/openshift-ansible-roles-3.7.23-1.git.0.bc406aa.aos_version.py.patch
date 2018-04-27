@@ -1,0 +1,17 @@
+*** ORIGINAL/aos_version.py     2018-03-08 17:11:42.197700755 -0500
+--- CORRECTED/aos_version.py    2018-03-08 15:45:53.401298141 -0500
+***************
+*** 216,227 ****
+          if too_high and higher_than_seen:
+              higher_version_for_pkg[pkg.name] = version
+
+-     if higher_version_for_pkg:
+-         higher_found = []
+-         for name, version in higher_version_for_pkg.items():
+-             higher_found.append(name + '-' + '.'.join(str(segment) for segment in version))
+-         raise FoundHigherVersion(higher_found)
+- 
+
+  class FoundMultiRelease(AosVersionException):
+      """Exception for reporting multiple minor releases found for same package"""
+--- 216,221 ----

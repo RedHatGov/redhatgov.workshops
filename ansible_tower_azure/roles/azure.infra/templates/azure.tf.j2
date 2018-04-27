@@ -1,0 +1,330 @@
+#----------------------------------------------
+# Variables
+#----------------------------------------------
+variable "azure_subscription_id" {}
+variable "azure_client_id" {}
+variable "azure_client_secret" {}
+variable "azure_tenant_id" {}
+variable "tower_instance_type" { default = "{{ tower_instance_type }}" }
+variable "node_instance_type" { default = "{{ node_instance_type }}" }
+variable "azure_region" { default = "{{ region }}" }
+variable "number_tower_nodes" { default = "{{ number_tower_nodes }}" }
+variable "number_nodes" { default = "{{ number_nodes }}" }
+variable "azure_resource_name" { default = "AzureAnsibleWorkshop" }
+variable "dns_name" { default = "{{ domain_name }}" }
+variable "keypair" { default = "{{ workshop_prefix }}-tower" }
+#----------------------------------------------
+# Configure the Microsoft Azure Provider
+#----------------------------------------------
+provider "azurerm" {
+    subscription_id = "${var.azure_subscription_id}"
+    client_id       = "${var.azure_client_id}"
+    client_secret   = "${var.azure_client_secret}"
+    tenant_id       = "${var.azure_tenant_id}"
+}
+#----------------------------------------------
+# Create a resource group if it doesn’t exist
+#----------------------------------------------
+resource "azurerm_resource_group" "AzureRG"{
+    name     = "{{ workshop_prefix }}-ansible-tower"
+    location = "${var.azure_region}"
+
+    tags {
+        environment = "Ansible Workshop"
+    }
+}
+#----------------------------------------------
+# Create a Key Vault
+#----------------------------------------------
+resource "azurerm_key_vault" "keyvault"{
+    name     = "{{ workshop_prefix }}-mykey"
+    location = "${var.azure_region}"
+    resource_group_name = "${azurerm_resource_group.AzureRG.name}"
+
+sku {
+    name = "standard"
+  }
+
+tenant_id       = "${var.azure_tenant_id}"
+
+access_policy {
+    tenant_id = "${var.azure_tenant_id}"
+    object_id = "${var.azure_client_id}"
+    
+    key_permissions = [
+      "get",
+    ]
+
+    secret_permissions = [
+      "get",
+    ]
+  }
+
+}
+#----------------------------------------------
+# Virtual Network
+#----------------------------------------------
+# Create virtual network
+resource "azurerm_virtual_network" "main" {
+    name                = "AnsibleVnet"
+    address_space       = ["10.0.0.0/16"]
+    location            = "${var.azure_region}"
+    resource_group_name = "${azurerm_resource_group.AzureRG.name}"
+
+  tags {
+    Name = "{{ workshop_prefix }}-ansible-tower-main"
+  }
+}
+
+# The public subnet is where resources connected to the internet will go
+resource "azurerm_subnet" "public" {
+    name                 = "AnsibleSubnet"
+    resource_group_name  = "${azurerm_resource_group.AzureRG.name}"
+    virtual_network_name = "${azurerm_virtual_network.main.name}"
+    address_prefix       = "10.0.2.0/24"
+}
+# Create public ip's
+resource "azurerm_public_ip" "towerpublicip" {
+    name                         = "towerpublicip${count.index}"
+    location                     = "${var.azure_region}"
+    resource_group_name          = "${azurerm_resource_group.AzureRG.name}"
+    count		         = "${var.number_tower_nodes}"
+    domain_name_label            = "{{ workshop_prefix }}-${format("tower%1d",count.index)}"
+    public_ip_address_allocation = "dynamic"
+}
+resource "azurerm_public_ip" "nodepublicip" {
+    name                         = "nodepublicip${count.index}"
+    location                     = "${var.azure_region}"
+    resource_group_name          = "${azurerm_resource_group.AzureRG.name}"
+    public_ip_address_allocation = "dynamic"
+    count		         = "${var.number_nodes}"
+    domain_name_label            = "{{ workshop_prefix }}-${format("node%1d",count.index)}"
+}
+#----------------------------------------------
+# Create network interface
+#----------------------------------------------
+resource "azurerm_network_interface" "towernic" {
+    name                      = "towernic${count.index}"
+    location                  = "${var.azure_region}"
+    resource_group_name       = "${azurerm_resource_group.AzureRG.name}"
+    network_security_group_id = "${azurerm_network_security_group.ansible-tower-sg.id}"
+    count		      =	"${var.number_tower_nodes}"
+
+  ip_configuration {
+        name            = "ipconfig1"
+        subnet_id       = "${azurerm_subnet.public.id}"
+        private_ip_address_allocation = "dynamic"
+        public_ip_address_id = "${element(azurerm_public_ip.towerpublicip.*.id, count.index)}"
+            }
+  depends_on          = ["azurerm_public_ip.towerpublicip","azurerm_virtual_network.main","azurerm_network_security_group.ansible-tower-sg"]
+  tags {
+    environment = "Ansible Workshop"
+  }
+}
+resource "azurerm_network_interface" "nodenic" {
+    name                      = "nodenic${count.index}"
+    location                  = "${var.azure_region}"
+    resource_group_name       = "${azurerm_resource_group.AzureRG.name}"
+    network_security_group_id = "${azurerm_network_security_group.ansible-tower-sg.id}"
+    count		      =	"${var.number_nodes}"
+
+  ip_configuration {
+        name            = "ipconfig1"
+        subnet_id       = "${azurerm_subnet.public.id}"
+        private_ip_address_allocation = "dynamic"
+        public_ip_address_id = "${element(azurerm_public_ip.nodepublicip.*.id, count.index)}"
+            }
+  depends_on          = ["azurerm_public_ip.nodepublicip","azurerm_virtual_network.main","azurerm_network_security_group.ansible-tower-sg"]
+  tags {
+    environment = "Ansible Workshop"
+  }
+}
+#----------------------------------------------
+# Create Network Security Group and rule
+#----------------------------------------------
+resource "azurerm_network_security_group" "ansible-tower-sg" {
+    name                = "{{ workshop_prefix }}-ansible-tower-sg"
+    location            = "${var.azure_region}"
+    resource_group_name = "${azurerm_resource_group.AzureRG.name}"
+
+security_rule {
+        name                       = "SSH"
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "22"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+security_rule {
+        name                       = "HTTP"
+        priority                   = 200
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "80"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+security_rule {
+        name                       = "Port5000"
+        priority                   = 300
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "5000"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+security_rule {
+        name                       = "Egress"
+        priority                   = 400
+        direction                  = "Outbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "0"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+security_rule {
+        name                       = "HTTPS"
+        priority                   = 500
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "443"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+security_rule {
+        name                       = "Port8443"
+        priority                   = 600
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "8443"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+security_rule {
+        name                       = "Port8888"
+        priority                   = 700
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "8888"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+    }
+}
+
+#----------------------------------------------
+# DNS
+#----------------------------------------------
+resource "azurerm_dns_zone" "dnszone" {
+  name                = "${var.dns_name}"
+  resource_group_name = "${azurerm_resource_group.AzureRG.name}"
+}
+#resource "azurerm_dns_a_record" "tower-node" {
+  # same number of records as instances
+#  count = "${var.number_tower_nodes}"
+#  name = "{{ workshop_prefix }}.tower.${count.index}.${var.dns_name}"
+#  zone_name = "${azurerm_dns_zone.dnszone.name}"
+#  resource_group_name = "${azurerm_resource_group.AzureRG.name}"
+#  ttl = "300"
+  # matches up record N to instance N
+#  records             = ["${element(azurerm_virtual_machine.tower-node.*.ip_address, count.index)}"]
+#}
+
+#resource "azurerm_dns_a_record" "nodes" {
+  # same number of records as instances
+#  count = "${var.number_nodes}"
+#  name = "{{ workshop_prefix }}.node.${count.index}.${var.dns_name}"
+#  zone_name = "${azurerm_dns_zone.dnszone.name}"
+#  resource_group_name = "${azurerm_resource_group.AzureRG.name}"
+#  ttl = "300"
+  # matches up record N to instance N
+#  records             = ["${element(azurerm_virtual_machine.node.*.ip_address, count.index)}"]
+#}
+#----------------------------------------------
+# Create Tower Node
+#----------------------------------------------
+resource "azurerm_virtual_machine" "tower-node" {
+    count             		= "${var.number_tower_nodes}"
+    location          		= "${var.azure_region}"
+    vm_size           		= "${var.tower_instance_type}"
+    network_interface_ids 	= ["${element(azurerm_network_interface.towernic.*.id, count.index)}"]
+    name              		= "{{ workshop_prefix }}-tower-${count.index}"
+    resource_group_name       	= "${azurerm_resource_group.AzureRG.name}"
+
+    storage_os_disk {
+        name              = "studentostowerdisk-${count.index}"
+        caching           = "ReadWrite"
+        create_option     = "FromImage"
+        managed_disk_type = "Standard_LRS"
+    }
+
+    storage_image_reference {
+        publisher = "RedHat"
+        offer     = "RHEL"
+        sku       = "7.3"
+        version   = "latest"
+    }
+    os_profile {
+        computer_name  = "{{ workshop_prefix }}-tower-${count.index}"
+        admin_username = "azure-user"
+#	admin_password = "RedHat2018!"
+    }
+    os_profile_linux_config {
+        disable_password_authentication = true
+	ssh_keys = [{
+      		path     = "/home/azure-user/.ssh/authorized_keys"
+      		key_data = "${file("~/.ssh/ansible/id_rsa.pub")}"
+    	}]
+    }
+}
+#----------------------------------------------
+# Create Generic Node
+#----------------------------------------------
+resource "azurerm_virtual_machine" "node" {
+    count                       = "${var.number_nodes}"
+    location          		= "${var.azure_region}"
+    vm_size           		= "${var.node_instance_type}"
+    network_interface_ids 	= ["${element(azurerm_network_interface.nodenic.*.id, count.index)}"]
+    name              		= "{{ workshop_prefix }}-node-${count.index}"
+    resource_group_name       	= "${azurerm_resource_group.AzureRG.name}"
+
+    storage_os_disk {
+        name              = "studentosnodedisk-${count.index}"
+        caching           = "ReadWrite"
+        create_option     = "FromImage"
+        managed_disk_type = "Standard_LRS"
+    }
+
+    storage_image_reference {
+        publisher = "RedHat"
+        offer     = "RHEL"
+        sku       = "7.3"
+        version   = "latest"
+    }
+    os_profile {
+        computer_name  = "{{ workshop_prefix }}-node-${count.index}"
+        admin_username = "azure-user"
+#	admin_password = "RedHat2018!"
+    }
+    os_profile_linux_config {
+        disable_password_authentication = true
+	ssh_keys = [{
+      		path     = "/home/azure-user/.ssh/authorized_keys"
+      		key_data = "${file("~/.ssh/ansible/id_rsa.pub")}"
+    	}]
+    }
+}
