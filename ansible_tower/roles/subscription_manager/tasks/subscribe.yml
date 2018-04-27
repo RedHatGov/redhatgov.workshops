@@ -81,7 +81,7 @@
     - rhel
 
 - name: Enable the requisite rhel7 repos
-shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
   when: not cloud_access and smr_result.stdout != "4"
   tags:
     - rhel
