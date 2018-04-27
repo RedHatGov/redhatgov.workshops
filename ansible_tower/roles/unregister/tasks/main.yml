@@ -13,5 +13,5 @@
 - name: Unsubscribe RHN
   redhat_subscription:
       state: absent
-#  when: sm_result.rc == 0
+  when: not cloud_access
 
