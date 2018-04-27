@@ -73,6 +73,18 @@ aws_access_key: ""
 aws_secret_key: ""
 ```
 
+***** NOTE:
+For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown here:
+```
+# subscription_manager     |      Red Hat Subscription via Cloud Access
+cloud_access:                     false
+# subscription_manager     |      Red Hat Subscription via username & password
+username:                         "user@company.com"
+password:                         "my_password"
+pool_id:                          "1234567890abcdef01234567890abcde"
+```
+
+
 ```
 ansible-playbook 1_provision.yml  
 ansible-playbook 2_load.yml -K
