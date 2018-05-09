@@ -40,6 +40,9 @@ resource "aws_vpc" "main" {
     Name = "{{ workshop_prefix }}-ansible-tower-vpc" 
   }
 }
+output "aws_vpc main" {
+  value = "Completed {{ workshop_prefix }}-ansible-tower-vpc"
+}
 
 # The public subnet is where resources connected to the internet will go
 resource "aws_subnet" "public" {
@@ -48,11 +51,17 @@ resource "aws_subnet" "public" {
     map_public_ip_on_launch = true
     tags { Name = "{{ workshop_prefix }}-ansible-tower-public-subnet" }
 }
+output "aws_subnet public" {
+  value = "Completed {{ workshop_prefix }}-ansible-tower-public-subnet"
+}
 
 # Internet accessible route table + gateway for the public subnet
 resource "aws_internet_gateway" "public" {
   vpc_id = "${aws_vpc.main.id}"
   tags { Name = "{{ workshop_prefix }}-ansible-tower-igw" }
+}
+output "aws_internet_gateway public" {
+  value = "Completed {{ workshop_prefix }}-ansible-tower-igw"
 }
 
 resource "aws_route_table" "public" {
@@ -63,10 +72,16 @@ resource "aws_route_table" "public" {
   }
   tags { Name = "{{ workshop_prefix }}-ansible-tower-public-rt" }
 }
+output "aws_route_table public" {
+  value = "Completed {{ workshop_prefix }}-ansible-tower-public-rt"
+}
 
 resource "aws_route_table_association" "public" {
   subnet_id      = "${aws_subnet.public.id}"
   route_table_id = "${aws_route_table.public.id}"
+}
+output "aws_route_table_association public" {
+  value = "Completed association of ${aws_subnet.public.id} to ${aws_route_table.public.id}"
 }
 
 #----------------------------------------------
@@ -132,6 +147,9 @@ resource "aws_security_group" "ansible-tower-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+output "aws_security_group ansible-tower-sg" {
+  value = "Completed {{ workshop_prefix }}-ansible-tower-sg"
+}
 
 #----------------------------------------------
 # DNS
@@ -146,6 +164,9 @@ resource "aws_route53_record" "tower-node" {
   # matches up record N to instance N
   records = ["${element(aws_instance.tower-node.*.public_ip, count.index)}"]
 }
+output "aws_route53_record tower-node" {
+  value = "Completed {{ workshop_prefix }}.towers.{{ domain_name }}"
+}
 
 resource "aws_route53_record" "nodes" {
   # same number of records as instances
@@ -156,6 +177,9 @@ resource "aws_route53_record" "nodes" {
   ttl = "300"
   # matches up record N to instance N
   records = ["${element(aws_instance.node.*.public_ip, count.index)}"]
+}
+output "aws_route53_record nodes" {
+  value = "Completed {{ workshop_prefix }}.nodes.{{ domain_name }}"
 }
 
 #----------------------------------------------
@@ -182,6 +206,9 @@ resource "aws_instance" "tower-node" {
 
     }
 }
+output "aws_instance tower-node" {
+  value = "Completed {{ workshop_prefix }}-tower"
+}
 
 #----------------------------------------------
 # AMI : Generic Node
@@ -206,6 +233,9 @@ resource "aws_instance" "node" {
         Index    = "${count.index}"
 
     }
+}
+output "aws_instance node" {
+  value = "Completed {{ workshop_prefix }}-node"
 }
 
 

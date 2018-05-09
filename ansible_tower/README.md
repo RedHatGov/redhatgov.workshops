@@ -73,24 +73,31 @@ aws_access_key: ""
 aws_secret_key: ""
 ```
 
+***** NOTE:
+For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown here:
+```
+# subscription_manager     |      Red Hat Subscription via Cloud Access
+cloud_access:                     false
+# subscription_manager     |      Red Hat Subscription via username & password
+username:                         "user@company.com"
+password:                         "my_password"
+pool_id:                          "1234567890abcdef01234567890abcde"
+```
+
+**** Configure Workshop Nodes
+
+To install and configure the necessary software, on the newly created nodes, run the second playbook.  It may be re-run as many times as necessary.
+
 ```
 ansible-playbook 1_provision.yml  
 ansible-playbook 2_load.yml -K
 ```
 
-To destroy
+**** To destroy the workshop environment
 
 ```
-ansible-playbook 3_unregister.yml # only need to run this if you aren't using Cloud Access
-cd .redhatgov
-terraform destroy
-```
-
-## Configure Workshop Nodes
-
-To install and configure the necessary software, on the newly created nodes, run the second playbook.  It may be re-run as many times as necessary.
-
-```
+ansible-playbook 3_unregister.yml 
+rm -rf .redhatgov
 ```
 
 ## Login to Ansible Tower
