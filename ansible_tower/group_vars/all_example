@@ -1,19 +1,19 @@
 # file: group_vars
-#######################################################################################
+################################################################################
 #
 #                  ////IMPORTANT////
 #
 #      Prefixed to all resources for cleanup & identifcation.
-#######################################################################################
+################################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "tower"
 
 
 
-#######################################################################################
+################################################################################
 # ANSIBLE ROLE KEY         |      VALUE
-#######################################################################################
+################################################################################
 # aws.infra                |      .terraform working dir 
 terraform_working_dir:            "{{ lookup('env','PWD') }}/.redhatgov"
 # aws.infra                |      AWS API KEYS
@@ -24,17 +24,22 @@ domain_name:                      ""
 zone_id:                          ""
 # aws.infra                |      AWS Terraform Vars
 number_tower_nodes:               "2"            # Tower Nodes
-number_nodes:                     "4"            # Student Nodes
+number_nodes:                     "2"            # Student Nodes
 tower_instance_type:              "t2.medium"    # Tower Instance Size
 node_instance_type:               "t2.small"     # Student Instance Size
 region:                           "us-east-1"    # AWS Region, configures ec2.ini too
 ebs_root_block_size:              50
-# ami_id:                         "" # Cloud Access RHEL 7.4 (NOVA us-east-1)
-# ami_id:                         "" # Cloud Access RHEL 7.4 (Ohio us-east-2)
-# ami_id:                         "ami-cfdafaaa" # us-east-2 RHEL 7.4 
-# ami_id:                         "ami-c998b6b2" # us-east-1 RHEL 7.4
-# ami_id:                         "ami-a4791ede" # us-east-1 RHEL 7.4 with JBoss EAP 7.1
-#--------------------------------------------------------------------------------------
+# aws.infra                |      AWS AMI IDs
+#-------------------------------------------------------------------------------
+# us-east-1
+# ami_id:                         "ami-c998b6b2" # RHEL 7.4
+# ami_id:                         "ami-a4791ede" # RHEL 7.4 with JBoss EAP 7.1
+# ami_id:                         "ami-0d70a070" # RHEL 7.5
+# us-east-2
+# ami_id:                         "ami-cfdafaaa" # RHEL 7.4 
+# ami_id:                         "ami-c11b32a4" # RHEL 7.4 with JBoss EAP 7.1
+# ami_id:                         "ami-8f2617ea" # RHEL 7.5 
+#-------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                      true
 # subscription_manager     |      Red Hat Subscription via username & password
@@ -44,7 +49,7 @@ pool_id:                          ""
 # subscription_manager     |      Red Hat Subscription via activation keys
 rhsm_activationkey:               ""
 rhsm_org_id:                      ""
-#--------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # LetsEncrypt              |      email
 letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
@@ -53,9 +58,9 @@ letsencrypt:                      false
 workshop_password:                "redhat!@#"
 #--------------------------------------------------------------------------------------
 
-#######################################################################################
+################################################################################
 # ANSIBLE config           |      VALUE
-#######################################################################################
+################################################################################
 # Dynamic Inventory 
 inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars

@@ -1,0 +1,64 @@
+# file: group_vars
+#######################################################################################
+#
+#                  ////IMPORTANT////
+#
+#      Prefixed to all resources for cleanup & identifcation.
+#######################################################################################
+
+# Ensure that the name does not include special characters such as underscores, etc.
+workshop_prefix:                  "tower"
+
+
+
+#######################################################################################
+# ANSIBLE ROLE KEY         |      VALUE
+#######################################################################################
+# azure.infra                |    .terraform working dir
+terraform_working_dir:            "{{ lookup('env','PWD') }}/.redhatgov"
+# azure.infra                |    AZURE KEYS
+azure_subscription_id:            ""
+azure_client_id:                  ""
+azure_client_secret:		          ""
+azure_tenant_id:		              ""
+# azure.infra                |    AZURE DNS
+domain_name:                      ""
+# azure.infra                |    AZURE Terraform Vars
+number_tower_nodes:               "2"            # Tower Nodes
+number_nodes:                     "4"            # Student Nodes
+tower_instance_type:              "Standard_DS1_V2"    # Tower Instance Size
+node_instance_type:               "Standard_B1MS"     # Student Instance Size
+region:                           "eastus"    # AZURE Region
+#--------------------------------------------------------------------------------------
+# subscription_manager     |      Red Hat Subscription via Cloud Access
+cloud_access:                      true
+# subscription_manager     |      Red Hat Subscription via username & password
+username:                         ""
+password:                         ""
+pool_id:                          ""
+# subscription_manager     |      Red Hat Subscription via activation keys
+rhsm_activationkey:               ""
+rhsm_org_id:                      ""
+#--------------------------------------------------------------------------------------
+# LetsEncrypt              |      email
+letsencrypt_email:                "someone@redhat.com"
+letsencrypt:                      false
+#--------------------------------------------------------------------------------------
+# wetty                    |      password
+workshop_password:                "redhat!@#"
+#--------------------------------------------------------------------------------------
+
+#######################################################################################
+# ANSIBLE config           |      VALUE
+#######################################################################################
+# Dynamic Inventory
+inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
+# Ansible SSH Key Location |      SSH Key Vars
+ssh_key_path:                     "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
+ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
+system_user:                      "azure-user"    # Azure
+# Here is the list of users for codiad.  It is suggested to use the same password as you specified as the `workshop_password`, above.  Use the following algorithm to hash passwords:
+# $ php -r 'print_r(sha(md5("password")));echo "\n";'
+codiad_users:
+- { name: "azure-user", pass: "0a161200ebeadfd24001682f05f16359b74bb55f" }
+# system_user:                     "vagrant"    # vagrant

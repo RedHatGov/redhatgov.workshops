@@ -67,7 +67,7 @@
 #---------------------------------------------------
 - name: Check to see if requisite repos are already enabled
   become: yes
-  shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms' | wc -l
+  shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms|jb-eap-7.1-for-rhel-7-server-rpms' | wc -l
   register: smr_result
   ignore_errors: True
   when: not cloud_access
@@ -76,12 +76,12 @@
 
 - name: Disable all repos by default
   command: subscription-manager repos --disable "*"
-  when: not cloud_access and smr_result.stdout != "3"
+  when: not cloud_access and smr_result.stdout != "4"
   tags:
     - rhel
 
 - name: Enable the requisite rhel7 repos
-  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-  when: not cloud_access and smr_result.stdout != "3"
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
+  when: not cloud_access and smr_result.stdout != "4"
   tags:
     - rhel
