@@ -1,4 +1,4 @@
-# file: roles/aws.infra.terraform/defaults/main.yml
+# file: roles/azure.infra.terraform/defaults/main.yml
 ---
 #
 # foo: default
