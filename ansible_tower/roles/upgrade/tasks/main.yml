@@ -6,6 +6,16 @@
     package: 
       name: "*"
       state: latest
+    async: 10800
+    poll: 0
+    register: package_update_status
+  
+  - name: 'Check on Package Updates ...'
+    async_status: jid={{ package_update_status.ansible_job_id }}
+    register: job_result
+    until: job_result.finished
+    delay: 30
+    retries: 180
 
   - name: Rebooting to apply kernel updates
     shell: /sbin/shutdown -r +1
