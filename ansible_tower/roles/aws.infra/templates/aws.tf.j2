@@ -146,6 +146,12 @@ resource "aws_security_group" "ansible-tower-sg" {
     to_port     = 8888
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    protocol    = "tcp"
+    from_port   = 9090
+    to_port     = 9090
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 output "aws_security_group ansible-tower-sg" {
   value = "Completed {{ workshop_prefix }}-ansible-tower-sg"

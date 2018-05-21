@@ -80,6 +80,13 @@
   roles:
     - { role: poms }
 
+- name: Configure Cockpit
+  become: yes
+  remote_user: ec2-user
+  hosts: all_nodes
+  roles:
+    - { role: cockpit }
+
 - name: Upgrade packages
   become: yes
   remote_user: ec2-user
