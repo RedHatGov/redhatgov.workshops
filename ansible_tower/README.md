@@ -27,7 +27,7 @@ This repo also requires that Terraform be installed if you are using the aws.inf
 
 To create infrastructure and a Ansible Tower instance via Terraform:
 
-**** OS X
+#### OS X
 ```
 sudo easy_install pip
 sudo pip install boto
@@ -37,7 +37,7 @@ sudo pip install passlib
 brew install terraform
 ```
 
-**** RHEL/CentOS
+#### RHEL/CentOS
 ```
 sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 # server
@@ -49,7 +49,7 @@ wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd6
 sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
 ```
 
-**** Fedora 25/26
+#### Fedora 25/26
 ```
 sudo dnf -y install python2-boto ansible
 wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
@@ -73,7 +73,7 @@ aws_access_key: ""
 aws_secret_key: ""
 ```
 
-***** NOTE:
+##### NOTE:
 For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown here:
 ```
 # subscription_manager     |      Red Hat Subscription via Cloud Access
@@ -84,7 +84,7 @@ password:                         "my_password"
 pool_id:                          "1234567890abcdef01234567890abcde"
 ```
 
-**** Configure Workshop Nodes
+#### Configure Workshop Nodes
 
 To install and configure the necessary software, on the newly created nodes, run the second playbook.  It may be re-run as many times as necessary.
 
@@ -93,7 +93,7 @@ ansible-playbook 1_provision.yml
 ansible-playbook 2_load.yml -K
 ```
 
-**** To destroy the workshop environment
+#### To destroy the workshop environment
 
 ```
 ansible-playbook 3_unregister.yml 
