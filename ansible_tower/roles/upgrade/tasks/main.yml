@@ -1,0 +1,18 @@
+---
+# tasks file for upgrade
+- name: Upgrade packages and reboot
+  block:
+  - name: Upgrade all packages to latest
+    package: 
+      name: "*"
+      state: latest
+
+  - name: Rebooting to apply kernel updates
+    shell: /sbin/shutdown -r +1
+
+  - name: Wait for system to become reachable again
+    wait_for_connection:
+      timeout: 900
+      delay: 120
+      sleep: 5
+  when: upgrade == 1
