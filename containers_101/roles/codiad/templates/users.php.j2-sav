@@ -1,0 +1,3 @@
+<?php/*|
+[{"username":"{{ codiad_user }}","password":"{{ codiad_user_pass }}","project":"default"}]
+|*/?>

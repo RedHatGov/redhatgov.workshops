@@ -1,0 +1,28 @@
+---
+# tasks file for poms
+- name: Stage Maven POMs via Maven
+  block:
+  - name: Get Maven and Git packages
+    package:
+      name: "{{ item }}"
+      state: present      
+    with_items:
+    - git
+    - rh-maven35
+  - name: Get JBoss EAP Quickstarts
+    git:
+      repo: https://github.com/jboss-developer/jboss-eap-quickstarts.git
+      dest: /var/tmp/quickstarts
+  - name: Dependency resolves via Maven
+    shell: "scl enable rh-maven35 'mvn dependency:resolve' chdir='/var/tmp/quickstarts/helloworld'"
+  - name: Remove Maven and Git
+    package:
+      name: "{{ item }}"
+      state: absent   
+    with_items:
+    - git
+    - rh-maven35*
+  - name: Remove JBoss EAP Quickstarts
+    file:
+      state: absent
+      path: "/var/tmp/quickstarts/"
