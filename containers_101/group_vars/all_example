@@ -7,7 +7,7 @@
 ################################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
-workshop_prefix:                  "tower"
+workshop_prefix:                  "containers101"
 
 
 

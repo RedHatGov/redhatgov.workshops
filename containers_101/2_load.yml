@@ -37,7 +37,7 @@
 #      name: eap7-*
 #      state: absent
 
-- name: Configure repositories on nodes
+- name: Configure LetsEncrypt on Specified Node
   become: yes
   remote_user: ec2-user
   hosts: le_node
@@ -47,12 +47,12 @@
 - name: Configure software on nodes
   become: yes
   remote_user: ec2-user
-  hosts: tower_nodes
+  hosts: nodes
   roles:
-#    - { role: nodejs }
+    - { role: nodejs }
     - { role: wetty }
     - { role: zsh }
-    - { role: codiad }
+#    - { role: codiad }
 
 #- name: Prep walkthroughs for deployment
 #  become: yes
@@ -84,14 +84,14 @@
 - name: Configure Cockpit
   become: yes
   remote_user: ec2-user
-  hosts: all_nodes
+  hosts: nodes
   roles:
     - { role: cockpit }
 
 - name: Upgrade packages
   become: yes
   remote_user: ec2-user
-  hosts: all_nodes
+  hosts: nodes
   roles:
     - { role: upgrade }
 

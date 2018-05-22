@@ -18,12 +18,12 @@
 #  SSH Key
 #---------------------------------------------------
 - name: Check for existing key and remove
-  ec2_key: name="{{ workshop_prefix }}-tower" region="{{ region }}" state=absent
+  ec2_key: name="{{ workshop_prefix }}-containers" region="{{ region }}" state=absent
   tags:
     - tf_create
 
 - name: Create EC2 keypair
-  ec2_key: name="{{ workshop_prefix }}-tower" region="{{ region }}" state=present
+  ec2_key: name="{{ workshop_prefix }}-containers" region="{{ region }}" state=present
   register: ec2_key
   tags:
     - tf_create
@@ -39,7 +39,7 @@
 
 - name: Create ssh keypair
   copy: content="{{ ec2_key.key.private_key }}"
-        dest="{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
+        dest="{{ terraform_working_dir }}/{{ workshop_prefix }}-containers"
         mode=0400
   tags:
     - tf_create

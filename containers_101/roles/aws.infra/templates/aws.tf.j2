@@ -10,14 +10,12 @@
 #----------------------------------------------
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-variable "security_group" { default = "{{ workshop_prefix }}-ansible-tower-sg" }
-variable "keypair" { default = "{{ workshop_prefix }}-tower" }
-variable "tower_instance_type" { default = "{{ tower_instance_type }}" } 
+variable "security_group" { default = "{{ workshop_prefix }}-containers-101-sg" }
+variable "keypair" { default = "{{ workshop_prefix }}-containers" }
 variable "node_instance_type" { default = "{{ node_instance_type }}" } 
 variable "aws_region" { default = "{{ region }}" }
 variable "ebs_root_block_size" { default = "50" }
 variable "aws_node_ami" { default = "{{ ami_id }}" }
-variable "number_tower_nodes" { default = "{{ number_tower_nodes }}" }
 variable "number_nodes" { default = "{{ number_nodes }}" }
 #----------------------------------------------
 # API Keys
@@ -37,11 +35,11 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
  
   tags { 
-    Name = "{{ workshop_prefix }}-ansible-tower-vpc" 
+    Name = "{{ workshop_prefix }}-containers-101-vpc" 
   }
 }
 output "aws_vpc main" {
-  value = "Completed {{ workshop_prefix }}-ansible-tower-vpc"
+  value = "Completed {{ workshop_prefix }}-containers-101-vpc"
 }
 
 # The public subnet is where resources connected to the internet will go
@@ -49,19 +47,19 @@ resource "aws_subnet" "public" {
     vpc_id                  = "${aws_vpc.main.id}"
     cidr_block              = "10.0.2.0/24"
     map_public_ip_on_launch = true
-    tags { Name = "{{ workshop_prefix }}-ansible-tower-public-subnet" }
+    tags { Name = "{{ workshop_prefix }}-containers-101-public-subnet" }
 }
 output "aws_subnet public" {
-  value = "Completed {{ workshop_prefix }}-ansible-tower-public-subnet"
+  value = "Completed {{ workshop_prefix }}-containers-101-public-subnet"
 }
 
 # Internet accessible route table + gateway for the public subnet
 resource "aws_internet_gateway" "public" {
   vpc_id = "${aws_vpc.main.id}"
-  tags { Name = "{{ workshop_prefix }}-ansible-tower-igw" }
+  tags { Name = "{{ workshop_prefix }}-containers-101-igw" }
 }
 output "aws_internet_gateway public" {
-  value = "Completed {{ workshop_prefix }}-ansible-tower-igw"
+  value = "Completed {{ workshop_prefix }}-containers-101-igw"
 }
 
 resource "aws_route_table" "public" {
@@ -70,10 +68,10 @@ resource "aws_route_table" "public" {
       cidr_block = "0.0.0.0/0"
       gateway_id = "${aws_internet_gateway.public.id}"
   }
-  tags { Name = "{{ workshop_prefix }}-ansible-tower-public-rt" }
+  tags { Name = "{{ workshop_prefix }}-containers-101-public-rt" }
 }
 output "aws_route_table public" {
-  value = "Completed {{ workshop_prefix }}-ansible-tower-public-rt"
+  value = "Completed {{ workshop_prefix }}-containers-101-public-rt"
 }
 
 resource "aws_route_table_association" "public" {
@@ -87,8 +85,8 @@ output "aws_route_table_association public" {
 #----------------------------------------------
 # Security Group
 #----------------------------------------------
-resource "aws_security_group" "ansible-tower-sg" {
-  name   = "{{ workshop_prefix }}-ansible-tower-sg"
+resource "aws_security_group" "containers-101-sg" {
+  name   = "{{ workshop_prefix }}-containers-101-sg"
   vpc_id = "${aws_vpc.main.id}"
 
   egress {
@@ -153,32 +151,18 @@ resource "aws_security_group" "ansible-tower-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-output "aws_security_group ansible-tower-sg" {
-  value = "Completed {{ workshop_prefix }}-ansible-tower-sg"
+output "aws_security_group containers-101-sg" {
+  value = "Completed {{ workshop_prefix }}-containers-101-sg"
 }
 
 #----------------------------------------------
 # DNS
 #----------------------------------------------
-resource "aws_route53_record" "tower-node" {
-  # same number of records as instances
-  count = "${var.number_tower_nodes}"
-  zone_id = "{{ zone_id }}"                       
-  name = "{{ workshop_prefix }}.tower.${count.index}.{{ domain_name }}"
-  type = "A"
-  ttl = "300"
-  # matches up record N to instance N
-  records = ["${element(aws_instance.tower-node.*.public_ip, count.index)}"]
-}
-output "aws_route53_record tower-node" {
-  value = "Completed {{ workshop_prefix }}.towers.{{ domain_name }}"
-}
-
 resource "aws_route53_record" "nodes" {
   # same number of records as instances
   count = "${var.number_nodes}"
   zone_id = "{{ zone_id }}"                       
-  name = "{{ workshop_prefix }}.node.${count.index}.{{ domain_name }}"
+  name = "{{ workshop_prefix }}.${count.index}.{{ domain_name }}"
   type = "A"
   ttl = "300"
   # matches up record N to instance N
@@ -186,34 +170,6 @@ resource "aws_route53_record" "nodes" {
 }
 output "aws_route53_record nodes" {
   value = "Completed {{ workshop_prefix }}.nodes.{{ domain_name }}"
-}
-
-#----------------------------------------------
-# AMI : Tower Node
-#----------------------------------------------
-resource "aws_instance" "tower-node" {
-    count             = "${var.number_tower_nodes}"
-    ami               = "${var.aws_node_ami}"
-    instance_type     = "${var.tower_instance_type}"
-    subnet_id         = "${aws_subnet.public.id}"
-    key_name          = "${var.keypair}"
-    security_groups   = [ "${aws_security_group.ansible-tower-sg.id}" ]
-
-    root_block_device = {
-      volume_type     = "gp2"
-      volume_size     = "${var.ebs_root_block_size}"
-    }
-    tags {
-        Name     = "{{ workshop_prefix }}-tower-${count.index}"
-        Role     = "{{ workshop_prefix }}-tower"
-        Workshop = "{{ workshop_prefix }}"
-        sshUser  = "ec2-user"
-        Index    = "${count.index}"
-
-    }
-}
-output "aws_instance tower-node" {
-  value = "Completed {{ workshop_prefix }}-tower"
 }
 
 #----------------------------------------------
@@ -225,14 +181,14 @@ resource "aws_instance" "node" {
     instance_type     = "${var.node_instance_type}"
     subnet_id         = "${aws_subnet.public.id}"
     key_name          = "${var.keypair}"
-    security_groups   = [ "${aws_security_group.ansible-tower-sg.id}" ]
+    security_groups   = [ "${aws_security_group.containers-101-sg.id}" ]
 
 	  root_block_device = {
       volume_type     = "gp2"
       volume_size     = "${var.ebs_root_block_size}"
 	  }
     tags {
-        Name     = "{{ workshop_prefix }}-node-${count.index}"
+        Name     = "{{ workshop_prefix }}-${count.index}"
         Role     = "{{ workshop_prefix }}-node"
         Workshop = "{{ workshop_prefix }}"
         sshUser  = "ec2-user"
