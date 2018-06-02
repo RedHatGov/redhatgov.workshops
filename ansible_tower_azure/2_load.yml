@@ -1,8 +1,8 @@
 # file: 2_load.yml
 ---
-# https://www.terraform.io/docs/providers/aws/index.html
+# https://www.terraform.io/docs/providers/azurerm
 
-- name: Wait for Azure to become initialized
+- name: Wait for Azure VM's to become initialized
   hosts: localhost
   tasks:
     - wait_for:
@@ -12,13 +12,29 @@
         timeout: 300
       with_items: "{{ groups.all_nodes }}"
 
-- name: Configure repositories on nodes
+- name: Configure repositories on all nodes
   become: yes
   remote_user: azure-user
   hosts: tower_nodes
   roles:
     - { role: subscription_manager }
     - { role: epel }
+
+- name: Configure repositories on tower nodes
+  become: yes
+  remote_user: azure-user
+  hosts: nodes
+  roles:
+    - { role: subscription_manager }
+
+- name: Remove Red Hat EAP packages
+  become: yes
+  remote_user: azure-user
+  hosts: all_nodes
+  tasks:
+  - package:
+      name: eap7-*
+      state: absent
 
 - name: Configure repositories on nodes
   become: yes

@@ -40,7 +40,7 @@
   command: subscription-manager status
   register: sm_result
   ignore_errors: True
-  when: not cloud_access
+#  when: not cloud_access
   tags:
     - rhel
 
@@ -50,7 +50,7 @@
     username: "{{ username }}"
     password: "{{ password }}"
     pool: "{{ pool_id }}"
-  when: not cloud_access and sm_result.rc != 0
+#  when: not cloud_access and sm_result.rc != 0
   tags:
     - rhel
 
@@ -70,18 +70,30 @@
   shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms' | wc -l
   register: smr_result
   ignore_errors: True
-  when: not cloud_access
+#  when: not cloud_access
   tags:
     - rhel
 
 - name: Disable all repos by default
   command: subscription-manager repos --disable "*"
-  when: not cloud_access and smr_result.stdout != "3"
+#  when: not cloud_access and smr_result.stdout != "3"
   tags:
     - rhel
 
 - name: Enable the requisite rhel7 repos
-  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-  when: not cloud_access and smr_result.stdout != "3"
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7-for-rhel-7-server-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
+#  when: not cloud_access and smr_result.stdout != "3"
+  tags:
+    - rhel
+
+- name: open web port 8080
+  become: yes
+  firewalld: port=8080/tcp zone=public permanent=true state=enabled immediate=yes
+  tags:
+    - rhel
+
+- name: open web port 80
+  become: yes
+  firewalld: port=80/tcp zone=public permanent=true state=enabled immediate=yes
   tags:
     - rhel

@@ -1,9 +1,9 @@
 # file: 1_provision.yml
 ---
-# https://www.terraform.io/docs/providers/aws/index.html
+# https://www.terraform.io/docs/providers/azurerm
 
 
-- name: Provision Azure Infrastucture using Terraform 
+- name: Provision Azure Infrastucture using Terraform
   hosts: local_target
   roles:
   - { role: azure.infra, tags: ["tf_create"] }
