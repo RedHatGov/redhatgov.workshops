@@ -19,6 +19,22 @@
     creates: /usr/lib/node_modules/wetty/bin/wetty.js
 
 #-------------------------------------------------------
+# Patch wetty to properly handle iOS spaces
+#-------------------------------------------------------
+- name: Install the patch package, if not already present
+  become: yes
+  package:
+    name: patch
+    state: latest
+
+- name: Patch hterm_all.js to handle iOS spaces
+  become: yes
+  patch:
+    backup: yes
+    basedir: /
+    src: hterm_all.js-iOS-patch
+
+#-------------------------------------------------------
 # Let's Encrypt. 
 #-------------------------------------------------------
 - name: Copy cert.pem to Wetty dir
