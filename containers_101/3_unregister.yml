@@ -1,0 +1,17 @@
+# file: 3_unregister.yml
+---
+
+# Do not use with Cloud Access
+- name: Unregister Nodes 
+  become: yes
+  hosts: all_nodes
+  remote_user: ec2-user
+  roles:
+    - { role: unregister }
+
+- name: Remove infrastructure using Terraform
+  hosts: local_target
+  tasks:
+  - terraform:
+      project_path: "{{ terraform_working_dir }}"
+      state: absent

@@ -1,0 +1,9 @@
+<?php/*|[
+{% for user in codiad_users %}
+{% if loop.index < 2 %}
+  {"username":"{{ user.name }}","password":"{{ user.pass }}","project":"default"}
+{% else %}
+  ,{"username":"{{ user.name }}","password":"{{ user.pass }}","project":"default"}
+{% endif %}
+{% endfor %}
+]|*/?>
