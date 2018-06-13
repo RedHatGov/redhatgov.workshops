@@ -163,7 +163,7 @@ resource "aws_route53_record" "nodes" {
   # same number of records as instances
   count = "${var.number_nodes}"
   zone_id = "{{ zone_id }}"                       
-  name = "{{ workshop_dash_prefix }}.${count.index}.{{ domain_name }}"
+  name = "{{ workshop_prefix }}.${count.index}.{{ domain_name }}"
   type = "A"
   ttl = "30"
   # matches up record N to instance N
