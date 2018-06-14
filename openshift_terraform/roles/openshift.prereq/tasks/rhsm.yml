@@ -43,8 +43,8 @@
 - name: Disable all RHSM repositories
   command: subscription-manager repos --disable="*"
 
-- name: Disable all yum repositories
-  shell: /usr/bin/yum-config-manager --disable \*
+# - name: Disable all yum repositories
+#   shell: /usr/bin/yum-config-manager --disable \*
 
 - name: Enable only the repositories required
   shell: subscription-manager repos --enable {{ item }}

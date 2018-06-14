@@ -33,4 +33,6 @@
   hosts: masters, nodes
   become: yes
   roles:
+    - epel
+    - nodejs
     - wetty

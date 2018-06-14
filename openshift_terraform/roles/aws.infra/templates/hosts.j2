@@ -8,7 +8,7 @@ localhost ansible_connection=local
 # [NOTE]: These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
 
 [masters]
-master.ocp.${INSERT_VALUE_HERE}
+master.{{ default_subdomain }}
 
 [nodes]
-node.[0:2].ocp.${INSERT_VALUE_HERE}
+node.[0:{{ number_nodes | int - 1 }}].{{ default_subdomain }}

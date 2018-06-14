@@ -7,7 +7,7 @@
 - name: Terraform AWS Provider
   hosts: targets
   roles:
-    - terraform.infra.aws
+    - aws.infra
 
 # [TODO]: Add Terraform Google Cloud Platform provider support.
 # [TODO]: Add Terraform Microsoft Azure provider support.
