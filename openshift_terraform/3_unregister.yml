@@ -10,7 +10,7 @@
     - { role: unregister }
 
 - name: Remove infrastructure using Terraform
-  hosts: local_target
+  hosts: localhost
   tasks:
   - terraform:
       project_path: "{{ terraform_working_dir }}"
