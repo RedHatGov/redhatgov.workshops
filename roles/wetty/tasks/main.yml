@@ -161,6 +161,9 @@
     insertbefore: "^COMMIT$"
     line: "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m udp --dport 8888 -j ACCEPT"
     state: present
+  when:
+  - rf_result.rc != 0
+  - ri_result.rc == 0
 
 #-------------------------------------------------------
 # SELinux settings
