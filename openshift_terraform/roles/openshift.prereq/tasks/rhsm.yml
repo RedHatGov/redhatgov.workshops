@@ -21,30 +21,27 @@
   register: sm
   ignore_errors: true
 
+- name: Register host via Activation key
+  redhat_subscription:
+    activationkey: "{{ vault_rhel_rhsm_activationkey }}"
+    org_id: "{{ vault_rhel_rhsm_org_id }}"
+    state: present
+  when: vault_rhel_rhsm_activationkey != "${INSERT_VALUE_HERE}"
+  register: register_key_result
+  ignore_errors: true
+
 - name: Register with RHSM
-  command: sudo subscription-manager register --username {{ rhsm_username }} --password {{ rhsm_password }} 
+  command: sudo subscription-manager register --username {{ rhsm_username }} --password {{ rhsm_password }}
+  when: rhsm_username != "${INSERT_VALUE_HERE}"
   ignore_errors: true
 
 - name: Attach Pool Id
   command: sudo subscription-manager attach --pool="{{ rhsm_pool_id }}"
+  when: rhsm_pool_id != "${INSERT_VALUE_HERE}"
   ignore_errors: true
-
-# - name: Register with RHSM
-#   # redhat_subscription:
-#   #   activationkey: "{{ rhel_rhsm_activationkey }}"
-#   #   org_id: "{{ rhel_rhsm_org_id }}"
-#   shell: subscription-manager register --org={{ rhel_rhsm_org_id }} --activationkey={{ rhel_rhsm_activationkey }}
-#   register: result
-#   retries: 10
-#   delay: 30
-#   until: result.rc == 0
-#   when: sm.rc != 0
 
 - name: Disable all RHSM repositories
   command: subscription-manager repos --disable="*"
-
-# - name: Disable all yum repositories
-#   shell: /usr/bin/yum-config-manager --disable \*
 
 - name: Enable only the repositories required
   shell: subscription-manager repos --enable {{ item }}
