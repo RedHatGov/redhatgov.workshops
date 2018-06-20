@@ -76,6 +76,20 @@ vault_openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 
 You also need to update the `vault_number_nodes` variable in `group_vars/all/vault.yml` to reflect the desired number of nodes, if you want more than the default of `2`.  You probably don't need mroe nodes unless you have more than 20-25 students.
 
+You can also change the number of users created for students.  By default, we create 20, and that is controlled by this variable:
+
+```
+vault_users_count: 20
+```
+
+Change that value to whatever number of students are required.  The student accounts will be `user<#>`, with the same password as you set for the admin account.
+For example:
+
+```
+uid: user13
+pwd: <same as admin user>
+```
+
 # Usage
 
 **!Important** You must encrypt your group_vars/all/vault.yml before running your playbook.  You must add a vault_pass.txt to your home directory containing your password.
