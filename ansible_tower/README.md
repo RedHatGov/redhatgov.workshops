@@ -55,8 +55,9 @@ sudo dnf -y install python2-boto ansible
 wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
 sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
 ```
-
-Then edit `group_vars/all` and fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53.  You can get the zone ID from the DNS domain stored in Route 53.
+# Custom Variable Requirements
+* Copy `group_vars/all_example` to `group_vars/all.yml`
+* Fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53.  You can get the zone ID from the DNS domain stored in Route 53.
 
 
 ```
@@ -72,43 +73,76 @@ zone_id: ""
 aws_access_key: ""
 aws_secret_key: ""
 ```
+* Define the workshop prefix.  Use a name/word that reflects the workshop you are teaching. **NOTE: No special characters**
+##### Example:
+```
+workshop_prefix:                  "NYCworkshop"
+```
+* Uncomment the `ami_id` you wish to use for the AWS instance
+##### Example:
+```
+ami_id:                         "ami-a4791ede" # RHEL 7.4 with JBoss EAP 7.1
+```
 
-##### NOTE:
-For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown here:
+* Define variables to allow enable subscription with RHSM
+
+**IMPORTANT!:**
+For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown below.  It is recommended that you enable Cloud Access and NOT use a traditional subscription as there is a known/unresolved bug when connecting to Red Hat servers.  
+
+**NOTE: If following this recommendation, your variables will look like this:**
+
+```
+# subscription_manager     |      Red Hat Subscription via Cloud Access
+cloud_access:                     true
+# subscription_manager     |      Red Hat Subscription via activation key and org id
+rhsm_activationkey:               ""
+rhsm_org_id:                      ""
+# subscription_manager     |      Red Hat Subscription via username & password
+username:                         ""
+password:                         ""
+pool_id:                          ""
+```
+**NOTE: If you choose the traditional RHSM route, your variables will look something like this**
+
+Red Hat Subscription Manager uses **_either_** an `activation key / org id` combination or a `username/password` combination, not both.
 ```
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                     false
+# subscription_manager     |      Red Hat Subscription via activation key and org id
+rhsm_activationkey:               "myactkey"
+rhsm_org_id:                      "12345678"
 # subscription_manager     |      Red Hat Subscription via username & password
 username:                         "user@company.com"
 password:                         "my_password"
 pool_id:                          "1234567890abcdef01234567890abcde"
 ```
 
-#### Configure Workshop Nodes
-
-To install and configure the necessary software, on the newly created nodes, run the second playbook.  It may be re-run as many times as necessary.
+#### Provision Workshop Nodes
 
 ```
 ansible-playbook 1_provision.yml  
+```
+#### Install packages and configure the newly provisioned nodes.
+
+**NOTE: You need to run this playbook with sudo priviledges**
+```
 ansible-playbook 2_load.yml -K
 ```
 
 #### To destroy the workshop environment
 
 ```
-ansible-playbook 3_unregister.yml 
+ansible-playbook 3_unregister.yml
 rm -rf .redhatgov
 ```
 
-## Login to Ansible Tower
+## Login to the primary workshop node
 
-Browse to the URL of the EC2 instance and enter the `ec2-user`'s password (workshop_password:) located in `group_vars/all`. 
+Browse to the URL of the EC2 instance and enter the `ec2-user`'s password `workshop_password:` located in `group_vars/all`.
 
 ```
 https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
 ```
-
-![Tower Login](img/ansible-tower.png)
 
 There is a web-based IDE running on port 8443 of each tower node.  That IDE can be used to edit Ansible playbooks, rather than using a command line editor, like `vim` or `nano`.
 
@@ -119,4 +153,3 @@ There is a web-based IDE running on port 8443 of each tower node.  That IDE can 
 A walkthrough for most of the typewritten steps has been added to the workshop, both to speed up workshops presented within a limited schedule, or to help a studenmt who has made a mistake, or who has fallen far behind.
 
 The walkthrough is deployed on the tower nodes, in `~ec2-user/walkthrough`.
-
