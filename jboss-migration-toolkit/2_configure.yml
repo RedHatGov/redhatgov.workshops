@@ -1,10 +1,10 @@
 ---
 
-# This playbook uses "workshop_prefix" AWS Tag to 
+# This playbook uses "workshop_prefix" AWS Tag to
 # configure the instances. Found in group_vars/all.
 - name: AWS | Install & Configure Instances
   remote_user: ec2-user
-  hosts: tag_Workshop_jboss_migration_toolkit       # AWS: workshop_prefix: 
+  hosts: tag_Workshop_jboss_migration_toolkit       # AWS: workshop_prefix:
   become: yes
   roles:
     - subscription_manager
@@ -18,8 +18,8 @@
     - cockpit
     - vaulttec.zsh
     - nodejs
-    - LetsEncrypt      # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work. 
+    - LetsEncrypt      # Does not work with Vagrant, must be a public ip for Let'sEncrypt to work.
     - wetty            # Not needed for Vagrant, use vagrant ssh
     # - sendgrid       # I send mail if you don't turn me off!
-    - jboss-migration 
-
+    - jboss-migration
+    # - jboss-windup   # Community release of migration toolkit
