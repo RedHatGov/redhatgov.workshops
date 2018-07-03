@@ -1,4 +1,0 @@
-# file: roles/terraform.infra.aws/tasks/main.yml
----
-
-- include: terraform.yml

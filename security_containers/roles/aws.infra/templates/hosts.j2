@@ -6,5 +6,4 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env py
 
 
 [nodes]
-# {{ workshop_prefix }}.[0:{{ number_nodes | int -1 }}].{{ domain_name }}
-{{ workshop_prefix }}.[0:{{ number_nodes }}].{{ domain_name }}
+{{ workshop_prefix }}.[0:{{ number_nodes | int -1 }}].{{ domain_name }}

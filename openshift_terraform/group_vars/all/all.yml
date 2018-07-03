@@ -4,7 +4,7 @@
 # Default configuration
 #####################################################
 default_domain:    "{{ vault_default_domain }}"
-default_subdomain: "ocp.{{ default_domain }}"
+default_subdomain: "{{ vault_cluster_name }}.{{ default_domain }}"
 default_wildcard:  "apps.{{ default_subdomain }}"
 default_user:      "ec2-user"
 default_home:      "/home/{{ default_user }}"
@@ -17,11 +17,12 @@ number_nodes:      "{{ vault_number_nodes }}"
 #####################################################
 aws_access_key_id:     "{{ vault_aws_access_key_id }}"
 aws_secret_access_key: "{{ vault_aws_secret_access_key }}"
+region:                "us-east-1"
 
 #####################################################
 # Terraform configuration
 #####################################################
-terraform_workspace:   "{{ lookup('env','PWD') }}/.{{ default_domain }}"
+terraform_working_dir:                 "{{ lookup('env','PWD') }}/.redhatgov"
 terraform_provisioner_connection_type: "ssh"
 
 #####################################################
@@ -45,12 +46,13 @@ openshift_test_users_password: "{{ vault_openshift_cluster_admin_password }}"
 # Ansible configuration
 #####################################################
 ansible_user:                 "{{ default_user }}"
-ansible_ssh_private_key_file: "{{ terraform_workspace }}/{{ default_keypair }}"
+ansible_ssh_private_key_file: "{{ terraform_working_dir }}/{{ default_keypair }}"
+inventory_working_dir:        "{{ lookup('env','PWD') }}/inventory"
 
 #####################################################
 # Wetty configuration
 #####################################################
-system_user: ec2-user
-letsencrypt: false
+system_user:       ec2-user
+letsencrypt:       false
 domain_name:       "{{ vault_default_domain }}"
 workshop_password: "{{ vault_openshift_cluster_admin_password }}"

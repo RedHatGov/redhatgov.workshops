@@ -26,50 +26,82 @@ After checking out this repository, search for the string "INSERT_VALUES_HERE" t
 
 # Required
 
-The following variables must be set before usage.
-
 ### group_vars/all/vault.yml
+The following variables must be set before usage.  Variables that need to be set will be have the placeholder value of ```"$INSERT_VALUE_HERE"```
 
+* The first two values are the DNS domain name (often `redhatgov.io`) and the cluster name, which will form the DNS subdomain:
+
+##### Example:
 ```
-default_domain: "${INSERT_VALUE_HERE}"
-default_user: "${INSERT_VALUE_HERE}"
-aws_access_key_id: "${INSERT_VALUE_HERE}"
-aws_secret_access_key: "${INSERT_VALUE_HERE}"
+vault_default_domain: "redhatgov.io"
+vault_cluster_name:   "nyc-workshop"
 ```
 
+* Insert your [AWS access and secret access keys](https://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html).
+
+##### Example:
 ```
-aws_route53_zone_id: "${INSERT_VALUE_HERE}"
+vault_aws_access_key_id:     "ABCD3FGIELSKDJD"
+vault_aws_secret_access_key: "dlsi#DJEHHSsldkEESJla;89374o30"
 ```
-The `aws_route53_zone_id` value can be found using the following command:
+
+* The next value can be obtained from the AWS Route53 GUI, or by using the command below the example:
+
+##### Example:
+```
+vault_aws_route53_zone_id: "Z3TTUI56NVLDJ"
+```
+OR, use the following command to find the `aws_route53_zone_id`:
 
 <pre>
 aws route53 list-hosted-zones --query 'HostedZones[*]' --output text | \
 grep '\/hostedzone\/.*<b>${INSERT_VALUE_HERE}</b>' | sed -e 's/.*\///' -e 's/[^a-zA-Z0-9].*//'
 </pre>
 
-Make sure to replace `${INSERT_VALUE_HERE}` with the domain purchased through AWS and managed by Route53.
+
+* Set values so that the OpenShift instances can register with Red Hat Subscription Manager.  You can either use an `activation key / organization id` combination or you can use a `username / password / pool_id` combination.  These two methods are mutually exclusive so *do not define both*.
+
+Set an activation key (which needs to be created in RHSM), and it's accompanying Org ID:
+
+##### Example:
 ```
-rhel_rhsm_activationkey: "${INSERT_VALUE_HERE}"
-rhel_rhsm_org_id: "${INSERT_VALUE_HERE}"
+rhel_rhsm_activationkey: "my_act_key"
+rhel_rhsm_org_id: "12345678"
+```
+Alternatively, you can use a `username`, `password`, and `pool_id` combination to register with RHSM.
+
+##### Example:
+```
+rhsm_username:                 "joeuser"
+rhsm_password:                 "mypassword"
+rhsm_pool_id:                  "393948383948393839293839384"
 ```
 
-```
-openshift_cluster_admin_username: "${INSERT_VALUE_HERE}"
-openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
-```
+* Define what you want the OpenShift admin user and password to be:
 
-### inventory
-
-**!Important** These variables must be updated manually, based on `vault_default_subdomain` value from `group_vars/all/vault.yml` file.
-
+##### Example:
 ```
-master.{{ default_subdomain }}
-node.[0:1].{{ default_subdomain }}
+vault_openshift_cluster_admin_username: "ocpadmin"
+vault_openshift_cluster_admin_password: "adminPassw0rd"
 ```
 
-You also need to update the `vault_number_nodes` variable in `group_vars/all/vault.yml` to match.
+* Modify the number of users created for students.  By default, we create 20, but a rule of thumb is _number of workshop registrants + 5_:
 
-**[NOTE]:** The value `[0:1]` is a [pattern](http://docs.ansible.com/ansible/intro_patterns.html#patterns) that declares how many OpenShift nodes to create. In this case it will create `node0` and `node1`.
+##### Example:
+```
+vault_users_count: 20
+```
+The student accounts will be `user<#>`, with the same password as you set for the admin account.  You can assign each student a `user#` at the beginning of your workshop.
+##### Example:
+
+```
+uid: user13
+pwd: <same as admin user>
+```
+
+#### OPTIONAL
+You can update the `vault_number_nodes` variable in `group_vars/all/vault.yml` to reflect the desired number of OpenShift nodes, if you want more than the default of `2`.  You probably don't need more nodes unless you have more than 20-25 students.
+
 
 # Usage
 
@@ -79,7 +111,7 @@ You also need to update the `vault_number_nodes` variable in `group_vars/all/vau
 ansible-vault encrypt group_vars/all/vault.yml
 ```
 
-You will be prompted to create a password and once complete, you can put this password is a file referenced in the ansible.cfg (vault_password_file = ~/.vault_pass.txt) file.  The current entry has a location of ~/.vault_pass.txt but you can chnage this at your discretion.
+You will be prompted to create a password and once complete, you can put this password is a file referenced in the ansible.cfg (vault_password_file = ~/.vault_pass.txt) file.  The current entry has a location of ~/.vault_pass.txt but you can change this at your discretion.
 
 ### Provision
 
@@ -92,18 +124,19 @@ AWS_SECRET_ACCESS_KEY=01234567890abcdefghijlkmnopqrstuvwxyz!@#
 AWS_ACCESS_KEY_ID=0123456789abcdefghij
 ```
 
+* First, run the playbook to create your OpenShift instances
 ```
-ansible-playbook -i inventory 1_provision.yml
-ansible-playbook -i inventory 2_load.yml
+ansible-playbook 1_provision.yml
 ```
+* Next, install OpenShift
+```
+ansible-playbook 2_load.yml
+```
+**[NOTE]:** A hidden directory contains the key pair for SSH access to instantiated host systems.
 
 ### Destroy
-
-**[NOTE]:** This hidden directory contains the key pair for SSH access to instantiated host systems.
+Once the workshop has been completed, you can tear down your OpenShift environment by running this playbook
 
 ```
-ansible-playbook -i inventory 3_unregister.yml
-cd $(pwd)/.{{ default_domain }}
-terraform destroy
-
+ansible-playbook 3_unregister.yml
 ```
