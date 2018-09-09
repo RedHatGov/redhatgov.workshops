@@ -2,16 +2,17 @@
 #---------------------------------------------------
 # DNS Setup
 #---------------------------------------------------
+# This breaks a lot of thigns when wrong.  Should we remove these?
 - name: Add DNS entries for subscription
   blockinfile:
     path: /etc/hosts
     block: |
-      209.132.183.44   xmlrpc.rhn.redhat.com
-      23.204.148.218   content-xmlrpc.rhn.redhat.com
-      209.132.183.49   subscription.rhn.redhat.com
+      209.132.183.192  xmlrpc.rhn.redhat.com
+      23.55.28.63      content-xmlrpc.rhn.redhat.com
+      209.132.183.107  subscription.rhn.redhat.com
       209.132.183.108  subscription.rhsm.redhat.com
       209.132.182.63   registry.access.redhat.com
-      209.132.182.33   repository.jboss.org
+      209.132.182.97   repository.jboss.org
     marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
     insertafter: EOF
   when: not cloud_access
@@ -40,17 +41,27 @@
   command: subscription-manager status
   register: sm_result
   ignore_errors: True
-#  when: not cloud_access
+  when: not cloud_access
   tags:
     - rhel
 
-- name: Subscribe to RHSM
+- name: Subscribe to RHSM via activation key / org id
+  redhat_subscription:
+    activationkey: "{{ rhsm_activationkey }}"
+    org_id: "{{ rhsm_org_id }}"
+    state: present
+  when: activation_key and sm_result.rc != 0
+  register: actkey_result
+  tags:
+    - rhel
+
+- name: Subscribe to RHSM via username/password/pool_id
   redhat_subscription:
     state: present
     username: "{{ username }}"
     password: "{{ password }}"
     pool: "{{ pool_id }}"
-#  when: not cloud_access and sm_result.rc != 0
+  when: not cloud_access and not activation_key and sm_result.rc != 0
   tags:
     - rhel
 
@@ -67,33 +78,21 @@
 #---------------------------------------------------
 - name: Check to see if requisite repos are already enabled
   become: yes
-  shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms' | wc -l
+  shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms|jb-eap-7.1-for-rhel-7-server-rpms|rhel-server-rhscl-7-rpms' | wc -l
   register: smr_result
   ignore_errors: True
-#  when: not cloud_access
+  when: not cloud_access
   tags:
     - rhel
 
 - name: Disable all repos by default
   command: subscription-manager repos --disable "*"
-#  when: not cloud_access and smr_result.stdout != "3"
+  when: not cloud_access and smr_result.stdout != "5"
   tags:
     - rhel
 
 - name: Enable the requisite rhel7 repos
-  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7-for-rhel-7-server-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-#  when: not cloud_access and smr_result.stdout != "3"
-  tags:
-    - rhel
-
-- name: open web port 8080
-  become: yes
-  firewalld: port=8080/tcp zone=public permanent=true state=enabled immediate=yes
-  tags:
-    - rhel
-
-- name: open web port 80
-  become: yes
-  firewalld: port=80/tcp zone=public permanent=true state=enabled immediate=yes
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" --enable="rhel-server-rhscl-7-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
+  when: not cloud_access and smr_result.stdout != "5"
   tags:
     - rhel

@@ -12,15 +12,25 @@
       - nano
   when: install
 
+- name: Fake, if missing, the dbus-1 directory
+  file:
+    path: /usr/lib64/dbus-1
+    state: directory
+
+- name: Fake, if missing, the dbus dbus-daemon-launch-helper file
+  file:
+    path: /usr/lib64/dbus-1/dbus-daemon-launch-helper
+    state: touch
+
 - name: Install ansible.cfg and vimrc in home directory
   copy:
-    src="{{ item }}"
-    dest="/home/{{ system_user }}/"
+    src="{{ item.src }}"
+    dest="/home/{{ system_user }}/{{ item.dest }}"
     owner="{{ system_user }}"
     group="{{ system_user }}"
   with_items:
-    - vimrc
-    - license
+    - { src: "vimrc", dest: ".vimrc" }
+    - { src: "license", dest: "license" }
   when: install
 
 - name: Copy over SSH Key to {{ system_user }} home

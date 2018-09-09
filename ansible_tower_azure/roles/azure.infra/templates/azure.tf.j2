@@ -11,8 +11,10 @@ variable "azure_region" { default = "{{ region }}" }
 variable "number_tower_nodes" { default = "{{ number_tower_nodes }}" }
 variable "number_nodes" { default = "{{ number_nodes }}" }
 variable "azure_resource_name" { default = "AzureAnsibleWorkshop" }
+#variable "dns_name" { default = "{{ workshop_prefix }}.{{ domain_name }}" }
 variable "dns_name" { default = "{{ domain_name }}" }
 variable "keypair" { default = "{{ workshop_prefix }}-tower" }
+variable "azure_ce" { default = "{{ azure_cloud_environment }}" }
 #----------------------------------------------
 # Configure the Microsoft Azure Provider
 #----------------------------------------------
@@ -21,6 +23,7 @@ provider "azurerm" {
     client_id       = "${var.azure_client_id}"
     client_secret   = "${var.azure_client_secret}"
     tenant_id       = "${var.azure_tenant_id}"
+    environment     = "${var.azure_ce}"
 }
 #----------------------------------------------
 # Create a resource group if it doesn’t exist
@@ -63,6 +66,7 @@ resource "azurerm_public_ip" "towerpublicip" {
     count		         = "${var.number_tower_nodes}"
     domain_name_label            = "{{ workshop_prefix }}-${format("tower%1d",count.index)}"
     public_ip_address_allocation = "dynamic"
+    reverse_fqdn                 = "{{ workshop_prefix }}-tower${count.index}.usgovvirginia.cloudapp.usgovcloudapi.net"
 }
 resource "azurerm_public_ip" "nodepublicip" {
     name                         = "nodepublicip${count.index}"
@@ -71,6 +75,7 @@ resource "azurerm_public_ip" "nodepublicip" {
     public_ip_address_allocation = "dynamic"
     count		         = "${var.number_nodes}"
     domain_name_label            = "{{ workshop_prefix }}-${format("node%1d",count.index)}"
+    reverse_fqdn                 = "{{ workshop_prefix }}-node${count.index}.usgovvirginia.cloudapp.usgovcloudapi.net"
 }
 #----------------------------------------------
 # Create network interface
@@ -212,31 +217,25 @@ security_rule {
 #----------------------------------------------
 # DNS
 #----------------------------------------------
-resource "azurerm_dns_zone" "dnszone" {
-  name                = "${var.dns_name}"
-  resource_group_name = "${azurerm_resource_group.AzureRG.name}"
-}
-#resource "azurerm_dns_a_record" "tower-node" {
-  # same number of records as instances
-#  count = "${var.number_tower_nodes}"
-#  name = "{{ workshop_prefix }}.tower.${count.index}.${var.dns_name}"
-#  zone_name = "${azurerm_dns_zone.dnszone.name}"
-#  resource_group_name = "${azurerm_resource_group.AzureRG.name}"
-#  ttl = "300"
-  # matches up record N to instance N
-#  records             = ["${element(azurerm_virtual_machine.tower-node.*.ip_address, count.index)}"]
-#}
 
-#resource "azurerm_dns_a_record" "nodes" {
-  # same number of records as instances
-#  count = "${var.number_nodes}"
-#  name = "{{ workshop_prefix }}.node.${count.index}.${var.dns_name}"
-#  zone_name = "${azurerm_dns_zone.dnszone.name}"
-#  resource_group_name = "${azurerm_resource_group.AzureRG.name}"
-#  ttl = "300"
-  # matches up record N to instance N
-#  records             = ["${element(azurerm_virtual_machine.node.*.ip_address, count.index)}"]
-#}
+resource "azurerm_dns_cname_record" "tower-node" {
+  count = "${var.number_tower_nodes}"
+  name = "{{ workshop_prefix }}.tower.${count.index}"
+  zone_name = "${var.dns_name}"
+  resource_group_name = "permanent"
+  ttl = "3600"
+  record = "{{ workshop_prefix }}-tower${count.index}.usgovvirginia.cloudapp.usgovcloudapi.net"
+}
+
+resource "azurerm_dns_cname_record" "nodes" {
+  count = "${var.number_nodes}"
+  name = "{{ workshop_prefix }}.node.${count.index}"
+  zone_name = "${var.dns_name}"
+  resource_group_name = "permanent"
+  ttl = "3600"
+  record = "{{ workshop_prefix }}-node${count.index}.usgovvirginia.cloudapp.usgovcloudapi.net"
+}
+
 #----------------------------------------------
 # Create Tower Node
 #----------------------------------------------
@@ -249,7 +248,8 @@ resource "azurerm_virtual_machine" "tower-node" {
     resource_group_name       	= "${azurerm_resource_group.AzureRG.name}"
 
     storage_os_disk {
-        name              = "studentostowerdisk-${count.index}"
+        name              = "{{ workshop_prefix }}-tower${count.index}-disk"
+#        name              = "studentostowerdisk-${count.index}"
         caching           = "ReadWrite"
         create_option     = "FromImage"
         managed_disk_type = "Standard_LRS"
@@ -257,8 +257,8 @@ resource "azurerm_virtual_machine" "tower-node" {
 
     storage_image_reference {
         publisher = "RedHat"
-        offer     = "RHEL"
-        sku       = "7.3"
+        offer     = "{{ os }}"
+        sku       = "{{ os_version }}"
         version   = "latest"
     }
     os_profile {
@@ -285,7 +285,8 @@ resource "azurerm_virtual_machine" "node" {
     resource_group_name       	= "${azurerm_resource_group.AzureRG.name}"
 
     storage_os_disk {
-        name              = "studentosnodedisk-${count.index}"
+        name              = "{{ workshop_prefix }}-node${count.index}-disk"
+#        name              = "studentosnodedisk-${count.index}"
         caching           = "ReadWrite"
         create_option     = "FromImage"
         managed_disk_type = "Standard_LRS"

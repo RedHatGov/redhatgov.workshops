@@ -19,6 +19,7 @@
   roles:
     - { role: subscription_manager }
     - { role: epel }
+    - { role: upgrade }
 
 - name: Configure repositories on tower nodes
   become: yes
@@ -26,15 +27,24 @@
   hosts: nodes
   roles:
     - { role: subscription_manager }
+    - { role: upgrade }
 
-- name: Remove Red Hat EAP packages
+- name: Do generic configuration
   become: yes
   remote_user: azure-user
   hosts: all_nodes
   tasks:
-  - package:
+  - name: Remove default JBoss packages
+    package:
       name: eap7-*
       state: absent
+
+- name: Configure firewalls on nodes
+  become: yes
+  remote_user: azure-user
+  hosts: all_nodes
+  roles:
+    - { role: firewall }
 
 - name: Configure repositories on nodes
   become: yes
@@ -72,7 +82,6 @@
     prep: no
   roles:
     - { role: ansible.tower }
-
 
 # {{workshop_prefix}}.tower.<student number>.redhatgov.io:8888
 # Username: azure-user

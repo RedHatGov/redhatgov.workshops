@@ -2,3 +2,6 @@
 ---
 #
 # foo: default
+
+# xmlrpc.rhn.redhat.com
+#host0: "{{ lookup('pipe', 'getent hosts xmlrpc.rhn.redhat.com || true') | regex_replace('\n','') | regex_replace(' .*','') | default('209.132.183.192', true ) }}"
