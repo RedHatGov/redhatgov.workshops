@@ -1,0 +1,13 @@
+# file: roles/ansible.tower/defaults/main.yml
+---
+#
+# foo: default
+
+open_ports:
+- 22
+- 80
+- 443
+- 5000
+- 8080
+- 8443
+- 8888
