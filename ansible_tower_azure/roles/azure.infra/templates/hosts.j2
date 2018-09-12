@@ -4,12 +4,32 @@ ansible_become=yes
 [local_target]
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
 
+{% if azure_cloud_environment == 'public' %}
 [tower_nodes]
-{{workshop_prefix}}-tower[0:{{ number_tower_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
+{{workshop_prefix}}-tower[0:{{ number_tower_nodes | int - 1 }}].{{ region }}.cloudapp.net
 
 [nodes]
-{{workshop_prefix}}-node[0:{{ number_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
+{{workshop_prefix}}-node[0:{{ number_nodes | int - 1 }}].{{ region }}.cloudapp.net
 
 [all_nodes]
-{{workshop_prefix}}-tower[0:{{ number_tower_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
-{{workshop_prefix}}-node[0:{{ number_nodes | int - 1 }}].{{ region }}.cloudapp.azure.com
+{{workshop_prefix}}-tower[0:{{ number_tower_nodes | int - 1 }}].{{ region }}.cloudapp.net
+{{workshop_prefix}}-node[0:{{ number_nodes | int - 1 }}].{{ region }}.cloudapp.net
+{% elif azure_cloud_environment == 'usgovernment' %}
+[tower_nodes]
+{% if number_tower_nodes == '1' %}
+{{workshop_prefix}}.tower.0.{{ domain_name }}
+{% else %}
+{{workshop_prefix}}.tower.[0:{{ number_tower_nodes | int - 1 }}].{{ domain_name }}
+{% endif %}
+
+[nodes]
+{% if number_nodes == '1' %}
+{{workshop_prefix}}.node.0.{{ domain_name }}
+{% else %}
+{{workshop_prefix}}.node.[0:{{ number_nodes | int - 1 }}].{{ domain_name }}
+{% endif %}
+{% endif %}
+
+[all_nodes:children]
+tower_nodes
+nodes

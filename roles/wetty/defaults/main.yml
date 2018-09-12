@@ -17,4 +17,4 @@ openssl_self_signed:
 key_path:   "home/{{ system_user }}/.wetty/privkey.pem"
 cert_path:  "home/{{ system_user }}/.wetty/cert.pem"
 wetty_port:  8888
-wetty_user: "ec2-user" # "cockpit"
+wetty_user: "{{ system_user }}" # "cockpit"

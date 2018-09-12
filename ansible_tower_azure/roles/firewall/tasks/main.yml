@@ -1,0 +1,21 @@
+# file: roles/firewall/tasks/main.yml
+---
+
+#---------------------------------------------------
+# Open required firewall ports
+#---------------------------------------------------
+
+- name: Check to see if firewalld is enabled
+  command: systemctl is-enabled firewalld
+  register: sif_result
+  ignore_errors: True
+
+- name: open web ports
+  firewalld:
+    port: "{{ item }}/tcp"
+    zone: public
+    permanent: true
+    state: enabled
+    immediate: yes
+  with_items: "{{ open_ports }}"
+  when: sif_result.rc == 0

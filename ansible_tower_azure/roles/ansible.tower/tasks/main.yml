@@ -8,6 +8,7 @@
 # Deploy walkthrough scripts
 ###################################
 - include_tasks: walkthroughs.yml
+  when: install_examples
 
 ###################################
 # Base setup of Tower
@@ -18,4 +19,3 @@
 # tower-cli users setup
 ###################################
 # - import_tasks: user_setup.yml
-

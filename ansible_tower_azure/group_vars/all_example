@@ -1,37 +1,50 @@
 # file: group_vars
-#######################################################################################
+################################################################################
 #
 #                  ////IMPORTANT////
 #
 #      Prefixed to all resources for cleanup & identifcation.
-#######################################################################################
+################################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "tower"
 
+################################################################################
+# OPTIONAL FEATURES          |    VALUE
+################################################################################
+install_codiad:                   false
+install_examples:                 false
 
-
-#######################################################################################
+################################################################################
 # ANSIBLE ROLE KEY         |      VALUE
-#######################################################################################
+################################################################################
 # azure.infra                |    .terraform working dir
 terraform_working_dir:            "{{ lookup('env','PWD') }}/.redhatgov"
 # azure.infra                |    AZURE KEYS
 azure_subscription_id:            ""
 azure_client_id:                  ""
-azure_client_secret:		          ""
-azure_tenant_id:		              ""
-# azure.infra                |    AZURE DNS
-domain_name:                      ""
+azure_client_secret:              ""
+azure_tenant_id:                  ""
+# azure.infra                |    AZURE DNS - usually no need to change this
+domain_name:                      "az.redhatgov.io"
 # azure.infra                |    AZURE Terraform Vars
 number_tower_nodes:               "1"            # Tower Nodes
 number_nodes:                     "1"            # Student Nodes
-tower_instance_type:              "Standard_DS1_V2"    # Tower Instance Size
-node_instance_type:               "Standard_B1MS"     # Student Instance Size
-region:                           "eastus"    # AZURE Region
-#--------------------------------------------------------------------------------------
+os:                               "RHEL"
+os_version:                       "7.4"
+tower_instance_type:              "Standard_B2s"    # Tower Instance Size
+node_instance_type:               "Standard_B2s"    # Student Instance Size
+tower_instance_type:              "Standard_DS1_V2" # Tower Instance Size
+node_instance_type:               "Standard_B1MS"   # Student Instance Size
+#azure_cloud_environment:          "public"
+azure_cloud_environment:          "usgovernment"
+#region:                           "eastus"    # AZURE Region
+region:                           "usgovvirginia"    # AZURE Region
+#-------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
-cloud_access:                      true
+# NOTE: at the moment, Azure Government lacks the jbeap-7-rhui-rhel-7-rpms repo, so do not use cloud access
+cloud_access:                     false
+activation_key:                   false
 # subscription_manager     |      Red Hat Subscription via username & password
 username:                         ""
 password:                         ""
@@ -39,18 +52,18 @@ pool_id:                          ""
 # subscription_manager     |      Red Hat Subscription via activation keys
 rhsm_activationkey:               ""
 rhsm_org_id:                      ""
-#--------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # LetsEncrypt              |      email
 letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
-#--------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # wetty                    |      password
 workshop_password:                "redhat!@#"
-#--------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-#######################################################################################
+################################################################################
 # ANSIBLE config           |      VALUE
-#######################################################################################
+################################################################################
 # Dynamic Inventory
 inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars
