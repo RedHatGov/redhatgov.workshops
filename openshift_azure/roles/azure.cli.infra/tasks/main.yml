@@ -137,7 +137,6 @@
 # Start the Deployment
 #---------------------------------------------------
 - name: Check to see if we are logged in to Azure
-#  shell: "{{ azure_cli_bin }} account show"
   shell: "./azure account show"
   args:
     chdir: "{{ azure_cli_dir }}/bin"
@@ -155,12 +154,12 @@
     - azure_create
 
 - name: Launch OpenShift 3.9 provisioning script
-  shell: "./deploy.sh {{ workshop_prefix }}"
+  shell: "./deploy.sh {{ workshop_prefix }} {{ ansible_ssh_private_key_file }}"
   args:
     chdir: "{{ ocp39_dir }}"
 
 - name: Register bastion IP address
-  shell: "{{ azure_cli_bin }} network public-ip show $GROUP bastionpublicip|grep 'Ip Address'|cut -d':' -f3|grep [0-9]|sed 's/ //g'"
+  shell: "{{ azure_cli_bin }} network public-ip show {{ workshop_prefix }} bastionpublicip|grep 'Ip Address'|cut -d':' -f3|grep [0-9]|sed 's/ //g'"
   register: bastionip
   changed_when: false
   tags:
