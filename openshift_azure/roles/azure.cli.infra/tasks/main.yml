@@ -158,6 +158,18 @@
   tags:
     - azure_create
 
+- name: Add Wetty rules to LBs for master
+  shell: "{{ azure_cli_bin }} network lb inbound-nat-rule create -f 8888 -b 8888 -p tcp {{ workshop_prefix }} ocpmlb Wetty-ocpm0"
+  tags:
+    - azure_create
+    # azure network lb inbound-nat-rule create -f 8888 -b 8888 -p tcp ansibleocp ocpmlb Wetty-ocpm0
+
+- name: Point master NIC to LB rule for Wetty
+  shell: "{{ azure_cli_bin }} network nic ip-config inbound-nat-rule create --lb-name ocpmlb --lb-inbound-nat-rule-name Wetty-ocpm0 {{ workshop_prefix }} ocpm0nic"
+  tags:
+    - azure_create
+    # azure network nic ip-config inbound-nat-rule create --lb-name ocpmlb --lb-inbound-nat-rule-name Wetty-ocpm0 ansibleocp ocpm0nic
+
 - name: Register DNS CNAME for master host
   shell: "{{ azure_cli_bin }} network dns record-set add-record -c {{ workshop_prefix }}master.{{ region }}.{{ az_fqdn }} {{ az_domain_rg }} {{ az_domain }} master.{{ workshop_prefix }} CNAME"
   tags:
