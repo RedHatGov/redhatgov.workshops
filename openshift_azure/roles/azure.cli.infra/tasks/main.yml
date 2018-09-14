@@ -159,7 +159,7 @@
     - azure_create
 
 - name: Register DNS CNAME for master host
-  shell: "{{ azure_cli_bin }} network dns record-set add-record -c {{ workshop_prefix }}master.{{ region }}.{{ az_fqdn }} permanent {{ az_domain }} master.{{ workshop_prefix }} CNAME"
+  shell: "{{ azure_cli_bin }} network dns record-set add-record -c {{ workshop_prefix }}master.{{ region }}.{{ az_fqdn }} {{ az_domain_rg }} {{ az_domain }} master.{{ workshop_prefix }} CNAME"
   tags:
     - azure_create
 
