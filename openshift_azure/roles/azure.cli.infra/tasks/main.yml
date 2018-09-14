@@ -1,15 +1,5 @@
 ---
 #---------------------------------------------------
-#  Inventory
-#---------------------------------------------------
-- name: Template over hosts file
-  template:
-    src: hosts.j2
-    dest: "{{ inventory_working_dir }}/hosts"
-  tags:
-    - azure_create
-
-#---------------------------------------------------
 #  SSH Key
 #---------------------------------------------------
 - name: Make temporary location to run the CLI
@@ -157,6 +147,21 @@
   shell: "./deploy.sh {{ workshop_prefix }} {{ ansible_ssh_private_key_file }}"
   args:
     chdir: "{{ ocp39_dir }}"
+  tags:
+    - azure_create
+
+- name: Add Wetty ports to NSGs for bastion and master
+  shell: "{{ azure_cli_bin }} network nsg rule create -p tcp -c allow -y 500 --destination-port-ranges 8888 -d 'Allow Wetty in from all locations' {{ workshop_prefix }} {{ item }} allowWettyIn_all"
+  with_items:
+    - ocpb-nsg
+    - ocpm-nsg
+  tags:
+    - azure_create
+
+- name: Register DNS CNAME for master host
+  shell: "{{ azure_cli_bin }} network dns record-set add-record -c {{ workshop_prefix }}master.{{ region }}.{{ az_fqdn }} permanent az.redhatgov.io master.{{ workshop_prefix }} CNAME"
+  tags:
+    - azure_create
 
 - name: Register bastion IP address
   shell: "{{ azure_cli_bin }} network public-ip show {{ workshop_prefix }} bastionpublicip|grep 'Ip Address'|cut -d':' -f3|grep [0-9]|sed 's/ //g'"
@@ -165,7 +170,22 @@
   tags:
     - azure_create
 
+#---------------------------------------------------
+#  Inventory
+#---------------------------------------------------
+- name: Template over hosts file
+  template:
+    src: hosts.j2
+    dest: "{{ inventory_working_dir }}/hosts"
+  tags:
+    - azure_create
+
+#---------------------------------------------------
+#  Complete
+#---------------------------------------------------
 - debug:
     msg: "The {{ workshop_prefix }} environment is now building.\n\nPlease wait 75 to 120 minutes for the build to complete.\n\nYou may access the hosts, as follows:\n\nbastion:\nssh -i {{ ansible_ssh_private_key_file }} {{ workshop_user }}@{{ bastionip.stdout }}\n"
+  tags:
+    - azure_create
 
 ...

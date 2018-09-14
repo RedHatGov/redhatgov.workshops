@@ -10,6 +10,7 @@
 workshop_prefix:                  "$INSERT_VALUE_HERE"
 workshop_user:                    "$INSERT_VALUE_HERE"
 workshop_password:                "$INSERT_VALUE_HERE"
+workshop_user_count:              25
 system_user:                      "{{ workshop_user }}"
 
 ################################################################################
@@ -27,7 +28,9 @@ disk_size:                        128
 #-------------------------------------------------------------------------------
 az_username:                      "$INSERT_VALUE_HERE"
 az_environment:                   "AzureCloud"
+az_fqdn:                          "cloudapp.azure.com"
 # az_environment:                   "AzureUSGovernment"
+# az_fqdn:                          "cloudapp.usgovcloudapi.net"
 #-------------------------------------------------------------------------------
 # SUBSCRIPTION INFORMATION
 #-------------------------------------------------------------------------------
@@ -50,6 +53,7 @@ letsencrypt:                      false
 # Dynamic Inventory 
 inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars
+ansible_user:                     "{{ workshop_user }}"
 ssh_key_path:                     "{{ terraform_working_dir }}/id_rsa"
 ansible_ssh_public_key_file:      "{{ terraform_working_dir }}/id_rsa.pub"
 ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/id_rsa"

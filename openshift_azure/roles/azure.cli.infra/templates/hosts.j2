@@ -1,14 +1,11 @@
-# file: inventory
-
-# [TODO]: Implement dynamic inventory file.
-
 [targets]
 localhost ansible_connection=local
 
-# [NOTE]: These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
+[bastion]
+{{ bastionip }}
 
 [masters]
-#master.{\{ default_subdomain }}
+{{ workshop_prefix }}master.usgovvirginia.cloudapp.usgovcloudapi.net ansible_port: 2200
 
 [nodes]
-#node.[0:{\{ number_nodes | int - 1 }}].{\{ default_subdomain }}
+node.[0:{{ number_nodes | int - 1 }}].usgovvirginia.cloudapp.usgovcloudapi.net

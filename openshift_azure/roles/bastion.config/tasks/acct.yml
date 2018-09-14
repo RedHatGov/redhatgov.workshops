@@ -1,0 +1,9 @@
+# file: roles/bastion.config/tasks/acct.yml
+---
+
+- name: Create users for shell/OC client access
+  user:
+    name:      "user{{ item }}"
+    password:  "{{ workshop_password |password_hash('sha512') }}"
+    state:     present
+  with_sequence: count={{ workshop_user_count }}

@@ -1,0 +1,4 @@
+# file: roles/bastion.config/tasks/main.yml
+---
+
+- include: acct.yml
