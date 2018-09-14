@@ -31,6 +31,10 @@ az_environment:                   "AzureCloud"
 az_fqdn:                          "cloudapp.azure.com"
 # az_environment:                   "AzureUSGovernment"
 # az_fqdn:                          "cloudapp.usgovcloudapi.net"
+az_domain:                        "$INSERT_VALUE_HERE" # DNS subdomain for workshop
+az_domain_rg:                     "permanent" # resource group containing DNS su
+bdomain
+
 #-------------------------------------------------------------------------------
 # SUBSCRIPTION INFORMATION
 #-------------------------------------------------------------------------------

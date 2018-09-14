@@ -10,8 +10,19 @@
 #   register: sm_result
 #   ignore_errors: True
 
-- name: Unsubscribe RHN
-  redhat_subscription:
-      state: absent
+# - name: Unsubscribe RHN
+#   redhat_subscription:
+#       state: absent
 #  when: sm_result.rc == 0
 
+- name: remove resource group
+  shell: "{{ azure_cli_bin }} group delete -q {{ workshop_prefix }}"
+  tags:
+    - azure_delete
+
+- name: remove master CNAME
+  shell: "{{ azure_cli_bin }} network dns record-set delete -q {{ az_domain_rg }} {{ az_domain }} {{ workshop_prefix }}"
+  tags:
+    - azure_delete
+
+...
