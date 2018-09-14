@@ -1,0 +1,55 @@
+# file: group_vars/all_example
+################################################################################
+#
+#                  ////IMPORTANT////
+#
+#      Prefixed to all resources for cleanup & identifcation.
+################################################################################
+
+# Ensure that the name does not include special characters such as underscores, etc.
+workshop_prefix:                  "$INSERT_VALUE_HERE"
+workshop_user:                    "$INSERT_VALUE_HERE"
+workshop_password:                "$INSERT_VALUE_HERE"
+system_user:                      "{{ workshop_user }}"
+
+################################################################################
+# ANSIBLE ROLE KEY         |      VALUE
+################################################################################
+# azure.cli.infra          |      .terraform working dir 
+terraform_working_dir:            "{{ lookup('env','PWD') }}/.redhatgov"
+number_master_nodes:              "1"             # Master Nodes
+number_nodes:                     "2"             # Managed Nodes
+region:                           "eastus" # Azure Region
+# region:                           "usgovvirginia" # Azure Region
+disk_size:                        128
+#-------------------------------------------------------------------------------
+# AZURE INFORMATION
+#-------------------------------------------------------------------------------
+az_username:                      "$INSERT_VALUE_HERE"
+az_environment:                   "AzureCloud"
+# az_environment:                   "AzureUSGovernment"
+#-------------------------------------------------------------------------------
+# SUBSCRIPTION INFORMATION
+#-------------------------------------------------------------------------------
+# subscription_manager     |      Red Hat Subscription via username & password
+username:                         "$INSERT_VALUE_HERE"
+password:                         "$INSERT_VALUE_HERE"
+pool_id:                          "$INSERT_VALUE_HERE"
+#-------------------------------------------------------------------------------
+# LetsEncrypt              |      email
+letsencrypt_email:                "someone@redhat.com"
+letsencrypt:                      false
+#-------------------------------------------------------------------------------
+# wetty                    |      password
+#-------------------------------------------------------------------------------
+# workshop_password:                "redhat!@#"
+
+################################################################################
+# ANSIBLE config           |      VALUE
+################################################################################
+# Dynamic Inventory 
+inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
+# Ansible SSH Key Location |      SSH Key Vars
+ssh_key_path:                     "{{ terraform_working_dir }}/id_rsa"
+ansible_ssh_public_key_file:      "{{ terraform_working_dir }}/id_rsa.pub"
+ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/id_rsa"

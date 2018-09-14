@@ -1,0 +1,175 @@
+---
+#---------------------------------------------------
+#  Inventory
+#---------------------------------------------------
+- name: Template over hosts file
+  template:
+    src: hosts.j2
+    dest: "{{ inventory_working_dir }}/hosts"
+  tags:
+    - azure_create
+
+#---------------------------------------------------
+#  SSH Key
+#---------------------------------------------------
+- name: Make temporary location to run the CLI
+  file:
+    path: "{{ terraform_working_dir }}"
+    state: directory
+  tags:
+    - azure_create
+
+- name: Create ssh keypair
+  user:
+    name: "{{ ansible_user_id }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: "{{ terraform_working_dir }}/id_rsa"
+  tags:
+    - azure_create
+
+- name: Set permissions on ssh keypair
+  file:
+    path: "{{ item }}"
+    mode: 0600
+  with_items:
+    - "{{ terraform_working_dir }}/id_rsa"
+    - "{{ terraform_working_dir }}/id_rsa.pub"
+
+#---------------------------------------------------
+# NPM
+#---------------------------------------------------
+- name: Check to see if NPM is already present
+  command: which npm
+  register: result
+  ignore_errors: true
+  changed_when: false
+  tags:
+    - azure_create
+
+- name: Install NPM locally, if it isn't already present (RHEL/CentOS/Fedora)
+  package:
+    name: npm
+    state: latest
+  become: true
+  when: ansible_distribution_file_variety == 'RedHat' and result.rc != 0
+  tags:
+    - azure_create
+
+- name: Otherwise, tell the user to install NPM
+  fail:
+    msg: "NPM is required to install the Azure CLI.  Please install it to continue."
+  when: ansible_distribution_file_variety != 'RedHat' and result.rc != 0
+  tags:
+    - azure_create
+
+#---------------------------------------------------
+# Azure CLI
+#---------------------------------------------------
+- name: Install the Azure CLI, v1.0
+  command: npm install --prefix "{{ azure_cli_dir }}" -g "{{ azure_cli_src }}"
+  args:
+    creates: "{{ azure_cli_bin }}"
+  tags:
+    - azure_create
+
+#---------------------------------------------------
+# Git
+#---------------------------------------------------
+- name: Check to see if git is already present
+  command: which git
+  register: result
+  ignore_errors: true
+  changed_when: false
+  tags:
+    - azure_create
+
+- name: Install git locally, if it isn't already present (RHEL/CentOS/Fedora)
+  package:
+    name: git
+    state: latest
+  become: true
+  when: ansible_distribution_file_variety == 'RedHat' and result.rc != 0
+  tags:
+    - azure_create
+
+- name: Otherwise, tell the user to install git
+  fail:
+    msg: "Git is required to check out the Azure OpenShift provisioning code.  Please install it to continue."
+  when: ansible_distribution_file_variety != 'RedHat' and result.rc != 0
+  tags:
+    - azure_create
+
+#---------------------------------------------------
+# ocp-azure39-simple checkout and configure
+#---------------------------------------------------
+- name: Check to see if the ocp-azure39-simple repo already exists, locally
+  command: "test -d {{ ocp39_dir }}"
+  register: result
+  ignore_errors: true
+  changed_when: false
+  tags:
+    - azure_create
+
+- name: Clone the ocp-azure39-simple repo
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ ocp39_dir }}"
+  when: result.rc != 0
+  tags:
+    - azure_create
+
+- name: Template over the ocp-azure39-simple deploy.cfg
+  template:
+    src: deploy.cfg.j2
+    dest: "{{ terraform_working_dir }}/{{ repo_name }}/deploy.cfg"
+  tags:
+    - azure_create
+
+- name: Template over the ocp-azure39-simple deploy.sh
+  template:
+    src: deploy.sh.j2
+    dest: "{{ terraform_working_dir }}/{{ repo_name }}/deploy.sh"
+  tags:
+    - azure_create
+
+#---------------------------------------------------
+# Start the Deployment
+#---------------------------------------------------
+- name: Check to see if we are logged in to Azure
+#  shell: "{{ azure_cli_bin }} account show"
+  shell: "./azure account show"
+  args:
+    chdir: "{{ azure_cli_dir }}/bin"
+  changed_when: false
+  ignore_errors: true
+  register: result
+  tags:
+    - azure_create
+
+- name: Request that the user login to Azure, if not already logged in
+  fail:
+    msg: "Please execute the following command to continue the deployment:\n{{ azure_cli_bin }} login --username {{ az_username }} --environment {{ az_environment }}"
+  when: result.rc != 0
+  tags:
+    - azure_create
+
+- name: Launch OpenShift 3.9 provisioning script
+  shell: "./deploy.sh {{ workshop_prefix }}"
+  args:
+    chdir: "{{ ocp39_dir }}"
+
+- name: Register bastion IP address
+  shell: "{{ azure_cli_bin }} network public-ip show $GROUP bastionpublicip|grep 'Ip Address'|cut -d':' -f3|grep [0-9]|sed 's/ //g'"
+  register: bastionip
+  changed_when: false
+  tags:
+    - azure_create
+
+- debug:
+    var: bastionip
+
+- debug:
+    msg: "The {{ workshop_prefix }} environment is now building.\n\nPlease wait 75 to 120 minutes for the build to complete.\n\nYou may access the hosts, as follows:\n\nbastion:\nssh -i {{ ansible_ssh_private_key_file }} {{ workshop_user }}@{{ bastionip.stdout }}\n"
+
+...

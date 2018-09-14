@@ -1,0 +1,5 @@
+# file: roles/openshift.config/tasks/main.yml
+---
+
+- include: acct.yml
+- include: logging.yml

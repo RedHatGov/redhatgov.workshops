@@ -1,0 +1,441 @@
+From 4f72e8a10da24aa231498c897db1153ef51ba2ee Mon Sep 17 00:00:00 2001
+From: Fabian von Feilitzsch <fabian@fabianism.us>
+Date: Mon, 20 Nov 2017 11:34:23 -0500
+Subject: [PATCH] Bug 1512793- Fix idempotence issues in ASB deploy
+
+- Add support for annotations in oc_service
+- Use oc_service instead of oc_obj
+- Use oc_pvc instead of oc_obj
+- Work around lack of idempotency for oc_obj DeploymentConfig
+---
+ roles/ansible_service_broker/tasks/install.yml     | 121 +++++++++------------
+ roles/lib_openshift/library/oc_adm_registry.py     |   5 +
+ roles/lib_openshift/library/oc_adm_router.py       |   5 +
+ roles/lib_openshift/library/oc_service.py          |  16 ++-
+ roles/lib_openshift/src/ansible/oc_service.py      |   1 +
+ roles/lib_openshift/src/class/oc_service.py        |   4 +-
+ roles/lib_openshift/src/doc/service                |   6 +
+ roles/lib_openshift/src/lib/service.py             |   5 +
+ .../lib_openshift/src/test/unit/test_oc_service.py |   4 +
+ 9 files changed, 96 insertions(+), 71 deletions(-)
+
+diff --git a/roles/ansible_service_broker/tasks/install.yml b/roles/ansible_service_broker/tasks/install.yml
+index ff90f59a3d..26ad7e2171 100644
+--- a/roles/ansible_service_broker/tasks/install.yml
++++ b/roles/ansible_service_broker/tasks/install.yml
+@@ -147,64 +147,41 @@
+ - set_fact:
+     service_ca_crt: "{{ asb_client_secret.results.results.0.data['service-ca.crt'] }}"
+ 
+-# Using oc_obj because oc_service doesn't seem to allow annotations
+-# TODO: Extend oc_service to allow annotations
+ - name: create ansible-service-broker service
+-  oc_obj:
++  oc_service:
+     name: asb
+     namespace: openshift-ansible-service-broker
+-    state: present
+-    kind: Service
+-    content:
+-      path: /tmp/asbsvcout
+-      data:
+-        apiVersion: v1
+-        kind: Service
+-        metadata:
+-          name: asb
+-          namespace: openshift-ansible-service-broker
+-          labels:
+-            app: openshift-ansible-service-broker
+-            service: asb
+-          annotations:
+-            service.alpha.openshift.io/serving-cert-secret-name: asb-tls
+-        spec:
+-          ports:
+-            - name: port-1338
+-              port: 1338
+-              targetPort: 1338
+-              protocol: TCP
+-          selector:
+-            app: openshift-ansible-service-broker
+-            service: asb
++    labels:
++      app: openshift-ansible-service-broker
++      service: asb
++    annotations:
++      service.alpha.openshift.io/serving-cert-secret-name: asb-tls
++    ports:
++      - name: port-1338
++        port: 1338
++        targetPort: 1338
++        protocol: TCP
++    selector:
++      app: openshift-ansible-service-broker
++      service: asb
+ 
+ - name: create asb-etcd service
+-  oc_obj:
++  oc_service:
+     name: asb-etcd
+     namespace: openshift-ansible-service-broker
+-    state: present
+-    kind: Service
+-    content:
+-      path: /tmp/asbetcdsvcout
+-      data:
+-        apiVersion: v1
+-        kind: Service
+-        metadata:
+-          name: asb-etcd
+-          labels:
+-            app: etcd
+-            service: asb-etcd
+-          annotations:
+-            service.alpha.openshift.io/serving-cert-secret-name: etcd-tls
+-        spec:
+-          ports:
+-            - name: port-2379
+-              port: 2379
+-              targetPort: 2379
+-              protocol: TCP
+-          selector:
+-            app: etcd
+-            service: asb-etcd
++    labels:
++      app: etcd
++      service: asb-etcd
++    annotations:
++      service.alpha.openshift.io/serving-cert-secret-name: etcd-tls
++    ports:
++      - name: port-2379
++        port: 2379
++        targetPort: 2379
++        protocol: TCP
++    selector:
++      app: etcd
++      service: asb-etcd
+ 
+ - name: create route for ansible-service-broker service
+   oc_route:
+@@ -219,28 +196,25 @@
+     tls_termination: Reencrypt
+ 
+ - name: create persistent volume claim for etcd
+-  oc_obj:
++  oc_pvc:
+     name: etcd
+     namespace: openshift-ansible-service-broker
+-    state: present
+-    kind: PersistentVolumeClaim
+-    content:
+-      path: /tmp/pvcout
+-      data:
+-        apiVersion: v1
+-        kind: PersistentVolumeClaim
+-        metadata:
+-          name: etcd
+-          namespace: openshift-ansible-service-broker
+-        spec:
+-          accessModes:
+-            - ReadWriteOnce
+-          resources:
+-            requests:
+-              storage: 1Gi
++    access_modes:
++      - ReadWriteOnce
++    volume_capacity: 1G
++
++- name: Search for existing Ansible Service Broker deployment config
++  oc_obj:
++    name: asb
++    namespace: openshift-ansible-service-broker
++    kind: DeploymentConfig
++    state: list
++  register: asb_dc
+ 
+ - name: Create Ansible Service Broker deployment config
++  when: asb_dc.results.results.0 | length == 0
+   oc_obj:
++    force: yes
+     name: asb
+     namespace: openshift-ansible-service-broker
+     state: present
+@@ -315,9 +289,18 @@
+                   secret:
+                     secretName: broker-etcd-auth-secret
+ 
++- name: Search for existing Ansible Service Broker etcd deployment config
++  oc_obj:
++    name: asb-etcd
++    namespace: openshift-ansible-service-broker
++    kind: DeploymentConfig
++    state: list
++  register: asb_etcd_dc
++
+ - name: Create asb-etcd deployment config
++  when: asb_etcd_dc.results.results.0 | length == 0
+   oc_obj:
+-    name: etcd
++    name: asb-etcd
+     namespace: openshift-ansible-service-broker
+     state: present
+     kind: DeploymentConfig
+diff --git a/roles/lib_openshift/library/oc_adm_registry.py b/roles/lib_openshift/library/oc_adm_registry.py
+index 0771aa5a55..fe565987cf 100644
+--- a/roles/lib_openshift/library/oc_adm_registry.py
++++ b/roles/lib_openshift/library/oc_adm_registry.py
+@@ -1993,6 +1993,7 @@ def __init__(self,
+                  sname,
+                  namespace,
+                  ports,
++                 annotations=None,
+                  selector=None,
+                  labels=None,
+                  cluster_ip=None,
+@@ -2004,6 +2005,7 @@ def __init__(self,
+         self.name = sname
+         self.namespace = namespace
+         self.ports = ports
++        self.annotations = annotations
+         self.selector = selector
+         self.labels = labels
+         self.cluster_ip = cluster_ip
+@@ -2026,6 +2028,9 @@ def create_dict(self):
+             self.data['metadata']['labels'] = {}
+             for lab, lab_value in self.labels.items():
+                 self.data['metadata']['labels'][lab] = lab_value
++        if self.annotations:
++            self.data['metadata']['annotations'] = self.annotations
++
+         self.data['spec'] = {}
+ 
+         if self.ports:
+diff --git a/roles/lib_openshift/library/oc_adm_router.py b/roles/lib_openshift/library/oc_adm_router.py
+index 146f71f682..5550390e48 100644
+--- a/roles/lib_openshift/library/oc_adm_router.py
++++ b/roles/lib_openshift/library/oc_adm_router.py
+@@ -1559,6 +1559,7 @@ def __init__(self,
+                  sname,
+                  namespace,
+                  ports,
++                 annotations=None,
+                  selector=None,
+                  labels=None,
+                  cluster_ip=None,
+@@ -1570,6 +1571,7 @@ def __init__(self,
+         self.name = sname
+         self.namespace = namespace
+         self.ports = ports
++        self.annotations = annotations
+         self.selector = selector
+         self.labels = labels
+         self.cluster_ip = cluster_ip
+@@ -1592,6 +1594,9 @@ def create_dict(self):
+             self.data['metadata']['labels'] = {}
+             for lab, lab_value in self.labels.items():
+                 self.data['metadata']['labels'][lab] = lab_value
++        if self.annotations:
++            self.data['metadata']['annotations'] = self.annotations
++
+         self.data['spec'] = {}
+ 
+         if self.ports:
+diff --git a/roles/lib_openshift/library/oc_service.py b/roles/lib_openshift/library/oc_service.py
+index 3e8aea4f1a..c541e1bbd3 100644
+--- a/roles/lib_openshift/library/oc_service.py
++++ b/roles/lib_openshift/library/oc_service.py
+@@ -90,6 +90,12 @@
+     required: false
+     default: default
+     aliases: []
++  annotations:
++    description:
++    - Annotations to apply to the object
++    required: false
++    default: None
++    aliases: []
+   selector:
+     description:
+     - The selector to apply when filtering for services.
+@@ -1471,6 +1477,7 @@ def __init__(self,
+                  sname,
+                  namespace,
+                  ports,
++                 annotations=None,
+                  selector=None,
+                  labels=None,
+                  cluster_ip=None,
+@@ -1482,6 +1489,7 @@ def __init__(self,
+         self.name = sname
+         self.namespace = namespace
+         self.ports = ports
++        self.annotations = annotations
+         self.selector = selector
+         self.labels = labels
+         self.cluster_ip = cluster_ip
+@@ -1504,6 +1512,9 @@ def create_dict(self):
+             self.data['metadata']['labels'] = {}
+             for lab, lab_value in self.labels.items():
+                 self.data['metadata']['labels'][lab] = lab_value
++        if self.annotations:
++            self.data['metadata']['annotations'] = self.annotations
++
+         self.data['spec'] = {}
+ 
+         if self.ports:
+@@ -1662,6 +1673,7 @@ def __init__(self,
+                  sname,
+                  namespace,
+                  labels,
++                 annotations,
+                  selector,
+                  cluster_ip,
+                  portal_ip,
+@@ -1674,7 +1686,7 @@ def __init__(self,
+         ''' Constructor for OCVolume '''
+         super(OCService, self).__init__(namespace, kubeconfig, verbose)
+         self.namespace = namespace
+-        self.config = ServiceConfig(sname, namespace, ports, selector, labels,
++        self.config = ServiceConfig(sname, namespace, ports, annotations, selector, labels,
+                                     cluster_ip, portal_ip, session_affinity, service_type,
+                                     external_ips)
+         self.user_svc = Service(content=self.config.data)
+@@ -1739,6 +1751,7 @@ def run_ansible(params, check_mode):
+         oc_svc = OCService(params['name'],
+                            params['namespace'],
+                            params['labels'],
++                           params['annotations'],
+                            params['selector'],
+                            params['clusterip'],
+                            params['portalip'],
+@@ -1840,6 +1853,7 @@ def main():
+             debug=dict(default=False, type='bool'),
+             namespace=dict(default='default', type='str'),
+             name=dict(default=None, type='str'),
++            annotations=dict(default=None, type='dict'),
+             labels=dict(default=None, type='dict'),
+             selector=dict(default=None, type='dict'),
+             clusterip=dict(default=None, type='str'),
+diff --git a/roles/lib_openshift/src/ansible/oc_service.py b/roles/lib_openshift/src/ansible/oc_service.py
+index b90c082552..0c55391e33 100644
+--- a/roles/lib_openshift/src/ansible/oc_service.py
++++ b/roles/lib_openshift/src/ansible/oc_service.py
+@@ -14,6 +14,7 @@ def main():
+             debug=dict(default=False, type='bool'),
+             namespace=dict(default='default', type='str'),
+             name=dict(default=None, type='str'),
++            annotations=dict(default=None, type='dict'),
+             labels=dict(default=None, type='dict'),
+             selector=dict(default=None, type='dict'),
+             clusterip=dict(default=None, type='str'),
+diff --git a/roles/lib_openshift/src/class/oc_service.py b/roles/lib_openshift/src/class/oc_service.py
+index 7268a0c884..e41237b7e1 100644
+--- a/roles/lib_openshift/src/class/oc_service.py
++++ b/roles/lib_openshift/src/class/oc_service.py
+@@ -13,6 +13,7 @@ def __init__(self,
+                  sname,
+                  namespace,
+                  labels,
++                 annotations,
+                  selector,
+                  cluster_ip,
+                  portal_ip,
+@@ -25,7 +26,7 @@ def __init__(self,
+         ''' Constructor for OCVolume '''
+         super(OCService, self).__init__(namespace, kubeconfig, verbose)
+         self.namespace = namespace
+-        self.config = ServiceConfig(sname, namespace, ports, selector, labels,
++        self.config = ServiceConfig(sname, namespace, ports, annotations, selector, labels,
+                                     cluster_ip, portal_ip, session_affinity, service_type,
+                                     external_ips)
+         self.user_svc = Service(content=self.config.data)
+@@ -90,6 +91,7 @@ def run_ansible(params, check_mode):
+         oc_svc = OCService(params['name'],
+                            params['namespace'],
+                            params['labels'],
++                           params['annotations'],
+                            params['selector'],
+                            params['clusterip'],
+                            params['portalip'],
+diff --git a/roles/lib_openshift/src/doc/service b/roles/lib_openshift/src/doc/service
+index ba9aa0b38d..b596dff85a 100644
+--- a/roles/lib_openshift/src/doc/service
++++ b/roles/lib_openshift/src/doc/service
+@@ -39,6 +39,12 @@ options:
+     required: false
+     default: default
+     aliases: []
++  annotations:
++    description:
++    - Annotations to apply to the object
++    required: false
++    default: None
++    aliases: []
+   selector:
+     description:
+     - The selector to apply when filtering for services.
+diff --git a/roles/lib_openshift/src/lib/service.py b/roles/lib_openshift/src/lib/service.py
+index 0e8cc3aa5a..84620c518b 100644
+--- a/roles/lib_openshift/src/lib/service.py
++++ b/roles/lib_openshift/src/lib/service.py
+@@ -10,6 +10,7 @@ def __init__(self,
+                  sname,
+                  namespace,
+                  ports,
++                 annotations=None,
+                  selector=None,
+                  labels=None,
+                  cluster_ip=None,
+@@ -21,6 +22,7 @@ def __init__(self,
+         self.name = sname
+         self.namespace = namespace
+         self.ports = ports
++        self.annotations = annotations
+         self.selector = selector
+         self.labels = labels
+         self.cluster_ip = cluster_ip
+@@ -43,6 +45,9 @@ def create_dict(self):
+             self.data['metadata']['labels'] = {}
+             for lab, lab_value in self.labels.items():
+                 self.data['metadata']['labels'][lab] = lab_value
++        if self.annotations:
++            self.data['metadata']['annotations'] = self.annotations
++
+         self.data['spec'] = {}
+ 
+         if self.ports:
+diff --git a/roles/lib_openshift/src/test/unit/test_oc_service.py b/roles/lib_openshift/src/test/unit/test_oc_service.py
+index 9c21a262f9..2a7b3c7dce 100755
+--- a/roles/lib_openshift/src/test/unit/test_oc_service.py
++++ b/roles/lib_openshift/src/test/unit/test_oc_service.py
+@@ -34,6 +34,7 @@ def test_state_list(self, mock_cmd, mock_tmpfile_copy):
+                   'ports': None,
+                   'state': 'list',
+                   'labels': None,
++                  'annotations': None,
+                   'clusterip': None,
+                   'portalip': None,
+                   'selector': None,
+@@ -120,6 +121,7 @@ def test_create(self, mock_cmd, mock_tmpfile_copy):
+                             'targetPOrt': 9000},
+                   'state': 'present',
+                   'labels': None,
++                  'annotations': None,
+                   'clusterip': None,
+                   'portalip': None,
+                   'selector': {'router': 'router'},
+@@ -318,6 +320,7 @@ def test_create_with_labels(self, mock_cmd, mock_tmpfile_copy):
+                             'targetPOrt': 9000},
+                   'state': 'present',
+                   'labels': {'component': 'some_component', 'infra': 'true'},
++                  'annotations': None,
+                   'clusterip': None,
+                   'portalip': None,
+                   'selector': {'router': 'router'},
+@@ -407,6 +410,7 @@ def test_create_with_external_ips(self, mock_cmd, mock_tmpfile_copy):
+                             'targetPOrt': 9000},
+                   'state': 'present',
+                   'labels': {'component': 'some_component', 'infra': 'true'},
++                  'annotations': None,
+                   'clusterip': None,
+                   'portalip': None,
+                   'selector': {'router': 'router'},

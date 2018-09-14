@@ -1,0 +1,67 @@
+# Configuration file for deployment
+# You need to edit this file for the deploy.sh script to work
+
+# This should be the username you use to login to access.redhat.com
+RHN_ACCOUNT={{ username }}
+
+# This should be the password you use to login to access.redhat.com. Leave blank to be prompted.
+RHN_PASSWORD='{{ password }}'
+
+# This should be the subscription pool id for your OpenShift subscriptions
+# Read about how to get the pool id here: https://access.redhat.com/solutions/125873
+SUBSCRIPTION_POOL={{ pool_id }}
+
+# This should be the username which should become admin for your OpenShift installation
+OCP_USER={{ workshop_user }}
+
+# This should be the password which is used for the OCP_USER
+OCP_PASSWORD='{{ workshop_password }}'
+
+#
+# You don't need to edit things below this mark, just if you want to.
+#
+
+# This is the number of master nodes and infra nodes, supported values are 1 and 3. 3 masters = HA. 1 master = NON-HA.
+# 3 masters scales to ~2000 nodes.
+MASTERCOUNT={{ number_master_nodes }}
+
+# This is the number of nodes which runs your container workloads.
+NODECOUNT={{ number_nodes }}
+
+# This is your public ssh key, normally located here: ~/.ssh/id_rsa.pub it will be used to allow passwordless login to the cluster.
+# Don't forget to put " " around your key.
+PUBLIC_SSH_KEY="{{ lookup('file', '{{ ansible_ssh_public_key_file }}') }}"
+
+# This should be the Azure region to deploy to
+# Valid public values: centralus,eastasia,southeastasia,eastus,eastus2,westus,westus2,northcentralus,southcentralus,westcentralus,northeurope,westeurope,japaneast,japanwest,brazilsouth,australiasoutheast,australiaeast,westindia,southindia,centralindia,canadacentral,canadaeast,uksouth,ukwest,koreacentral,koreasouth
+# US Government values: usgovvirginia,usgoviowa,usgovtexas,usgovarizona
+# US DoD values: usdodeast,usdodcentral
+LOCATION={{ region }}
+
+# If you want to define the DNS name allocated to your azure load balancer which forwards traffic to the OpenShift masters, change 'default'
+# to something of your choosing. It will default to "{$GROUP}master".
+MASTER_DNS=
+
+# If you want to define the DNS name allocated to your azure load balancer which forwards traffic to the OpenShift cluster, change 'default'
+# to something of your choosing. It will default to "${GROUP}apps".
+INFRA_DNS=
+
+# This is the number of gigabytes of the disk allocated to all nodes and which is used for docker to store docker images
+# Because this install is a bit inflexible and that the master NFS server uses this disk as well, your install may fail if this is below 60-80.
+DISKSIZE={{ disk_size }}
+
+# This sets the name of the resource group in which you want to put your key vault. Defaults to the same resource group as the OCP cluster
+KEYVAULTRESOURCEGROUP=
+
+# This sets the name of the key vault in which you keep your private SSH key, defaults to ${GROUP}KeyVaultName
+KEYVAULTNAME=
+
+# This sets the name of the key vault secret, defaults to ${GROUP}SecretName
+KEYVAULTSECRETNAME=
+
+# Change this to 'custom' if you want to utilize your own DNS instead of nip.io
+DOMAINTYPE=xipio
+
+# If you are using custom DOMAINTYPE, change this to the subdomain which you have pointed to INFRA_DNS
+CUSTOMDOMAIN=domainname.com
+
