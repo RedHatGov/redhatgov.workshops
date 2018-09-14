@@ -16,7 +16,7 @@
 #  when: sm_result.rc == 0
 
 - name: remove resource group
-  shell: "{{ azure_cli_bin }} group delete -q {{ workshop_prefix }}"
+  shell: "{{ azure_cli_bin }} group delete -q --nowait {{ workshop_prefix }}"
   tags:
     - azure_delete
 

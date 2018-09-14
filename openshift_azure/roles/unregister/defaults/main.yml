@@ -1,4 +1,8 @@
-# file: roles/subscription_manager/defaults/main.yml
+# file: roles/unregister/defaults/main.yml
 ---
-#
-# foo: default
+#####################################################
+# Azure CLI
+#####################################################
+azure_cli_src: "http://aka.ms/linux-azure-cli"
+azure_cli_dir: "{{ terraform_working_dir }}/azure-cli-1.0"
+azure_cli_bin: "{{ azure_cli_dir }}/bin/azure"
