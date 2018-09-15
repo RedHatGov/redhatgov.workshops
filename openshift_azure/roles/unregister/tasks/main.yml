@@ -21,7 +21,7 @@
     - azure_delete
 
 - name: remove master CNAME
-  shell: "{{ azure_cli_bin }} network dns record-set delete -q {{ az_domain_rg }} {{ az_domain }} {{ workshop_prefix }}"
+  shell: "{{ azure_cli_bin }} network dns record-set delete -q permanent {{ az_domain }} master.{{ workshop_prefix }} CNAME"
   tags:
     - azure_delete
 
