@@ -1,0 +1,12 @@
+# file: site.yml
+---
+
+#---------------------------------------------------
+# Terraform Providers
+#---------------------------------------------------
+- name: CLI Azure provider
+  hosts: targets
+  roles:
+    - azure.cli.infra
+
+...

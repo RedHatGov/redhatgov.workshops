@@ -1,0 +1,26 @@
+# file: roles/openshift.prereq/tasks/atomic.yml
+---
+
+# [TODO]: Add Atomic Host support.
+
+- name: Upgrade the atomic host platform to the latest version (atomic host upgrade)
+  shell: atomic host upgrade
+
+- name: Reboot the host
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  become: true
+  ignore_errors: true
+
+- name: Waiting for server to come back
+  local_action: wait_for host={{ inventory_hostname }} state=started delay=30 timeout=300
+  become: false
+
+- name: get EC2 Facts
+  action: ec2_facts
+
+- debug: var=hostvars
+
+- name: Template inventory file to host
+  template: dest={{ default_home }}/inventory_ose  src=inventory_ose.j2

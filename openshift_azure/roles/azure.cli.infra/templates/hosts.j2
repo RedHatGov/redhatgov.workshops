@@ -1,0 +1,11 @@
+[targets]
+localhost ansible_connection=local
+
+[bastion]
+{{ bastionip.stdout }}
+
+[masters]
+{{ workshop_prefix }}master.usgovvirginia.cloudapp.usgovcloudapi.net ansible_port=2200
+
+[nodes]
+node.[0:{{ number_nodes | int - 1 }}].usgovvirginia.cloudapp.usgovcloudapi.net

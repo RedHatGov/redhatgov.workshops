@@ -1,0 +1,70 @@
+# file: 2_load.yml
+---
+- name: Wait for bastion Azure VM to become initialized
+  hosts: localhost
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.bastion }}"
+
+- name: Wait for master Azure VM(s) to become initialized
+  hosts: localhost
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 2200
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.masters }}"
+
+#---------------------------------------------------
+# OpenShift Pre- Installation
+#---------------------------------------------------
+#- name: OpenShift Pre- Installation
+#  hosts: masters, nodes
+#  become: yes
+#  roles:
+#    - openshift.prereq
+
+#---------------------------------------------------
+# OpenShift Advanced Installation
+#---------------------------------------------------
+#- name: OpenShift Advanced Installation
+#  hosts: masters
+#  roles:
+#    - openshift.install
+
+#---------------------------------------------------
+# Configure OpenShift Cluster
+#---------------------------------------------------
+- name: Configure OpenShift Cluster
+  hosts: masters
+  become: yes
+  roles:
+    - openshift.config
+
+#---------------------------------------------------
+# Configure bastion host
+#---------------------------------------------------
+- name: Bastion configuration
+  hosts: bastion
+  become: yes
+  roles:
+    - bastion.config
+
+#---------------------------------------------------
+# Wetty Installation
+#---------------------------------------------------
+- name: Wetty Installation
+#  hosts: masters, nodes
+  hosts: bastion, masters
+  become: yes
+  roles:
+    - epel
+    - nodejs
+    - wetty

@@ -1,0 +1,4 @@
+# file: roles/openshift.install/tasks/main.yml
+---
+
+- include: install.yml
