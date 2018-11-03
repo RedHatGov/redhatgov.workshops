@@ -92,11 +92,27 @@
     dest: /usr/share/ansible/openshift-ansible/roles/openshift_logging/tasks/install_logging.yaml
   when: osansibleroles.stdout == "openshift-ansible-roles-3.7.23-1.git.0.bc406aa.el7.noarch"
 
-- name: Run advanced installation method (runtime ~45 minutes)
-  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml 2>&1 | sudo tee -a /var/log/openshift-install && sudo touch /var/opt/.openshift-complete
+- name: Run advanced installation method (prerequisites)
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml 2>&1 | sudo tee -a /var/log/openshift-install.pre && sudo touch /var/opt/.openshift-complete-pre
   args:
     chdir: "{{ default_home }}"
-    creates: /var/opt/.openshift-complete
+    creates: /var/opt/.openshift-complete-pre
+  async: 10800
+  poll: 0
+  register: ose_install_status_pre
+
+- name: 'Check on OpenShift install ...'
+  async_status: jid={{ ose_install_status_pre.ansible_job_id }}
+  register: job_result
+  until: job_result.finished
+  delay: 30
+  retries: 180
+
+- name: Run advanced installation method 
+  shell: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_ose /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml 2>&1 | sudo tee -a /var/log/openshift-install && sudo touch /var/opt/.openshift-complete-deploy
+  args:
+    chdir: "{{ default_home }}"
+    creates: /var/opt/.openshift-complete-deploy
   async: 10800
   poll: 0
   register: ose_install_status
@@ -107,6 +123,7 @@
   until: job_result.finished
   delay: 30
   retries: 180
+
 
 # [TODO]: Apply to masters and nodes (both)
 # - name: Add entries to the exclude directive in the host’s /etc/yum.conf file when installed
