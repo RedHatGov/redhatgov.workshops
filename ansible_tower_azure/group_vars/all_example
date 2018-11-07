@@ -32,10 +32,10 @@ number_tower_nodes:               "1"            # Tower Nodes
 number_nodes:                     "1"            # Student Nodes
 os:                               "RHEL"
 os_version:                       "7.4"
-tower_instance_type:              "Standard_B2s"    # Tower Instance Size
-node_instance_type:               "Standard_B2s"    # Student Instance Size
-#tower_instance_type:              "Standard_DS1_V2" # Tower Instance Size
-#node_instance_type:               "Standard_B1MS"   # Student Instance Size
+#tower_instance_type:              "Standard_B2s"    # Tower Instance Size
+#node_instance_type:               "Standard_B2s"    # Student Instance Size
+tower_instance_type:              "Standard_DS2_V2" # Tower Instance Size
+node_instance_type:               "Standard_DS1_V2"   # Student Instance Size
 #azure_cloud_environment:          "public"
 azure_cloud_environment:          "usgovernment"
 #region:                           "eastus"    # AZURE Region
