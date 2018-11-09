@@ -1,0 +1,13 @@
+ansible_ssh_user=azure-user
+ansible_become=yes
+
+[local_target]
+localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
+
+[tower_nodes]
+
+[nodes]
+
+[all_nodes:children]
+tower_nodes
+nodes
