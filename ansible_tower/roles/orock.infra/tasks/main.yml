@@ -1,0 +1,6 @@
+---
+# tasks file for orock.infra
+# - include: infra.yml
+# - include: servers.yml
+- include: delete.yml
+

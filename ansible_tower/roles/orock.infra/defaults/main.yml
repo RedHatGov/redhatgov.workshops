@@ -1,0 +1,10 @@
+---
+# defaults file for orock.infra
+tower_server_defaults:
+  - name: 1
+  - name: 2
+  # - name: 3
+
+tower_node_defaults:
+  - name: 1
+  - name: 2

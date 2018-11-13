@@ -5,11 +5,11 @@ ansible_become=yes
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
 
 [tower_nodes]
-ChangeMe.tower.[0:2].redhatgov.io
+orock.tower.[0:1].redhatgov.io
 
 [nodes]
-ChangeMe.node.[0:4].redhatgov.io
+orock.node.[0:1].redhatgov.io
 
 [all_nodes]
-ChangeMe.tower.[0:2].redhatgov.io
-ChangeMe.node.[0:4].redhatgov.io
+orock.tower.[0:1].redhatgov.io
+orock.node.[0:1].redhatgov.io

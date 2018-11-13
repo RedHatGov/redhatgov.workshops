@@ -8,6 +8,7 @@
 # Deploy walkthrough scripts
 ###################################
 - include_tasks: walkthroughs.yml
+  when: walkthrough
 
 ###################################
 # Base setup of Tower

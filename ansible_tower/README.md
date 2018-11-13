@@ -16,12 +16,38 @@ source env.sh
 
 This repo also requires that you have Ansible installed on your local machine. For the most upto date methods of installing Ansible for your operating system [check here](http://docs.ansible.com/ansible/intro_installation.html).
 
+# ORock 
+
+To use the ORock cloud set the cloud type to 'orock' in the 'group_vars/all' file and also in the '1_provision.yml' as shown below. This will also currently provision the DNS names for instances in AWS. You will also need to obtain a OpenStack 'openrc' file to source for your environment as shown below and a 'cert.crt' file.
+
+group_vars/all
+```
+cloud:  "orock"
+```
+
+1_provision.yml
+```
+- name: Provision AWS Infrastucture
+  hosts: local_target
+  become: false
+  roles:
+  # - aws.infra
+  - orock.infra
+```
+
+```
+source openrc
+```
+
+```
+cert.crt
+```
+
+# AWS
+
 This repo also requires that Terraform be installed if you are using the aws.infra.terraform role. For the most upto data methods of installing Terraform for your operating system [check here](https://www.terraform.io/downloads.html).
 
-
-
 ## AWS Infrastructure Roles
-
 
 ### roles/aws.infra.terraform
 

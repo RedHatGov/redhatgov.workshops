@@ -11,86 +11,53 @@
         state: started
         timeout: 300
       with_items: "{{ groups.all_nodes }}"
+      when: cloud == "aws"
 
 - name: Configure repositories on all nodes
   become: yes
-  remote_user: ec2-user
-  hosts: tower_nodes
+  remote_user: "{{ system_user }}"
+  hosts: all_nodes
   roles:
-    - { role: subscription_manager }
-    - { role: epel }
+    - subscription_manager
+    - repo_epel
+    - nodejs 
+    - wetty
+    - zsh
+    - cockpit
+    - LetsEncrypt
+    - ansible.tower
 
-- name: Configure repositories on tower nodes
+# Conditionally added below via group_vars/all
+# jboss:       True
+# walkthrough: True
+# upgrade:     True
+
+
+# JBOSS
+- name: Stage Maven POMs
   become: yes
-  remote_user: ec2-user
+  remote_user: "{{ system_user }}"
   hosts: nodes
   roles:
-    - { role: subscription_manager }
+    - { role: poms, when: jboss }
 
-- name: Remove Red Hat EAP packages
-  become: yes
-  remote_user: ec2-user
-  hosts: all_nodes
-  tasks:
-  - package:
-      name: eap7-*
-      state: absent
-
-- name: Configure repositories on nodes
-  become: yes
-  remote_user: ec2-user
-  hosts: le_node
-  roles:
-    - { role: LetsEncrypt }
-
-- name: Configure software on nodes
-  become: yes
-  remote_user: ec2-user
-  hosts: tower_nodes
-  roles:
-    - { role: nodejs }
-    - { role: wetty }
-    - { role: zsh }
-    - { role: codiad }
-
+# WALKTHROUGH
 - name: Prep walkthroughs for deployment
   become: yes
-  remote_user: ec2-user
+  remote_user: "{{ system_user }}"
   hosts: tower_nodes
   vars:
     install: no
     prep: yes
   roles:
-    - { role: ansible.tower }
+    - { role: ansible.tower, when: walkthrough }
+    - { role: codiad, when: walkthrough }
 
-- name: Configure software and deploy walkthroughs
-  become: yes
-  remote_user: ec2-user
-  hosts: tower_nodes
-  vars:
-    install: yes
-    prep: no
-  roles:
-    - { role: ansible.tower }
-
-- name: Stage Maven POMs
-  become: yes
-  remote_user: ec2-user
-  hosts: nodes
-  roles:
-    - { role: poms }
-
-- name: Configure Cockpit
-  become: yes
-  remote_user: ec2-user
-  hosts: all_nodes
-  roles:
-    - { role: cockpit }
-
+# Upgrade
 - name: Upgrade packages
   become: yes
-  remote_user: ec2-user
+  remote_user: "{{ system_user }}"
   hosts: all_nodes
   roles:
-    - { role: upgrade }
+    - { role: upgrade, when: upgrade }
 

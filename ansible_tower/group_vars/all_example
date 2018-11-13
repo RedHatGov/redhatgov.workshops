@@ -7,9 +7,11 @@
 ################################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
-workshop_prefix:                  "tower"
-
-
+workshop_prefix:                  "orock"
+cloud:                            "orock" # aws
+jboss:                            False
+walkthrough:                      False
+upgrade:                          False
 
 ################################################################################
 # ANSIBLE ROLE KEY         |      VALUE
@@ -38,10 +40,10 @@ ebs_root_block_size:              50
 # us-east-2
 # ami_id:                         "ami-cfdafaaa" # RHEL 7.4 
 # ami_id:                         "ami-c11b32a4" # RHEL 7.4 with JBoss EAP 7.1
-# ami_id:                         "ami-8f2617ea" # RHEL 7.5 
+ami_id:                           "" # RHEL 7.5 
 #-------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
-cloud_access:                      true
+cloud_access:                     False # True for AWS | False for Orock
 # subscription_manager     |      Red Hat Subscription via username & password
 username:                         ""
 password:                         ""
@@ -55,7 +57,7 @@ letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
 #--------------------------------------------------------------------------------------
 # wetty                    |      password
-workshop_password:                "redhat!@#"
+workshop_password:                "redhat321"
 #--------------------------------------------------------------------------------------
 
 ################################################################################
@@ -66,7 +68,7 @@ inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars
 ssh_key_path:                     "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
 ansible_ssh_private_key_file:     "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower"
-system_user:                      "ec2-user"    # AWS
+system_user:                      "cloud-user"    # AWS
 # Here is the list of users for codiad.  It is suggested to use the same password as you specified as the `workshop_password`, above.  Use the following algorithm to hash passwords:
 # $ php -r 'print_r(sha(md5("password")));echo "\n";'
 codiad_users:

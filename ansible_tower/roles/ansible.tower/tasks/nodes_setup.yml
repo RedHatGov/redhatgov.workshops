@@ -4,13 +4,9 @@
 
 - name: Install base packages
   become: yes
-  yum: name={{ item }} state=latest enablerepo=epel-testing
-  with_items: 
-      - vim
-      - git
-      - ansible
-      - nano
-  when: install
+  yum: 
+    name: "{{ packages }}"
+    state: present 
 
 - name: Fake, if missing, the dbus-1 directory
   file:
@@ -31,7 +27,7 @@
   with_items:
     - { src: "vimrc", dest: ".vimrc" }
     - { src: "license", dest: "license" }
-  when: install
+
 
 - name: Copy over SSH Key to {{ system_user }} home
   copy: 
@@ -40,7 +36,16 @@
     mode: 0400 
     group: "{{ system_user }}"
     owner: "{{ system_user }}"
-  when: install
+  when: cloud == "aws"
+
+- name: Copy over SSH Key to {{ system_user }} home
+  copy: 
+    src: "{{ '~' | expanduser }}/.ssh/id_rsa"
+    dest: "/home/{{ system_user }}/.ssh/{{ workshop_prefix }}-tower" 
+    mode: 0400 
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+  when: cloud == "orock"
 
 - name: Template over ansible.cfg
   template:
@@ -48,4 +53,4 @@
     src=ansible.cfg.j2  
     owner="{{ system_user }}"
     group="{{ system_user }}"
-  when: install
+

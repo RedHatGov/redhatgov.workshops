@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+for key in $( set | awk '{FS="="}  /^OS_/ {print $1}' ); do unset $key ; done
+
+export OS_AUTH_URL=
+export OS_REGION_NAME=
+
+export OS_IDENTITY_API_VERSION=
+export OS_INTERFACE=
+
+export OS_PROJECT_DOMAIN_NAME=
+export OS_PROJECT_NAME=
+
+export OS_USERNAME=
+export OS_PASSWORD=
+
+# OpenStack authentication plugin
+export OS_AUTH_TYPE=
+# OpenStack Federation Protocol name
+export OS_PROTOCOL=
+# OpenStack Identity Provider name
+export OS_IDENTITY_PROVIDER=
+# SAML 2.0 Identity Provider (IdP) AssertionConsumerService (ACS) endpoint
+export OS_IDENTITY_PROVIDER_URL=
+
+export OS_CACERT=$(pwd)/cert.crt

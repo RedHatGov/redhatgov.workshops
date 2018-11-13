@@ -1,0 +1,90 @@
+---
+#
+- name: Template Ansible Hosts File
+  template: dest="{{ inventory_working_dir }}/hosts"  src=hosts.j2
+  tags:
+    - tf_create
+
+- name: Create new keypair from current user's default SSH key
+  os_keypair:
+    state: present
+    name:            "{{ workshop_prefix }}-student-key"
+    public_key_file: "{{ '~' | expanduser }}/.ssh/id_rsa.pub"
+    
+- name: Create the student network
+  os_network:
+    state:    present
+    name:    "{{ workshop_prefix }}-student-network"
+    external: False
+    shared:   False
+  register:   student_network
+
+- name: Create the student subnet
+  os_subnet:
+    state: present
+    network_name: "{{ student_network.id }}"
+    name: "{{ workshop_prefix }}-student-subnet"
+    ip_version: 4
+    cidr: 192.168.0.0/24
+    gateway_ip: 192.168.0.1
+    enable_dhcp: yes
+    # Internal ORock DNS resolvers
+    # allows fetching packages from Satellite
+    dns_nameservers:
+    - 10.11.49.16
+    - 10.10.49.16
+  register: student_subnet
+
+# WAN gateway: external-floating-ips
+# LAN interface: student-subnet/network
+- name: Create the student router
+  ignore_errors: yes
+  os_router:
+    state: present
+    name: "{{ workshop_prefix }}-student-router"
+    network: external-floating-ips
+    interfaces:
+    - "{{ workshop_prefix }}-student-subnet"
+
+- name: Create a new security group
+  os_security_group:
+    state: present
+    name: "{{ workshop_prefix }}-student-fw"
+
+- name: Create a new security group allowing any ICMP
+  os_security_group_rule:
+    security_group: "{{ workshop_prefix }}-student-fw"
+    protocol: icmp
+    remote_ip_prefix: 0.0.0.0/0
+
+- name: Create a new security group allowing any SSH connection
+  os_security_group_rule:
+    security_group: "{{ workshop_prefix }}-student-fw"
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
+    remote_ip_prefix: 0.0.0.0/0
+
+- name: Create a new security group allowing any HTTP connection
+  os_security_group_rule:
+    security_group: "{{ workshop_prefix }}-student-fw"
+    protocol: tcp
+    port_range_min: 80
+    port_range_max: 80
+    remote_ip_prefix: 0.0.0.0/0
+
+- name: Create a new security group allowing any HTTPS connection
+  os_security_group_rule:
+    security_group: "{{ workshop_prefix }}-student-fw"
+    protocol: tcp
+    port_range_min: 443
+    port_range_max: 443
+    remote_ip_prefix: 0.0.0.0/0
+
+- name: Create a new security group allowing any Wetty connection
+  os_security_group_rule:
+    security_group: "{{ workshop_prefix }}-student-fw"
+    protocol: tcp
+    port_range_min: 8888
+    port_range_max: 8888
+    remote_ip_prefix: 0.0.0.0/0

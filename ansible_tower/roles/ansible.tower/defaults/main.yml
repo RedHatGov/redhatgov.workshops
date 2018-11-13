@@ -1,4 +1,8 @@
 # file: roles/ansible.tower/defaults/main.yml
 ---
 #
-# foo: default
+packages: 
+  - vim
+  - git
+  - ansible
+  - nano
