@@ -124,7 +124,7 @@ ansible-playbook 1_provision.yml
 ```
 #### Install packages and configure the newly provisioned nodes.
 
-**NOTE: You need to run this playbook with sudo priviledges**
+**NOTE: You need to run this playbook with sudo priviledges which are provided via the -K option. DO NOT add 'sudo' to this command.**
 ```
 ansible-playbook 2_load.yml -K
 ```
