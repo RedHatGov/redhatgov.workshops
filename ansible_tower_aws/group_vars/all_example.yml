@@ -8,7 +8,7 @@
 
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "tower"
-execution:			  "local" when not running from Tower, define
+execution:                        "local" # when not running from Tower, define
  this variable
 
 ################################################################################
