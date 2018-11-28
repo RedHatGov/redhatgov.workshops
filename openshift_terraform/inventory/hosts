@@ -8,7 +8,7 @@ localhost ansible_connection=local
 # [NOTE]: These variables must be updated manually, based on `default_subdomain` value from `group_vars/all` file.
 
 [masters]
-master.jaj.redhatgov.io
+master.apps.redhatgov.io
 
 [nodes]
-node.[0:1].jaj.redhatgov.io
+node.[0:1].apps.redhatgov.io

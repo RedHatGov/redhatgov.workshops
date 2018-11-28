@@ -11,6 +11,11 @@ default_home:      "/home/{{ default_user }}"
 default_ssh:       "{{ default_home }}/.ssh"
 default_keypair:   "{{ vault_cluster_name }}"
 number_nodes:      "{{ vault_number_nodes }}"
+redhat_uid:        "{{ vault_redhat_uid }}"
+redhat_pwd:        "{{ vault_redhat_pwd }}"
+rhsm_username:     "{{ vault_redhat_uid }}"
+rhsm_password:     "{{ vault_redhat_pwd }}"
+rhsm_pool_id:      "{{ vault_rhsm_pool_id }}"
 
 #####################################################
 # AWS access keys

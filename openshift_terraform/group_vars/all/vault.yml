@@ -6,8 +6,10 @@
 vault_default_domain:    "${INSERT_VALUE_HERE}"
 vault_cluster_name:      "${INSERT_VALUE_HERE}"
 vault_cluster_id:        "bdsa"
-vault_openshift_release: "3.7"
-vault_users_count: 20
+vault_openshift_release: "3.11"
+vault_users_count:       20
+vault_redhat_uid:        "${INSERT_VALUE_HERE}"
+vault_redhat_pwd:        "${INSERT_VALUE_HERE}"
 
 #####################################################
 # AWS access keys
@@ -23,13 +25,11 @@ vault_aws_route53_zone_id: "${INSERT_VALUE_HERE}"
 #####################################################
 # Red Hat Subscription Information 
 #####################################################
-# activation keys
+# To subscribe with activation keys:
 vault_rhel_rhsm_activationkey: "${INSERT_VALUE_HERE}"
 vault_rhel_rhsm_org_id:        "${INSERT_VALUE_HERE}"
-# passwd + pool id
-rhsm_username:                 "${INSERT_VALUE_HERE}"
-rhsm_password:                 "${INSERT_VALUE_HERE}"
-rhsm_pool_id:                  "${INSERT_VALUE_HERE}"
+# To subscribe with username and password + pool id:
+vault_rhsm_pool_id:            "${INSERT_VALUE_HERE}"
 
 #####################################################
 # Cluster administration
