@@ -140,7 +140,7 @@
   command: service iptables status
   register: ri_result
   ignore_errors: True
-  when: rf_result.rc != 0
+#  when: rf_result.rc != 0
 
 - name: Open port in IPtables firewall
   become: yes
@@ -152,9 +152,13 @@
     protocol: tcp
     state: present
   when:
-  - rf_result.rc != 0
+#  - rf_result.rc != 0
   - ri_result.rc == 0
 
+# we should install 'iptables-services' package and use 'service iptables save' instead
+# or:
+# iptables-save > /etc/sysconfig/iptables
+# ip6tables-save > /etc/sysconfig/ip6tables
 - name: Append IPtables rule to config file
   lineinfile:
     path: /etc/sysconfig/iptables
@@ -162,7 +166,7 @@
     line: "-A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m udp --dport 8888 -j ACCEPT"
     state: present
   when:
-  - rf_result.rc != 0
+#  - rf_result.rc != 0
   - ri_result.rc == 0
 
 #-------------------------------------------------------

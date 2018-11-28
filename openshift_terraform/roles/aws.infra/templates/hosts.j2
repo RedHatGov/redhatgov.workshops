@@ -12,3 +12,7 @@ master.{{ default_subdomain }}
 
 [nodes]
 node.[0:{{ number_nodes | int - 1 }}].{{ default_subdomain }}
+
+[remotes:children]
+masters
+nodes

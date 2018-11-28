@@ -26,11 +26,13 @@ rhel_rhsm_repos:
   - rhel-7-server-rpms
   - rhel-7-server-extras-rpms
   - rhel-7-server-ose-{{ openshift_release }}-rpms
+  - rhel-7-server-ansible-2.6-rpms
 
 rhel_rhsm_repo_ocp_v3_4: rhel-7-server-optional-rpms
 rhel_rhsm_repo_ocp_v3_5: rhel-7-fast-datapath-rpms
 rhel_rhsm_repo_ocp_v3_6: rhel-7-fast-datapath-rpms
 rhel_rhsm_repo_ocp_v3_7: rhel-7-fast-datapath-rpms
+rhel_rhsm_repo_ocp_v3_11: rhel-7-fast-datapath-rpms
 
 
 #####################################################
@@ -66,7 +68,5 @@ rhel_base_pkgs:
 # OpenShift packages
 #####################################################
 rhel_ose_pkgs:
-  - atomic-openshift-utils
-  - docker-1.12.6
-  - atomic-openshift-excluder
-  - atomic-openshift-docker-excluder
+  - openshift-ansible
+  - docker-1.13.1

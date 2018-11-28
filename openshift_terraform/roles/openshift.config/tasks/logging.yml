@@ -8,11 +8,3 @@
     insertafter: "assetConfig:"
     line:  "  loggingPublicURL: https://kibana.{{ default_wildcard }}"
 
-- name: Restart master service
-  become: yes
-  service:
-    name: "{{ item }}"
-    state: restarted
-  with_items:
-  - atomic-openshift-master-api
-  - atomic-openshift-master-controllers

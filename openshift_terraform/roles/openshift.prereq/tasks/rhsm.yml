@@ -1,16 +1,16 @@
 # file: roles/openshift.prereq/tasks/rhsm.yml
 ---
 
-- name: Disable RHUI plugins
-  lineinfile: dest={{ item }} regexp='^enabled' line='enabled=0' state=present
-  with_items: "{{ rhel_rhui_plugins }}"
-
-- name: Disable RHUI repositories
-  replace:
-    dest: "{{ item }}"
-    regexp: 'enabled=1'
-    replace: 'enabled=0'
-  with_items: "{{ rhel_rhui_repos }}"
+#- name: Disable RHUI plugins
+#  lineinfile: dest={{ item }} regexp='^enabled' line='enabled=0' state=present
+#  with_items: "{{ rhel_rhui_plugins }}"
+#
+#- name: Disable RHUI repositories
+#  replace:
+#    dest: "{{ item }}"
+#    regexp: 'enabled=1'
+#    replace: 'enabled=0'
+#  with_items: "{{ rhel_rhui_repos }}"
 
 - name: Enable RHSM plugins
   lineinfile: dest={{ item }} regexp='^enabled' line='enabled=1' state=present
