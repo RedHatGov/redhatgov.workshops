@@ -2,12 +2,9 @@
 ---
 # https://www.terraform.io/docs/providers/aws/index.html
 
-
-- name: Provision AWS Infrastucture using Terraform 
-  hosts: local_target
+- name: Provision AWS Infrastucture
+  hosts: localhost
   roles:
-  - { role: aws.infra, tags: ["tf_create"] }
+  - { role: aws.create, tags: ["create"] }
 
-# {{workshop_prefix}}.tower.<student number>.redhatgov.io:8888
-# Username: ec2-user
-# Password: redhat!@#
+...
