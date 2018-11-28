@@ -1,0 +1,81 @@
+#--------------------------------------------------
+# Install Walkthrough Scripts
+#--------------------------------------------------
+
+- name: Create directory for walkthrough scripts
+  file:
+    path: "/home/{{ system_user }}/walkthrough"
+    state: directory
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0755
+  when: install
+
+- name: Create directory for walkthrough scripts
+  local_action:
+    file path="/tmp/{{ inventory_hostname }}" state=directory mode=0755
+  when: prep
+
+- name: create templates for each host
+  local_action:
+    template src="{{ item.src }}" dest="/tmp/{{ inventory_hostname }}/{{ item.dest }}"
+  with_items: 
+    - { src: "exercise1.0-0.sh.j2", dest: "exercise1.0-0.sh" }
+    - { src: "exercise1.0-1.sh.j2", dest: "exercise1.0-1.sh" }
+    - { src: "exercise1.0-2.sh.j2", dest: "exercise1.0-2.sh" }
+    - { src: "exercise1.0-3.sh.j2", dest: "exercise1.0-3.sh" }
+    - { src: "exercise1.0-4.sh.j2", dest: "exercise1.0-4.sh" }
+    - { src: "exercise1.0-5.sh.j2", dest: "exercise1.0-5.sh" }
+    - { src: "exercise1.0-6.sh.j2", dest: "exercise1.0-6.sh" }
+    - { src: "exercise1.0-7.sh.j2", dest: "exercise1.0-7.sh" }
+    - { src: "exercise1.1-1.sh.j2", dest: "exercise1.1-1.sh" }
+    - { src: "exercise1.1-2.sh.j2", dest: "exercise1.1-2.sh" }
+    - { src: "exercise1.1-3.sh.j2", dest: "exercise1.1-3.sh" }
+    - { src: "exercise1.1-4.sh.j2", dest: "exercise1.1-4.sh" }
+    - { src: "exercise1.2-1.sh.j2", dest: "exercise1.2-1.sh" }
+    - { src: "exercise1.2-2.sh.j2", dest: "exercise1.2-2.sh" }
+    - { src: "exercise1.3-1.1.sh.j2", dest: "exercise1.3-1.1.sh" }
+    - { src: "exercise1.3-1.2.sh.j2", dest: "exercise1.3-1.2.sh" }
+    - { src: "exercise1.3-1.3.sh.j2", dest: "exercise1.3-1.3.sh" }
+    - { src: "exercise1.3-2.1.sh.j2", dest: "exercise1.3-2.1.sh" }
+    - { src: "exercise1.3-2.2.sh.j2", dest: "exercise1.3-2.2.sh" }
+    - { src: "exercise1.3-3.1.sh.j2", dest: "exercise1.3-3.1.sh" }
+    - { src: "exercise1.3-4.1.sh.j2", dest: "exercise1.3-4.1.sh" }
+    - { src: "exercise1.4-1.sh.j2", dest: "exercise1.4-1.sh" }
+    - { src: "exercise1.4-2.sh.j2", dest: "exercise1.4-2.sh" }
+    - { src: "exercise1.5-1.1.sh.j2", dest: "exercise1.5-1.1.sh" }
+    - { src: "exercise1.5-1.2.sh.j2", dest: "exercise1.5-1.2.sh" }
+    - { src: "exercise1.5-1.3.sh.j2", dest: "exercise1.5-1.3.sh" }
+    - { src: "exercise1.5-1.4.sh.j2", dest: "exercise1.5-1.4.sh" }
+    - { src: "exercise1.5-2.1.sh.j2", dest: "exercise1.5-2.1.sh" }
+    - { src: "exercise1.5-2.2.sh.j2", dest: "exercise1.5-2.2.sh" }
+    - { src: "exercise1.5-2.3.sh.j2", dest: "exercise1.5-2.3.sh" }
+    - { src: "exercise1.5-2.4.sh.j2", dest: "exercise1.5-2.4.sh" }
+    - { src: "exercise1.5-2.5.sh.j2", dest: "exercise1.5-2.5.sh" }
+    - { src: "exercise1.5-2.6.sh.j2", dest: "exercise1.5-2.6.sh" }
+    - { src: "exercise1.5-2.7.sh.j2", dest: "exercise1.5-2.7.sh" }
+    - { src: "exercise1.5-3.1.sh.j2", dest: "exercise1.5-3.1.sh" }
+    - { src: "exercise2.0-1.sh.j2", dest: "exercise2.0-1.sh" }
+    - { src: "exercise2.0-2.sh.j2", dest: "exercise2.0-2.sh" }
+    - { src: "exercise2.0-3.sh.j2", dest: "exercise2.0-3.sh" }
+    - { src: "exercise2.0-4.sh.j2", dest: "exercise2.0-4.sh" }
+    - { src: "exercise2.0-6.sh.j2", dest: "exercise2.0-6.sh" }
+    - { src: "exercise2.0-7.sh.j2", dest: "exercise2.0-7.sh" }
+    - { src: "exercise3.0-1.1.sh.j2", dest: "exercise3.0-1.1.sh" }
+    - { src: "exercise3.0-1.2.sh.j2", dest: "exercise3.0-1.2.sh" }
+    - { src: "exercise3.0-1.3.sh.j2", dest: "exercise3.0-1.3.sh" }
+  when: prep
+
+- name: create template archives for each host
+  local_action:
+    archive path="/tmp/{{ inventory_hostname }}/*sh" dest="/tmp/{{ inventory_hostname }}.tgz" remove=no
+  when: prep
+
+- name: Copy archive and extract scripts
+  unarchive:
+    src: "/tmp/{{ inventory_hostname }}.tgz"
+    dest: "/home/{{ system_user }}/walkthrough/"
+    mode: 0755
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+  when: install
