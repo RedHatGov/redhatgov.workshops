@@ -5,37 +5,6 @@
 #===============================================================================
 
 #---------------------------------------------------
-#  AMI Choice
-#---------------------------------------------------
-- name: Define AMIs to use, based on region, for us-east-1
-  set_fact:
-    nodes:
-      tower_rhel:
-        ami_id: "ami-0394fe9914b475c53" # RHEL-7.5_HVM-20180813-x86_64-0-Hourly2-GP2
-        instance_type: "t2.large"
-      rhel:
-        ami_id: "ami-0394fe9914b475c53" # RHEL-7.5_HVM-20180813-x86_64-0-Hourly2-GP2
-        instance_type: "t2.small"
-      win:
-        ami_id: "ami-01945499792201081" # Windows_Server-2016-English-Full-Base-2018.09.15
-        instance_type: "t2.large"
-  when: region == "us-east-1"
-
-- name: Define AMIs to use, based on region, for us-east-2
-  set_fact:
-    nodes:
-      tower_rhel:
-        ami_id: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-        instance_type: "t2.large"
-      rhel:
-        ami_id: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-        instance_type: "t2.small"
-      win:
-        ami_id: "ami-0ca3e3965ada31684" # Windows_Server-2016-English-Full-Base-2018.09.15
-        instance_type: "t2.large"
-  when: region == "us-east-2"
-
-#---------------------------------------------------
 #  Ansible Hosts Creation
 #---------------------------------------------------
 - name: Template Ansible Hosts File
@@ -72,7 +41,7 @@
 #---------------------------------------------------
 - name: Create EC2 keypair
   ec2_key:
-    name: "dp-{{ workshop_prefix }}-key"
+    name: "at-{{ workshop_prefix }}-key"
     region: "{{ region }}"
     state: present
   register: ec2_key
@@ -92,7 +61,7 @@
 #---------------------------------------------------
 - name: Create VPC
   ec2_vpc_net:
-    name: "dp-{{ workshop_prefix }}-vpc"
+    name: "at-{{ workshop_prefix }}-vpc"
     region: "{{ region }}"
     cidr_block: "10.0.0.0/16"
     dns_hostnames: yes
@@ -113,7 +82,7 @@
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     state: present
     tags:
-      Name: "dp-{{ workshop_prefix }}-igw"
+      Name: "at-{{ workshop_prefix }}-igw"
       username: "{{ local_user }}"
       workshop: "dp"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -124,7 +93,7 @@
 
 - name: Create RHEL security group
   ec2_group:
-    name: "dp-{{ workshop_prefix }}-rhel-sg"
+    name: "at-{{ workshop_prefix }}-rhel-sg"
     description: "SG for RHEL hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
@@ -134,19 +103,31 @@
       cidr_ip: 0.0.0.0/0
       rule_desc: "allow all on port 22 (SSH)"
     - proto: "tcp"
+      ports: 80
+      cidr_ip: 0.0.0.0/0
+      rule_desc: "allow all on port 80 (http)"
+    - proto: "tcp"
       ports: 443
       cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 443 (SSH)"
+      rule_desc: "allow all on port 443 (https)"
+    - proto: "tcp"
+      ports: 8080
+      cidr_ip: 0.0.0.0/0
+      rule_desc: "allow all on port 8080 (jboss)"
+    - proto: "tcp"
+      ports: 8888
+      cidr_ip: 0.0.0.0/0
+      rule_desc: "allow all on port 8888 (wetty)"
     tags:
       username: "{{ local_user }}"
       workshop: "dp"
       workshop_prefix: "{{ workshop_prefix }}"
-      rhel: "dp-{{ workshop_prefix }}"
+      rhel: "at-{{ workshop_prefix }}"
     state: present
 
 - name: Create Windows security group
   ec2_group:
-    name: "dp-{{ workshop_prefix }}-win-sg"
+    name: "at-{{ workshop_prefix }}-win-sg"
     description: "SG for Windows hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
@@ -167,7 +148,7 @@
       username: "{{ local_user }}"
       workshop: "dp"
       workshop_prefix: "{{ workshop_prefix }}"
-      win: "dp-{{ workshop_prefix }}"
+      win: "at-{{ workshop_prefix }}"
     state: present
 
 - name: Create public subnet
@@ -176,7 +157,7 @@
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     tags:
-      Name: "dp-{{ workshop_prefix }}-subnet"
+      Name: "at-{{ workshop_prefix }}-subnet"
       username: "{{ local_user }}"
       workshop: "dp"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -197,7 +178,7 @@
         gateway_id: "{{ ec2_igw.gateway_id }}"
     lookup: tag
     tags:
-      Name: "dp-{{ workshop_prefix }}-route"
+      Name: "at-{{ workshop_prefix }}-route"
       username: "{{ local_user }}"
       workshop: "dp"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -210,18 +191,18 @@
 - name: Create RHEL instances
   ec2:
     assign_public_ip: yes
-    key_name: "dp-{{ workshop_prefix }}-key"
-    group: "dp-{{ workshop_prefix }}-rhel-sg"
+    key_name: "at-{{ workshop_prefix }}-key"
+    group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
-    instance_type: "{{ nodes.rhel.instance_type }}"
-    image: "{{ nodes.rhel.ami_id }}"
+    instance_type: "{{ rhel_instance_type }}"
+    image: "{{ rhel_ami_id }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
-      Name: "dp-{{ workshop_prefix }}-rhel"
+      Name: "at-{{ workshop_prefix }}-rhel"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      rhel: "dp-{{ workshop_prefix }}"
+      rhel: "at-{{ workshop_prefix }}"
     exact_count: "{{ rhel_count }}"
     count_tag: rhel
   register: ec2_rhel
@@ -229,18 +210,18 @@
 - name: Create RHEL Tower instances
   ec2:
     assign_public_ip: yes
-    key_name: "dp-{{ workshop_prefix }}-key"
-    group: "dp-{{ workshop_prefix }}-rhel-sg"
+    key_name: "at-{{ workshop_prefix }}-key"
+    group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
-    instance_type: "{{ nodes.tower_rhel.instance_type }}"
-    image: "{{ nodes.tower_rhel.ami_id }}"
+    instance_type: "{{ tower_instance_type }}"
+    image: "{{ rhel_ami_id }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
-      Name: "dp-{{ workshop_prefix }}-tower_rhel"
+      Name: "at-{{ workshop_prefix }}-tower_rhel"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      tower_rhel: "dp-{{ workshop_prefix }}"
+      tower_rhel: "at-{{ workshop_prefix }}"
     exact_count: "{{ tower_rhel_count }}"
     count_tag: tower_rhel
   register: ec2_tower_rhel
@@ -254,19 +235,19 @@
 - name: Create Windows instances
   ec2:
     assign_public_ip: yes
-    key_name: "dp-{{ workshop_prefix }}-key"
-    group: "dp-{{ workshop_prefix }}-win-sg"
+    key_name: "at-{{ workshop_prefix }}-key"
+    group: "at-{{ workshop_prefix }}-win-sg"
     region: "{{ region }}"
-    instance_type: "{{ nodes.win.instance_type }}"
-    image: "{{ nodes.win.ami_id }}"
+    instance_type: "{{ win_instance_type }}"
+    image: "{{ win_ami_id }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     user_data: "{{ lookup('file', '{{ winrm_path }}') }}"
     wait: true
     instance_tags:
-      Name: "dp-{{ workshop_prefix }}-win"
+      Name: "at-{{ workshop_prefix }}-win"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      win: "dp-{{ workshop_prefix }}"
+      win: "at-{{ workshop_prefix }}"
     exact_count: "{{ win_count }}"
     count_tag: win
   register: ec2_win
@@ -291,7 +272,7 @@
 
 - name: add RHEL hosts to groups
   add_host:
-    name: dp-{{ workshop_prefix}}-rhel-{{ item.id }}
+    name: at-{{ workshop_prefix}}-rhel-{{ item.id }}
     ansible_ssh_host: "{{ item.public_ip }}"
     groups: rhel_nodes
   with_items: "{{ ec2_rhel.tagged_instances }}"
@@ -301,7 +282,7 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "rhel7.{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
+    record: "{{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
 #    wait: yes
     state: present
@@ -313,7 +294,7 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "tower.{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
+    record: "{{ workshop_prefix }}.tower.{{ item.ami_launch_index }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
 #    wait: yes
     state: present
@@ -332,7 +313,7 @@
 
 - name: add Windows hosts to groups
   add_host:
-    name: dp-{{ workshop_prefix}}-win-{{ item.id }}
+    name: at-{{ workshop_prefix}}-win-{{ item.id }}
     ansible_ssh_host: "{{ item.public_ip }}"
     groups: win_nodes
   with_items: "{{ ec2_win.tagged_instances }}"
@@ -342,7 +323,7 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "win2016.{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
+    record: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
 #    wait: yes
     state: present

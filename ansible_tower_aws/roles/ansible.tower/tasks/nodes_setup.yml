@@ -10,7 +10,6 @@
       - git
       - ansible
       - nano
-  when: install
 
 - name: Fake, if missing, the dbus-1 directory
   file:
@@ -31,16 +30,14 @@
   with_items:
     - { src: "vimrc", dest: ".vimrc" }
     - { src: "license", dest: "license" }
-  when: install
 
 - name: Copy over SSH Key to {{ system_user }} home
   copy: 
-    src: "{{ terraform_working_dir }}/{{ workshop_prefix }}-tower" 
+    src: "{{ ssh_key_path }}"
     dest: "/home/{{ system_user }}/.ssh/{{ workshop_prefix }}-tower" 
     mode: 0400 
     group: "{{ system_user }}"
     owner: "{{ system_user }}"
-  when: install
 
 - name: Template over ansible.cfg
   template:
@@ -48,4 +45,3 @@
     src=ansible.cfg.j2  
     owner="{{ system_user }}"
     group="{{ system_user }}"
-  when: install

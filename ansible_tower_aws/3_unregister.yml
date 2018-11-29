@@ -4,7 +4,11 @@
 # Do not use with Cloud Access
 - name: Unregister Nodes 
   become: yes
-  hosts: all_nodes
+  gather_facts: false
+  ignore_errors: true
+  hosts:
+    - tower_rhel_nodes
+    - rhel_nodes
   remote_user: ec2-user
   roles:
     - { role: unregister }

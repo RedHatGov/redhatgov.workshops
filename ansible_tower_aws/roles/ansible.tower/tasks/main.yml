@@ -5,11 +5,6 @@
 - include_tasks: nodes_setup.yml
 
 ###################################
-# Deploy walkthrough scripts
-###################################
-- include_tasks: walkthroughs.yml
-
-###################################
 # Base setup of Tower
 ###################################
 # - import_tasks: tower_setup.yml
