@@ -9,6 +9,7 @@
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "tower"
 execution:                        "local" # when not running from Tower, define this variable
+jboss:                            "true" # when this is defined, configure JBoss/Maven
 
 ################################################################################
 # ANSIBLE ROLE KEY         |      VALUE
@@ -31,9 +32,11 @@ ebs_root_block_size:              50
 #-------------------------------------------------------------------------------
 # us-east-1
 nodes.rhel.ami_id:                "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+nodes.rhel.ami_id:                "ami-6408521b" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
 nodes.win.ami_id:                 "ami-01945499792201081" # Windows_Server-2016-English-Full-Base-2018.09.15
 # us-east-2
 nodes.rhel.ami_id:                "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+nodes.rhel.ami_id:                "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
 nodes.win.ami_id:                 "ami-0ca3e3965ada31684" # Windows_Server-2016-English-Full-Base-2018.09.15
 #-------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
