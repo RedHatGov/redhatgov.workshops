@@ -1,0 +1,115 @@
+---
+# tasks file for graphical
+- block:
+
+  - name: Install GUI components
+    yum:
+      name:
+      - "@gnome-desktop"
+      - "@x11"
+      - "@fonts"
+      exclude: "fwupdate-efi"
+      skip_broken: "yes"
+      state: present
+
+  - name: Install XRDP server and dependencies
+    yum:
+      name:
+      - "xrdp"
+      - "xrdp-selinux"
+      - "xorgxrdp"
+      - "tigervnc-server"
+      state: latest
+
+  - name: Install xrdp configuration
+    copy:
+      dest: "/etc/xrdp/xrdp.ini"
+      src: "xrdp.ini"
+      mode: 0644
+
+  - name: Create SELinux dir
+    file:
+      group: "{{ system_user }}"
+      owner: "{{ system_user }}"
+      mode:  0700
+      path:  "/home/{{ system_user }}/.selinux"
+      state: directory
+
+  - name: Copy over SELinux modules for colord
+    copy:
+      src:   "{{ item }}"
+      dest:  "/home/{{ system_user }}/.selinux"
+      group: "{{system_user}}"
+      owner: "{{system_user}}"
+      mode:  0600
+    with_items:
+      - colord-add.pp
+      - colord-add.te
+    register: result
+
+  - name: Copy over polikt config for colord
+    copy:
+      src:   "02-allow-colord.rules"
+      dest:  "/etc/polkit-1/rules.d/02-allow-colord.rules"
+      group: "root"
+      owner: "root"
+      mode:  0644
+
+  - name: Update SELinux for colord
+    command: semodule -i colord-add.pp chdir=/home/{{ system_user }}/.selinux
+    notify: colord
+    when: result.changed
+
+#  - name: Configure XRDP for SELinux
+#    file:
+#      path: "{{ item }}"
+#      setype: "bin_t"
+#    with_items:
+#    - "/usr/sbin/xrdp"
+#    - "/usr/sbin/xrdp-sesman"
+
+  - name: check to see if firewalld is installed
+    command: rpm -q firewalld
+    register: rf_result
+    ignore_errors: True
+
+  - name: check to see if firewalld is running
+    command: service firewalld status
+    register: rfr_result
+    ignore_errors: True
+    
+  - name: check to see if iptables is running
+    command: service iptables status
+    register: ri_result
+    ignore_errors: True
+
+  - name: open XRDP port in firewalld (permanent)
+    firewalld:
+      port: "3389/tcp"
+      state: enabled
+      permanent: yes
+    when: rf_result.rc == 0 
+
+  - name: open XRDP port in firewalld (immediate)
+    firewalld:
+      port: "3389/tcp"
+      state: enabled
+      immediate: yes
+    when: rfr_result.rc == 0 
+
+  - name: open XRDP port in iptables
+    iptables:
+      chain: INPUT
+      protocol: tcp
+      destination_port: 3389
+      jump: ACCEPT
+    when: ri_result.rc == 0 
+
+  - name: Enable XRDP auto-start
+    service:
+      name: "xrdp"
+      enabled: "yes"
+      state: started
+
+  when: graphical == 'true'
+...

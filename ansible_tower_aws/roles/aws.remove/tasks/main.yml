@@ -155,7 +155,7 @@
   route53:
     state: get
     zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.-ower.{{ dns_idx }}.{{ domain_name }}"
+    record: "{{ workshop_prefix }}.tower.{{ dns_idx }}.{{ domain_name }}"
     type: CNAME
   register: tower_rhel_rec
   loop: "{{ tower_rhel_instance_ids }}"

@@ -63,6 +63,8 @@
     - role: wetty
     - role: zsh
     - role: ansible.tower
+    - role: graphical
+    - role: vscode
 
 - name: Stage Maven POMs
   become: yes
@@ -91,4 +93,3 @@
     - rhel_nodes
   roles:
     - role: upgrade
-

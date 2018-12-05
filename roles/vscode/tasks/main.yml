@@ -1,0 +1,17 @@
+---
+# tasks file for vscode
+- name: Add Microsoft VS Code repo
+  yum_repository:
+    name: vscode
+    description: Microsoft Visual Studio Code repository
+    baseurl: https://packages.microsoft.com/yumrepos/vscode
+    gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+    gpgcheck: yes
+
+- name: Install VS Code and dependencies
+  package:
+    name:
+    - code
+    - firefox
+    state: latest
+...

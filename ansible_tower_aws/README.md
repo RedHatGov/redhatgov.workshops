@@ -1,4 +1,4 @@
-# Ansible Tower Workshop
+# Ansible Tower Workshop - AWS Version
 
 ![ansible](img/Ansible-Tower-Logotype-Large-RGB-FullGrey-300x124.png)
 
@@ -124,9 +124,8 @@ ansible-playbook 1_provision.yml
 ```
 #### Install packages and configure the newly provisioned nodes.
 
-**NOTE: You need to run this playbook with sudo priviledges**
 ```
-ansible-playbook 2_load.yml -K
+ansible-playbook 2_load.yml
 ```
 
 #### To destroy the workshop environment
@@ -144,12 +143,7 @@ Browse to the URL of the EC2 instance and enter the `ec2-user`'s password `works
 https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
 ```
 
-There is a web-based IDE running on port 8443 of each tower node.  That IDE can be used to edit Ansible playbooks, rather than using a command line editor, like `vim` or `nano`.
+## Alternative interface: RDP (Microsoft Remote Desktop)
 
-![Codiad Login](img/codiad.png)
+Users of the workshop can, alternatively, login to the Tower nodes, using a Microsoft Remote Desktop (RDP) client.  This service is running on the standard port of 3389.  Once in, you will have a GNOME graphical session, with Microsoft Vidual Studio Code and the Firefox browser, to do the workshop.  All Wetty terminal commands can be entered into the GNOME terminal, and will work the same way.  Copy and paste functionality is verified using Microsoft's official client, and using Remmina, from Fedora.
 
-## Walkthrough for Scripts
-
-A walkthrough for most of the typewritten steps has been added to the workshop, both to speed up workshops presented within a limited schedule, or to help a studenmt who has made a mistake, or who has fallen far behind.
-
-The walkthrough is deployed on the tower nodes, in `~ec2-user/walkthrough`.
