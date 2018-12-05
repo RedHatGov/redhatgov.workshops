@@ -49,9 +49,9 @@ wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd6
 sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
 ```
 
-#### Fedora 25/26/27/28
+#### Fedora 25/26/27/28/29
 ```
-sudo dnf -y install python2-boto ansible
+sudo dnf -y install python2-boto ansible python3-botocore python3-boto python3-boto3
 wget https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
 sudo unzip terraform_0.11.7_linux_amd64.zip -d /usr/local/bin terraform
 ```
