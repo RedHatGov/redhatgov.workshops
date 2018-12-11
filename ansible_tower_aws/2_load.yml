@@ -60,11 +60,11 @@
   gather_facts: no
   roles:
     - role: nodejs
-    - role: wetty
     - role: zsh
     - role: ansible.tower
-    - role: graphical
     - role: vscode
+    - role: graphical
+    - role: wetty
 
 - name: Stage Maven POMs
   become: yes
