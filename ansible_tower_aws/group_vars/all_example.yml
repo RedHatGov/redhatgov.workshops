@@ -32,13 +32,13 @@ ebs_root_block_size:              50
 # aws.infra                |      AWS AMI IDs
 #-------------------------------------------------------------------------------
 # us-east-1
-# nodes.rhel.ami_id:                "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-# nodes.rhel.ami_id:                "ami-6408521b" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
-# nodes.win.ami_id:                 "ami-01945499792201081" # Windows_Server-2016-English-Full-Base-2018.09.15
+# rhel_ami_id:                "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+# rhel_ami_id:                "ami-6408521b" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+# win_ami_id:                 "ami-01945499792201081" # Windows_Server-2016-English-Full-Base-2018.09.15
 # us-east-2
-nodes.rhel.ami_id:                "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-nodes.rhel.ami_id:                "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
-nodes.win.ami_id:                 "ami-0ca3e3965ada31684" # Windows_Server-2016-English-Full-Base-2018.09.15
+# rhel_ami_id:                "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+rhel_ami_id:                "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+win_ami_id:                 "ami-0ca3e3965ada31684" # Windows_Server-2016-English-Full-Base-2018.09.15
 #-------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t2.large"
