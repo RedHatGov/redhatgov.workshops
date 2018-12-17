@@ -56,36 +56,26 @@ wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd6
 sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
 ```
 # Custom Variable Requirements
-* Copy `group_vars/all_example` to `group_vars/all.yml`
-* Fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53.  You can get the zone ID from the DNS domain stored in Route 53.
-
-
+* Copy `group_vars/all_example.yml` to `group_vars/all.yml`
+* Fill in the following fields:
 ```
-#####################################################
-# Domain Name you own
-#####################################################
-domain_name: ""
-zone_id: ""
-
-#####################################################
-# AWS API Keys for terraform.tfvars file
-#####################################################
-aws_access_key: ""
-aws_secret_key: ""
+  workshop_prefix  : defaults to "tower", set to the name of your workshop
+  jboss            : defaults to "true", change it to false if you don't want to do the jboss steps in Exercise 1.0
+  graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
+  aws_access_key   : your Amazon AWS API key
+  aws_secret_key   : your Amazon AWS secret key
+  domain_name      : your DNS domain, likely "redhagov.io"
+  zone_id:         : the AWS Route 53 zone ID for your domain
+  tower_rhel_count : the number of tower instances, usually 1 per student
+  rhel_count       : the number of regular RHEL instances, usually 1 per student
+  win_count        : the number of Windows 2016 instances, currently not used
+  region:          : defaults to "us-east-2", set to any region
+  rhel_ami_id      : defaults to "us-east-2" AMIs, uncomment us-east-1, or add your preferred region, as desired.  There are both JBoss-enabled and plain RHEL instances avalable
+  win_ami_id       : similarly to "rhel_ami_id", uncomment to match your region choice
+  workshop_passwoed: pick a password for your students to login with
+  rabbit_password  : pick a password for RabbitMQ in Tower, usually not needed
+  local_user       : if you are using a Mac, uncomment the Mac-specific entry, and comment the RHEL/Fedora one
 ```
-* Define the workshop prefix.  Use a name/word that reflects the workshop you are teaching. **NOTE: No special characters**
-##### Example:
-```
-workshop_prefix:                  "NYCworkshop"
-```
-* Uncomment the `ami_id` you wish to use for the AWS instance
-##### Example:
-```
-ami_id:                         "ami-a4791ede" # RHEL 7.4 with JBoss EAP 7.1
-```
-
-* Define variables to allow enable subscription with RHSM
-
 **IMPORTANT!:**
 For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown below.  It is recommended that you enable Cloud Access and NOT use a traditional subscription as there is a known/unresolved bug when connecting to Red Hat servers.  
 
@@ -137,7 +127,7 @@ rm -rf .redhatgov
 
 ## Login to the primary workshop node
 
-Browse to the URL of the EC2 instance and enter the `ec2-user`'s password `workshop_password:` located in `group_vars/all`.
+Browse to the URL of the EC2 instance and enter the `ec2-user`'s password `workshop_password:` located in `group_vars/all.yml`.
 
 ```
 https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
