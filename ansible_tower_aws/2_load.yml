@@ -1,0 +1,95 @@
+# file: 2_load.yml
+---
+# https://www.terraform.io/docs/providers/aws/index.html
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.tower_rhel_nodes }}"
+        - "{{ groups.rhel_nodes }}"
+
+- name: Configure epel on tower nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_rhel_nodes
+  roles:
+    - role: epel
+
+- name: Configure repositories on all RHEL nodes
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - tower_rhel_nodes
+    - rhel_nodes
+  gather_facts: no
+  roles:
+    - role: subscription_manager 
+
+- name: Remove Red Hat EAP packages
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - tower_rhel_nodes
+    - rhel_nodes
+  gather_facts: no
+  tasks:
+    - package:
+        name: eap7-*
+        state: absent
+      when: jboss is defined
+
+- name: Configure repositories on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: le_node
+  gather_facts: no
+  roles:
+    - role: LetsEncrypt
+
+- name: Configure software on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_rhel_nodes
+  gather_facts: no
+  roles:
+    - role: nodejs
+    - role: zsh
+    - role: ansible.tower
+    - role: vscode
+    - role: graphical
+    - role: wetty
+
+- name: Stage Maven POMs
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  roles:
+    - role: poms
+      when: jboss is defined
+
+- name: Configure Cockpit
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - tower_rhel_nodes
+    - rhel_nodes
+  gather_facts: no
+  roles:
+    - role: cockpit
+
+- name: Upgrade packages
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - tower_rhel_nodes
+    - rhel_nodes
+  roles:
+    - role: upgrade

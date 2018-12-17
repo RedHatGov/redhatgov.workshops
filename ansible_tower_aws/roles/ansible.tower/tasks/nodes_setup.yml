@@ -1,0 +1,47 @@
+#--------------------------------------------------
+# Install Ansible
+#--------------------------------------------------
+
+- name: Install base packages
+  become: yes
+  yum: name={{ item }} state=latest enablerepo=epel-testing
+  with_items: 
+      - vim
+      - git
+      - ansible
+      - nano
+
+- name: Fake, if missing, the dbus-1 directory
+  file:
+    path: /usr/lib64/dbus-1
+    state: directory
+
+- name: Fake, if missing, the dbus dbus-daemon-launch-helper file
+  file:
+    path: /usr/lib64/dbus-1/dbus-daemon-launch-helper
+    state: touch
+
+- name: Install ansible.cfg and vimrc in home directory
+  copy:
+    src="{{ item.src }}"
+    dest="/home/{{ system_user }}/{{ item.dest }}"
+    owner="{{ system_user }}"
+    group="{{ system_user }}"
+  with_items:
+    - { src: "vimrc", dest: ".vimrc" }
+    - { src: "license", dest: "license" }
+
+- name: Copy over SSH Key to {{ system_user }} home
+  copy: 
+    src: "{{ ssh_key_path }}"
+    dest: "/home/{{ system_user }}/.ssh/{{ workshop_prefix }}-tower" 
+    mode: 0400 
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+
+- name: Template over ansible.cfg
+  template:
+    dest="/home/{{ system_user }}/ansible.cfg"
+    src=ansible.cfg.j2  
+    owner="{{ system_user }}"
+    group="{{ system_user }}"

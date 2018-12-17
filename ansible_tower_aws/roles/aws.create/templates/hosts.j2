@@ -1,0 +1,37 @@
+
+[local_target]
+localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
+
+[tower_rhel_nodes]
+{% for n in range( tower_rhel_count|int ) %}
+{{ workshop_prefix }}.tower.{{ n }}.{{ domain_name }}
+{% endfor %}
+
+[tower_rhel_nodes:vars]
+ansible_ssh_private_key_file={{ ssh_key_path }}
+
+[rhel_nodes]
+{% for n in range( rhel_count|int ) %}
+{{ workshop_prefix }}.node.{{ n }}.{{ domain_name }}
+{% endfor %}
+
+[rhel_nodes:vars]
+ansible_ssh_private_key_file={{ ssh_key_path }}
+
+[win_nodes]
+{% for n in range( win_count|int ) %}
+{{ workshop_prefix }}.win2016.{{ n }}.{{ domain_name }}
+{% endfor %}
+
+[win_nodes:vars]
+ansible_user=Administrator
+ansible_password="{{ workshop_password }}"
+ansible_connection=winrm
+ansible_winrm_transport=basic
+ansible_port=5986
+ansible_winrm_server_cert_validation=ignore
+
+[all_nodes:children]
+tower_rhel_nodes
+rhel_nodes
+win_nodes

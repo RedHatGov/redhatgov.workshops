@@ -4,12 +4,11 @@
 - name: Install required packages
   become: yes
   yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
+    name:
     - make
     - nmap-ncat
     - gcc-c++
+    state: present
 
 - name: Install Wetty Globaly
   become: yes
@@ -127,20 +126,30 @@
   register: rf_result
   ignore_errors: True
 
-- name: Turn off firewalld
-  become: yes
-  systemd:
-    name: firewalld
-    enabled: no
-    state: stopped
-  when: rf_result.rc == 0
+- name: check to see if firewalld is running
+  command: service firewalld status
+  register: rfr_result
+  ignore_errors: True
 
 - name: check to see if iptables is running
   become: yes
   command: service iptables status
   register: ri_result
   ignore_errors: True
-#  when: rf_result.rc != 0
+
+- name: open wetty port in firewalld (permanent)
+  firewalld:
+    port: "8888/tcp"
+    state: enabled
+    permanent: yes
+  when: rf_result.rc == 0
+
+- name: open wetty port in firewalld (immediate)
+  firewalld:
+    port: "8888/tcp"
+    state: enabled
+    immediate: yes
+  when: rfr_result.rc == 0
 
 - name: Open port in IPtables firewall
   become: yes
@@ -152,7 +161,6 @@
     protocol: tcp
     state: present
   when:
-#  - rf_result.rc != 0
   - ri_result.rc == 0
 
 # we should install 'iptables-services' package and use 'service iptables save' instead
