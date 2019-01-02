@@ -57,6 +57,18 @@ sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
 ```
 # Custom Variable Requirements
 * Copy `group_vars/all_example` to `group_vars/all.yml`
+
+The first thing you'll want to change is the quantities of Tower servers and student nodes that the playbooks will spin up and configure. Generally these will be the same number. You might want to spin up 5 or so extra instances just in case. In the all.yml file, edit:
+
+```
+# aws.infra                |      AWS Terraform Vars
+number_tower_nodes:               "15"            # Tower Nodes <--- Change this!
+number_nodes:                     "15"            # Student Nodes <--- And this!
+tower_instance_type:              "t2.medium"    # Tower Instance Size 
+node_instance_type:               "t2.small"     # Student Instance Size 
+region:                           "us-east-1"    # AWS Region, configures ec2.ini too
+```
+
 * Fill in the vars with your AWS api info. This role can also provide easy domain name mapping to all the instances if you have a domain registered in AWS Route 53.  You can get the zone ID from the DNS domain stored in Route 53.
 
 
