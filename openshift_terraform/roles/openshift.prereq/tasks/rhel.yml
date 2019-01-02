@@ -39,7 +39,7 @@
   service: name=docker state=started enabled=yes
 
 - name: get EC2 Facts
-  action: ec2_facts
+  action: ec2_metadata_facts
 
 - debug: var=hostvars
 
