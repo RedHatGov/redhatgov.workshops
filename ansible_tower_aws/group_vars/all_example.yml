@@ -7,7 +7,7 @@
 ################################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
-workshop_prefix:                  "tower"
+workshop_prefix:                  "tower" # Workshop name - NO underscores!
 execution:                        "local" # when not running from Tower, define this variable
 jboss:                            "true" # when this is defined, configure JBoss/Maven
 graphical:                        "true" # when true, install a graphical desktop on the tower nodes
