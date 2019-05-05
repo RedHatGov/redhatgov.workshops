@@ -121,7 +121,7 @@ resource "aws_route53_record" "{{ ec2_master_tag_name }}" {
   name                      = "master.{{ default_subdomain }}"
   type                      = "A"
   ttl                       = "600"
-  records                   = ["${aws_instance.{{ ec2_master_group_name }}.public_ip}"]
+  records                   = ["${aws_eip.{{ ec2_master_group_name }}.public_ip}"]
 }
 
 resource "aws_route53_record" "{{ ec2_node_tag_name }}" {
@@ -130,7 +130,7 @@ resource "aws_route53_record" "{{ ec2_node_tag_name }}" {
   name                      = "node.${count.index}.{{ default_subdomain }}"
   type                      = "A"
   ttl                       = "300"
-  records                   = ["${element(aws_instance.{{ ec2_node_group_name }}.*.public_ip, count.index)}"]
+  records                   = ["${element(aws_eip.{{ ec2_node_group_name }}.*.public_ip, count.index)}"]
 }
 
 resource "aws_route53_record" "wildcard" {
@@ -138,7 +138,7 @@ resource "aws_route53_record" "wildcard" {
   type                      = "A"
   ttl                       = "600"
   name                      = "*.{{ default_wildcard }}"
-  records                   = ["${aws_instance.{{ ec2_master_group_name }}.public_ip}"]
+  records                   = ["${aws_eip.{{ ec2_master_group_name }}.public_ip}"]
 }
 
 output "aws_route53_record" {
@@ -190,6 +190,14 @@ resource "aws_instance" "{{ ec2_master_group_name }}" {
         private_key         = "${file("{{ terraform_working_dir }}/{{ default_keypair }}")}"
       }
     }
+}
+
+resource "aws_eip" "ose-master" {
+  instance = "${aws_instance.ose-master.id}"
+}
+
+output "aws_instance master_eip" {
+  value = "Completed {{ default_subdomain }}-master-eip"
 }
 
 resource "aws_instance" "{{ ec2_node_group_name }}" {
@@ -253,5 +261,11 @@ output "aws_instance node" {
   value = "Completed {{ default_subdomain }}-node"
 }
 
+resource "aws_eip" "ose-node" {
+ count		= "{{ number_nodes }}"
+ instance	= "${element(aws_instance.ose-node.*.id, count.index)}"
+}
 
-
+output "aws_instance node_eip" {
+  value = "Completed {{ default_subdomain }}-node-eip"
+}
