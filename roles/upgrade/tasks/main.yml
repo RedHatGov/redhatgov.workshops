@@ -17,12 +17,18 @@
     delay: 30
     retries: 180
 
-  - name: Rebooting to apply kernel updates
+  - name: Rebooting to apply kernel updates (>=2.7)
+    reboot:
+    when: ansible_version.full >= "2.7" and job_result is changed
+
+  - name: Rebooting to apply kernel updates (<2.7)
     shell: /sbin/shutdown -r +1
+    when: ansible_version.full < "2.7" and job_result is changed
 
   - name: Wait for system to become reachable again
     wait_for_connection:
       timeout: 900
       delay: 120
       sleep: 5
-  when: upgrade == 1
+#    when: upgrade == 1
+    when: ansible_version.full < "2.7" and job_result is changed
