@@ -1,0 +1,54 @@
+---
+# tasks file for powerline
+
+- name: Install pip and vim
+  yum:
+    name: "{{ packages }}"
+    state: latest
+  vars:
+    packages:
+    - python2-pip
+    - vim
+
+- name: Install powerline
+  become: no
+  pip:
+    name: powerline-status
+    extra_args: --user
+
+- name: Create font storage directory
+  become: no
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "~{{ system_user }}/.local/share/fonts/"
+    - "~{{ system_user }}/.fonts.conf.d/"
+
+- name: Download powerline fonts
+  become: no
+  get_url:
+    url: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  with_items:
+    - { src: "https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf", dest: "~{{ system_user }}/.local/share/fonts/" }
+    - { src: "https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf", dest: "~{{ system_user }}/.fonts.conf.d/" }
+
+- name: Regenerate font cache
+  become: no
+  shell: "fc-cache -vf ~{{ system_user }}/.local/share/fonts/"
+
+- name: Install bashrc
+  become: no
+  template:
+    src: "bashrc.j2"
+    dest: "~{{ system_user }}/.bashrc"
+    mode: 0644
+
+- name: Configure vim for powerline
+  become: no
+  copy:
+    src: "vimrc"
+    dest: "~{{ system_user }}/.vimrc"
+    mode: 0644
