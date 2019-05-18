@@ -1,0 +1,76 @@
+# file: 2_load.yml
+---
+# https://www.terraform.io/docs/providers/aws/index.html
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.rhel_nodes }}"
+
+- name: Set system_user password
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  tasks:
+    - user:
+        name:      "{{ system_user }}"
+        password:  "{{ workshop_password |password_hash('sha512') }}"
+        state:     present
+        append:    yes
+
+#- name: Configure epel on nodes
+#  become: yes
+#  remote_user: ec2-user
+#  hosts: rhel_nodes
+#  roles:
+#    - role: epel
+
+- name: Configure repositories on all RHEL nodes
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: no
+  roles:
+    - role: subscription_manager 
+
+- name: Configure repositories on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: le_node
+  gather_facts: no
+  roles:
+    - role: LetsEncrypt
+
+- name: Configure software on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  roles:
+    - role: cockpit
+    - role: graphical
+    - role: powerline
+    - role: vscode
+#    - role: wetty
+    - role: upgrade
+
+- name: Install a test SELinux log
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  tasks:
+    - copy:
+        src: testaudit
+        dest: /root/testaudit
+        mode: 0600
+        setype: _default
+
+...
