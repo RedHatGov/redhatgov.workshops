@@ -68,7 +68,7 @@ Set an activation key (which needs to be created in RHSM), and it's accompanying
 rhel_rhsm_activationkey: "my_act_key"
 rhel_rhsm_org_id: "12345678"
 ```
-Alternatively, you can use a `username`, `password`, and `pool_id` combination to register with RHSM.
+Even if you specify an activation key, you must supply a valid Red Hat `username` and `password` combination.  Instead of an activation key, you can also specify a `pool_id` to register with RHSM.
 
 ##### Example:
 ```

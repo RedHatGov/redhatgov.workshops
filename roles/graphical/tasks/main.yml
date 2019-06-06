@@ -1,6 +1,14 @@
 ---
 # tasks file for graphical
-- block:
+- when: graphical == 'true'
+  block:
+
+  - name: Gather package facts
+    package_facts:
+      manager: auto
+
+  - name: Gather service facts
+    service_facts:
 
   - name: Install GUI components
     yum:
@@ -68,42 +76,32 @@
 #    - "/usr/sbin/xrdp"
 #    - "/usr/sbin/xrdp-sesman"
 
-  - name: check to see if firewalld is installed
-    command: rpm -q firewalld
-    register: rf_result
-    ignore_errors: True
-
-  - name: check to see if firewalld is running
-    command: service firewalld status
-    register: rfr_result
-    ignore_errors: True
+  - when: ansible_facts.packages["firewalld"] is defined
+    block:
+  
+    - name: open XRDP port in firewalld (permanent)
+      firewalld:
+        port: "3389/tcp"
+        state: enabled
+        permanent: yes
+  
+    - name: open XRDP port in firewalld (immediate)
+      firewalld:
+        port: "3389/tcp"
+        state: enabled
+        immediate: yes
+      when: ansible_facts.services["firewalld.service"].state == "running"
     
-  - name: check to see if iptables is running
-    command: service iptables status
-    register: ri_result
-    ignore_errors: True
+  - when: ansible_facts.packages["firewalld"] is undefined
+    block:
 
-  - name: open XRDP port in firewalld (permanent)
-    firewalld:
-      port: "3389/tcp"
-      state: enabled
-      permanent: yes
-    when: rf_result.rc == 0 
-
-  - name: open XRDP port in firewalld (immediate)
-    firewalld:
-      port: "3389/tcp"
-      state: enabled
-      immediate: yes
-    when: rfr_result.rc == 0 
-
-  - name: open XRDP port in iptables
-    iptables:
-      chain: INPUT
-      protocol: tcp
-      destination_port: 3389
-      jump: ACCEPT
-    when: ri_result.rc == 0 
+    - name: open XRDP port in iptables
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: 3389
+        jump: ACCEPT
+      when: ansible_facts.services["firewalld.service"].state == "running"
 
   - name: Enable XRDP auto-start
     service:
@@ -111,5 +109,4 @@
       enabled: "yes"
       state: started
 
-  when: graphical == 'true'
 ...

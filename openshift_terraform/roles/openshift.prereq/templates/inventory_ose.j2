@@ -6,6 +6,7 @@ etcd
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
+timeout=70
 # Cluster ID
 openshift_clusterid={{ openshift_cluster_id }}
 
@@ -21,6 +22,7 @@ deployment_type=openshift-enterprise
 openshift_install_examples=true
 oreg_auth_user={{ rhsm_username }}
 oreg_auth_password={{ rhsm_password }}
+oreg_test_login=False # help alleviate timeout issue
 openshift_examples_modify_imagestreams=true
 
 # Uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
@@ -36,11 +38,14 @@ openshift_cloudprovider_kind=aws
 openshift_cloudprovider_aws_access_key={{ aws_access_key_id }}
 openshift_cloudprovider_aws_secret_key={{ aws_secret_access_key }}
 
+# Disable check for container availability
+openshift_disable_check="docker_image_availability"
+
 # Host group for masters
 [masters]
 {% for host in inventory_ose_masters %}
 {% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
-{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes
 {% endif %}
 {% endfor %}
 
@@ -48,7 +53,7 @@ openshift_cloudprovider_aws_secret_key={{ aws_secret_access_key }}
 [etcd]
 {% for host in inventory_ose_masters %}
 {% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
-{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes
 {% endif %}
 {% endfor %}
 
@@ -56,12 +61,12 @@ openshift_cloudprovider_aws_secret_key={{ aws_secret_access_key }}
 [nodes]
 {% for host in inventory_ose_masters %}
 {% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
-{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes openshift_node_group_name='node-config-master-infra'
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes openshift_node_group_name='node-config-master-infra'
 {% endif %}
 {% endfor %}
 
 {% for host in inventory_ose_nodes %}
 {% if (hostvars[host]['inventory_hostname'] | match("node")) %}
-{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_node_group_name='node-config-compute'
+{{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_group_name='node-config-compute'
 {% endif %}
 {% endfor %}

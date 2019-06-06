@@ -68,10 +68,11 @@ domain_name: ""
 #####################################################
 # Azure ID's for terraform.tfvars file
 #####################################################
-azure_subscription_id:            ""
-azure_client_id:                  ""
-azure_client_secret:		          ""
-azure_tenant_id:		              ""
+azure_subscription_id:            "" # All services -> Subscriptions -> Subscription ID
+azure_client_id:                  "" # Azure Active Directory -> App registrations -> View all applications -> Ansible -> Application ID
+azure_client_secret:              "" # Azure Active Directory -> App registratio
+ns -> View all applications -> Ansible -> Keys -> Passwords -> <any key name> -> Value
+azure_tenant_id:                  "" # Azure Active Directory -> Manage -> Properies -> Directory ID
 ```
 
 ## Configure Workshop Nodes

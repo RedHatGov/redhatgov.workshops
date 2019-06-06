@@ -1,0 +1,7 @@
+python from powerline.vim import setup as powerline_setup
+python powerline_setup()
+python del powerline_setup
+colors elflord
+autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+set laststatus=2 tabstop=2 shiftwidth=2 expandtab
+syntax on

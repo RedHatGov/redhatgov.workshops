@@ -26,7 +26,7 @@
 # [TODO]: Replace EC2 facts with ansible IPv4.
 
 - name: Gather EC2 facts for host
-  action: ec2_facts
+  action: ec2_metadata_facts
   register: ec2_facts
 
 - name: Append EC2 host public ipv4 to hosts file
