@@ -47,8 +47,24 @@
 #---------------------------------------------------
 # Terraform.io
 #---------------------------------------------------
+
+- name: Check Terraform version
+  shell: terraform version
+  register: tf
+  changed_when: false
+
+- set_fact:
+    tf_version: "{{ tf.stdout_lines[0] | regex_replace('^Terraform.*v') }}"
+
+- name: Template Terraform files locally to run (Terraform v0.12+)
+  template: dest="{{ terraform_working_dir }}/aws.tf"  src=aws.tf-12.j2
+  when: tf_version is version('0.12.0', '>=')
+  tags:
+    - tf_create
+
 - name: Template Terraform files locally to run
   template: dest="{{ terraform_working_dir }}/aws.tf"  src=aws.tf.j2
+  when: tf_version is version('0.12.0', '<')
   tags:
     - tf_create
 
@@ -61,14 +77,6 @@
   template: dest="{{ terraform_working_dir }}/terraform.tfvars"  src=terraform.tfvars.j2
   tags:
     - tf_create
-
-- name: Check Terraform version
-  shell: terraform version
-  register: tf
-  changed_when: false
-
-- set_fact:
-    tf_version: "{{ tf.stdout_lines[0] | regex_replace('^Terraform.*v') }}"
 
 - name: Initialize Terraform to discover plugins
   command: terraform init
