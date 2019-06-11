@@ -5,7 +5,6 @@
 - name: Unregister Nodes 
   become: yes
   gather_facts: false
-  ignore_errors: true
   hosts:
     - rhel_nodes
   remote_user: ec2-user
@@ -17,5 +16,15 @@
   connection: local
   roles:
   - { role: aws.remove, tags: ["delete"] }
+
+- name: Remove .ssh/known_hosts entries
+  hosts: localhost
+  connection: local
+  tasks:
+  - lineinfile:
+      path: "/home/{{ system_user }}/.ssh/known_hosts"
+      regex: "^{{ item }},"
+      state: absent
+    with_items: rhel_nodes
 
 ...
