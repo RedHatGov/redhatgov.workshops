@@ -22,9 +22,9 @@
   connection: local
   tasks:
   - lineinfile:
-      path: "/home/{{ system_user }}/.ssh/known_hosts"
+      path: "/home/{{ local_user }}/.ssh/known_hosts"
       regex: "^{{ item }},"
       state: absent
-    with_items: rhel_nodes
+    with_items: "{{ groups['rhel_nodes'] }}"
 
 ...
