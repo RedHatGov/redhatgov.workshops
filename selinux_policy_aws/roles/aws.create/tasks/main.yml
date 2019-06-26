@@ -7,11 +7,15 @@
 #---------------------------------------------------
 #  Ansible Hosts Creation
 #---------------------------------------------------
+- debug:
+    var: ansible_distribution
+- debug:
+    var: ansible_distribution_major_version
+
 - name: Template Ansible Hosts File
   template:
     dest: "{{ inventory_working_dir }}/hosts"
     src: "hosts.j2"
-  when: execution is defined
 
 #---------------------------------------------------
 #  Deployment directory creation

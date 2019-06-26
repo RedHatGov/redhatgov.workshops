@@ -10,8 +10,17 @@
 #   register: sm_result
 #   ignore_errors: True
 
-- name: Unsubscribe RHN
-  redhat_subscription:
-      state: absent
-  when: not cloud_access
+- block:
+#  - name: Check to see if the host still exists
+#    command: "host {{ item }}"
+#    with_items: rhel_nodes
+#    register: results
 
+  - name: Unsubscribe RHN
+    redhat_subscription:
+      state: absent
+    when: not cloud_access
+#    when: not cloud_access and not results.failed
+
+  ignore_errors: true
+  ignore_unreachable: true
