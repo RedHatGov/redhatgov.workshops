@@ -1,0 +1,7 @@
+{% for host in ec2.instances %}
+instance_id:      {{ host.instance_id }}
+  instance_type:  {{ host.instance_type }}
+  launch_time:    {{ host.launch_time }}
+  key_name:       {{ host.key_name }}
+  vpc_id:         {{ host.vpc_id }}
+{% endfor %}

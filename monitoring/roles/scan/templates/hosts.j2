@@ -1,0 +1,15 @@
+ansible_ssh_user=ec2-user
+ansible_become=yes
+
+[local_target]
+localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
+
+[rhel_nodes]
+{{workshop_prefix}}.rhel.[0:{{ nodes.rhel.count | int - 1 }}].{{ domain_name }}
+
+[win_nodes]
+{{workshop_prefix}}.win.[0:{{ nodes.win.count | int - 1 }}].{{ domain_name }}
+
+[all_nodes:children]
+rhel_nodes
+win_nodes
