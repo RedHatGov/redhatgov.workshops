@@ -122,7 +122,7 @@
   register: job_result
   until: job_result.finished
   delay: 30
-  retries: 360
+  retries: 720
 
 
 # [TODO]: Apply to masters and nodes (both)
