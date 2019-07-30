@@ -5,8 +5,8 @@
 - name: Search for running instances
   hosts: localhost
   roles:
-#  - { role: scan, ec2_region: "us-east-1", tags: ["create"] }
+  - { role: scan, ec2_region: "us-east-1", tags: ["create"] }
   - { role: scan, ec2_region: "us-east-2", tags: ["create"] }
-#  - { role: scan, ec2_region: "us-west-1", tags: ["create"] }
+  - { role: scan, ec2_region: "us-west-1", tags: ["create"] }
 
 ...

@@ -1,0 +1,6 @@
+Instance ID,Instance Type,Launch Time,Key Name,VPC ID,Tags
+{% for host in ec2.instances %}
+{% if host.instance_id in instance_ids %}
+{{ host.instance_id }},{{ host.instance_type }},{{ host.launch_time }},{{ host.key_name }},{{ host.vpc_id }},{{ host.tags }}
+{% endif %}
+{% endfor %}
