@@ -1,12 +1,48 @@
-# file: 1_provision.yml
+# file: list_active.yml
 ---
-# https://www.terraform.io/docs/providers/aws/index.html
-
-- name: Search for running instances
+- name: Search for running instances (first notice)
   hosts: localhost
+  vars:
+  - days: 5
+  - dkcolor: "GOLD"
+  - email:
+      - "alexander@redhat.com"
+      - "mlevine@redhat.com"
+      - "jared@redhat.com"
+  - ltcolor: "LIGHTYELLOW"
+  - mail: true
+  - stop: false
   roles:
-  - { role: scan, ec2_region: "us-east-1", tags: ["create"] }
-  - { role: scan, ec2_region: "us-east-2", tags: ["create"] }
-  - { role: scan, ec2_region: "us-west-1", tags: ["create"] }
+  - { role: scan, ec2_region: "us-east-1" }
+  - { role: scan, ec2_region: "us-east-2" }
+  - { role: scan, ec2_region: "us-west-1" }
+
+- name: Search for running instances (second notice)
+  hosts: localhost
+  vars:
+  - days: 6
+  - dkcolor: "DARKORANGE"
+  - email: "alexander@redhat.com"
+  - ltcolor: "LIGHTSALMON"
+  - mail: true
+  - stop: false
+  roles:
+  - { role: scan, ec2_region: "us-east-1" }
+  - { role: scan, ec2_region: "us-east-2" }
+  - { role: scan, ec2_region: "us-west-1" }
+
+- name: Search for running instances (final notice)
+  hosts: localhost
+  vars:
+  - days: 7
+  - dkcolor: "DARKRED"
+  - email: "alexander@redhat.com"
+  - ltcolor: "LIGHTCORAL"
+  - mail: true
+  - stop: false
+  roles:
+  - { role: scan, ec2_region: "us-east-1", days: 7, color: "red", mail: true, stop: false }
+  - { role: scan, ec2_region: "us-east-2", days: 7, color: "red", mail: true, stop: false }
+  - { role: scan, ec2_region: "us-west-1", days: 7, color: "red", mail: true, stop: false }
 
 ...

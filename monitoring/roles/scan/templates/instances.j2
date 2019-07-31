@@ -2,7 +2,7 @@ EC2 Instance ID     | Instance Name    | Key Name         | Launch Date/Time
 ================================================================================
 {% for host in ec2.instances %}
 {% if host.instance_id in instance_ids %}
-{{ "%-16s" | format(host.instance_id|truncate(16,True,end='+',leeway=0)) }} | {{ "%-16s" | format(host.tags.Name|truncate(16,True,end='+',leeway=0)) }} | {{ "%-16s" | format(host.key_name|truncate(16,True,end='+',leeway=0)) }} | {{ host.launch_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') }}
+{{ "%-19s" | format(host.instance_id|truncate(19,True,end='+',leeway=0)) }} | {{ "%-16s" | format(host.tags.Name|truncate(16,True,end='+',leeway=0)) }} | {{ "%-16s" | format(host.key_name|truncate(16,True,end='+',leeway=0)) }} | {{ host.launch_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') }}
 {% endif %}
 {% endfor %}
 ================================================================================

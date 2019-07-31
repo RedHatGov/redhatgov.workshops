@@ -1,0 +1,29 @@
+<html>
+<body>
+<table border="1" cellpadding="4" bgcolor="{{ ltcolor }}">
+  <caption style="font-size:25px;"><span class="tableTitle">AWS EC2 {{ ec2_region }}: Instances Running {{ days }} Days or More</span></caption>
+  <thead style="color:white;">
+    <tr bgcolor="{{ dkcolor }}">
+      <th>EC2 Instance ID</th>
+      <th>Instance Name</th>
+      <th>Key Name</th>
+      <th>Launch Date/Time</th>
+      <th>Tags</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for host in ec2.instances %}
+{% if host.instance_id in instance_ids %}
+    <tr>
+      <th>{{ host.instance_id }}</th>
+      <td>{{ host.tags.Name }} </td>
+      <td>{{ host.key_name }}</td>
+      <td>{{ host.launch_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') }}</td>
+      <td><a href=" " title="{{ host.tags }}" style="background-color:{{ ltcolor }};color:#000000;text-decoration:none">hover to see tags</a></td>
+    </tr>
+{% endif %}
+{% endfor %}
+  <tbody>
+</table>
+</body>
+</html>

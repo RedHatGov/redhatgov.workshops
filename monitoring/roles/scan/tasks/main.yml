@@ -4,8 +4,25 @@
 #===============================================================================
 #  Search and record IDs
 #===============================================================================
+
+- name: Announce days setting
+  debug:
+    msg: "[ {{ ec2_region }} ] Scanning for running instances up for {{ days }} or more days."
+
+- name: Announce mail setting
+  debug:
+    msg: "Sending email with the results."
+  when: mail
+
+- name: Announce stop setting
+  debug:
+    msg: "Stopping instances running for {{ days }} or more days."
+  when: stop
+
 - name: Initialize an empty list for our strings
   set_fact:
+    html_dest: "{{ deploy_working_dir }}/hosts-{{ ec2_region }}.html"
+    text_dest: "{{ deploy_working_dir }}/hosts-{{ ec2_region }}"
     instance_ids: []
 
 - name: lookup running RHEL instances
@@ -18,11 +35,9 @@
 - name: Append instance ids to list if the instance is older than one week
   set_fact:
     instance_ids: "{{ instance_ids }} + [ '{{ item.instance_id }}' ]"
-  when: "{{ (ansible_date_time.iso8601[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') - item.launch_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S')).days }} > 7"
+  when: "(ansible_date_time.iso8601[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') - item.launch_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S')).days > days"
   with_items: "{{ ec2.instances }}"
-
-- debug:
-    var: instance_ids
+  no_log: True
 
 - name: Make deployment working directory
   file:
@@ -32,11 +47,30 @@
 - name: Text instance report
   template:
     src: "instances.j2"
-    dest: "{{ deploy_working_dir }}/hosts-{{ ec2_region }}"
+    dest: "{{ text_dest }}"
+
+- name: HTML instance report
+  template:
+    src: "instances-html.j2"
+    dest: "{{ html_dest }}"
 
 - name: CSV instance report
   template:
     src: "instances-csv.j2"
     dest: "{{ deploy_working_dir }}/hosts-{{ ec2_region }}.csv"
+
+- debug:
+    msg: "There are {{ instance_ids|length }} instances still up {{ days }} or more days."
+
+- name: Send e-mail
+  mail:
+    host: localhost
+    port: 25
+    to: "{{ email }}"
+    subject: "AWS EC2 {{ ec2_region }}: Instances Running {{ days }} Days+"
+    body: "<pre>{{ lookup('file', html_dest ) }}</pre>"
+    attach: "{{ deploy_working_dir }}/hosts-{{ ec2_region }}.csv"
+    subtype: "html"
+  when: mail and instance_ids|length > 0
 
 ...
