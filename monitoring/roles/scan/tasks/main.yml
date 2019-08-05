@@ -73,4 +73,10 @@
     subtype: "html"
   when: mail and instance_ids|length > 0
 
+- name: Stop instances
+  ec2:
+    state: 'stopped'
+    instance_ids: '{{ instance_ids }}'
+  when: stop and instance_ids|length > 0
+
 ...

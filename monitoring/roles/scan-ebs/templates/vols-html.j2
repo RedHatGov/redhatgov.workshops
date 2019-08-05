@@ -1,0 +1,27 @@
+<html>
+<body>
+<table border="1" cellpadding="4" bgcolor="{{ ltcolor }}">
+  <caption style="font-size:25px;"><span class="tableTitle">AWS EC2 {{ ec2_region }}: Unattached EBS Volumes</span></caption>
+  <thead style="color:white;">
+    <tr bgcolor="{{ dkcolor }}">
+      <th>EC2 Volume ID</th>
+      <th>Instance ID</th>
+      <th>Size</th>
+      <th>Create Date/Time</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for vol in ec2.volumes %}
+{% if vol.id in unattached_vol_ids %}
+    <tr>
+      <th>{{ vol.id }}</th>
+      <td>{{ vol.attachment_set.instance_id|default("none",true) }} </td>
+      <td align="right">{{ vol.size }} GB</td>
+      <td>{{ vol.create_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') }}</td>
+    </tr>
+{% endif %}
+{% endfor %}
+  <tbody>
+</table>
+</body>
+</html>

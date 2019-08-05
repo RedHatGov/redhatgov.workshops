@@ -1,0 +1,6 @@
+Volume ID,Instance ID,Instance Device,Size (GB),Type,Zone,Create Time
+{% for vol in ec2.volumes %}
+{% if vol.id in unattached_vol_ids %}
+{{ vol.id }},{{ vol.attachment_set.instance_id|default("none",true) }},{{ vol.attachment_set.device|default("none",true) }},{{ vol.size }},{{ vol.type }},{{vol.zone}},{{ vol.create_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') }}
+{% endif %}
+{% endfor %}

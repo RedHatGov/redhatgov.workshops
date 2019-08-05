@@ -1,14 +1,30 @@
 # file: list_active.yml
 ---
+- name: Search for EBS volumes
+  hosts: localhost
+  vars:
+#  - days: 5
+  - dkcolor: "goldenrod"
+  - email:
+    - "RHG-AWS@redhat.com"
+  - ltcolor: "LIGHTYELLOW"
+  - mail: true
+  - stop: true
+  roles:
+  - { role: scan-ebs, ec2_region: "us-east-1", unattached: true }
+  - { role: scan-ebs, ec2_region: "us-east-2", unattached: true }
+  - { role: scan-ebs, ec2_region: "us-west-1", unattached: true }
+#  - { role: scan-ebs, ec2_region: "us-east-1", days: 5 }
+#  - { role: scan-ebs, ec2_region: "us-east-2", days: 5 }
+#  - { role: scan-ebs, ec2_region: "us-west-1", days: 5 }
+
 - name: Search for running instances (first notice)
   hosts: localhost
   vars:
   - days: 5
-  - dkcolor: "GOLD"
+  - dkcolor: "goldenrod"
   - email:
-      - "alexander@redhat.com"
-      - "mlevine@redhat.com"
-      - "jared@redhat.com"
+    - "RHG-AWS@redhat.com"
   - ltcolor: "LIGHTYELLOW"
   - mail: true
   - stop: false
@@ -22,8 +38,9 @@
   vars:
   - days: 6
   - dkcolor: "DARKORANGE"
-  - email: "alexander@redhat.com"
-  - ltcolor: "LIGHTSALMON"
+  - email:
+    - "RHG-AWS@redhat.com"
+  - ltcolor: "antiquewhite"
   - mail: true
   - stop: false
   roles:
@@ -36,13 +53,14 @@
   vars:
   - days: 7
   - dkcolor: "DARKRED"
-  - email: "alexander@redhat.com"
-  - ltcolor: "LIGHTCORAL"
+  - email:
+    - "RHG-AWS@redhat.com"
+  - ltcolor: "mistyrose"
   - mail: true
   - stop: false
   roles:
-  - { role: scan, ec2_region: "us-east-1", days: 7, color: "red", mail: true, stop: false }
-  - { role: scan, ec2_region: "us-east-2", days: 7, color: "red", mail: true, stop: false }
-  - { role: scan, ec2_region: "us-west-1", days: 7, color: "red", mail: true, stop: false }
+  - { role: scan, ec2_region: "us-east-1", days: 7 }
+  - { role: scan, ec2_region: "us-east-2", days: 7 }
+  - { role: scan, ec2_region: "us-west-1", days: 7 }
 
 ...

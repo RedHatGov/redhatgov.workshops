@@ -1,0 +1,8 @@
+EC2 Volume ID         | Instance ID           | Size       | Create Date/Time
+================================================================================
+{% for vol in ec2.volumes %}
+{% if vol.id in unattached_vol_ids %}
+{{ "%-21s" | format(vol.id|truncate(21,True,end='+',leeway=0)) }} | {{ "%-21s" | format(vol.attachment_set.instance_id|default("none",true)|truncate(21,True,end='+',leeway=0)) }} | {{ "%7d GB" | format(vol.size) }} | {{ vol.create_time[:19] | to_datetime('%Y-%m-%dT%H:%M:%S') }}
+{% endif %}
+{% endfor %}
+================================================================================
