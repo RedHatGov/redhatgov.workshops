@@ -10,8 +10,14 @@ fi
 
 # User specific aliases and functions
 export PATH=$PATH:~{{ system_user }}/.local/bin
-export PYTHONPATH=/usr/lib/python2.7/site-packages:~{{ system_user }}/.local/lib/python2.7/site-packages
+{% if ( ansible_distribution == 'RedHat' ) and ( ansible_distribution_major_version >= '7' ) %}
+export PVER=2.7
+{% endif %}
+{% if ( ansible_distribution == 'RedHat' ) and ( ansible_distribution_major_version >= '8' ) %}
+export PVER=3.6
+{% endif %}
+export PYTHONPATH=/usr/lib/python2.7/site-packages:~{{ system_user }}/.local/lib/python${PVER}/site-packages
 ~{{ system_user }}/.local/bin/powerline-daemon -q
 POWERLINE_BASH_CONTINUATION=1
 POWERLINE_BASH_SELECT=1
-. ~{{ system_user }}/.local/lib/python2.7/site-packages/powerline/bindings/bash/powerline.sh
+. ~{{ system_user }}/.local/lib/python${PVER}/site-packages/powerline/bindings/bash/powerline.sh

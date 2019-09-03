@@ -55,6 +55,7 @@
   hosts: rhel_nodes
   gather_facts: no
   roles:
+    - role: ansible
     - role: cockpit
     - role: graphical
     - role: powerline

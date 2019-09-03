@@ -1,0 +1,32 @@
+# file: group_vars
+################################################################################
+#
+#                  ////IMPORTANT////
+#
+#      Prefixed to all resources for cleanup & identifcation.
+################################################################################
+
+workshop_prefix:                  "scan"
+
+################################################################################
+# ANSIBLE ROLE KEY         |      VALUE
+################################################################################
+# aws                      |      deployment working dir 
+deploy_working_dir:               "{{ lookup('env','PWD') }}/.redhatgov"
+
+################################################################################
+# ANSIBLE config           |      VALUE
+################################################################################
+# Dynamic Inventory 
+inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
+# Ansible SSH Key Location |      SSH Key Vars
+winrm_path:                       "{{ deploy_working_dir }}/{{ workshop_prefix }}-winrm"
+ssh_key_path:                     "{{ deploy_working_dir }}/{{ workshop_prefix }}-key"
+vpc_id_path:                      "{{ deploy_working_dir }}/{{ workshop_prefix }}-vpc_id"
+vpc_route_path:                   "{{ deploy_working_dir }}/{{ workshop_prefix }}-vpc_route"
+vpc_subnet_path:                  "{{ deploy_working_dir }}/{{ workshop_prefix }}-vpc_subnet"
+vpc_rhel_ids_path:                "{{ deploy_working_dir }}/{{ workshop_prefix }}-vpc_rhel_ids"
+ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
+system_user:                      "ec2-user"    # AWS
+local_user:                       "{{ ansible_env.USERNAME }}" # on RHEL/Fedora
+# local_user:                       "{{ ansible_env.USER }}" # on Mac OS X

@@ -41,3 +41,7 @@ vault_openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 # Node information
 #####################################################
 vault_number_nodes: "2"
+vault_master_size:  "m4.2xlarge"
+vault_node_size:    "m4.xlarge"
+#vault_ami:          "ami-000db10762d0c4c05"  # RHEL7.6
+vault_ami:          "ami-0916c408cb02e310b"  # RHEL7.7

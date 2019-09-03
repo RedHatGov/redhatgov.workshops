@@ -38,8 +38,11 @@ aws_security_group_name: "ose-sg"
 #####################################################
 # Master EC2 instances
 #####################################################
-ec2_master_instance_type: "m4.2xlarge"
-ec2_master_image: "ami-b63769a1"                    # RHEL7
+#ec2_master_instance_type: "m4.2xlarge"
+ec2_master_instance_type: "{{ master_size }}"
+#ec2_master_image: "ami-b63769a1"                    # RHEL7.3
+#ec2_master_image: "ami-000db10762d0c4c05"           # RHEL7.6
+ec2_master_image: "{{ ami }}"
 ec2_master_group_name: "ose-master"
 ec2_master_tag_name: "master"
 ec2_master_tag_role: "masters"
@@ -65,8 +68,11 @@ os_master_root_vol_type: "gp2"
 #####################################################
 # Node EC2 instances
 #####################################################
-ec2_node_instance_type: "m4.xlarge"
-ec2_node_image: "ami-b63769a1"
+#ec2_node_instance_type: "m4.xlarge"
+ec2_node_instance_type: "{{ node_size }}"
+#ec2_node_image: "ami-b63769a1"                    # RHEL7.3
+#ec2_node_image: "ami-000db10762d0c4c05"           # RHEL7.6
+ec2_node_image: "{{ ami }}"
 ec2_node_group_name: "ose-node"
 ec2_node_tag_name: "node"
 ec2_node_tag_role: "nodes"
