@@ -1,6 +1,6 @@
 
 [local_target]
-{% if ( ( ansible_distribution == 'Fedora' ) and ( ansible_distribution_major_version >= '30' ) ) or ( ( ansible_distribution == 'RedHat' ) and ( ansible_distribution_major_version >= '8' ) ) %}
+{% if ( ansible_distribution == 'Fedora' ) and ( ansible_distribution_major_version >= '30' ) %}
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/python3'
 {% else %}
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'

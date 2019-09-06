@@ -43,5 +43,6 @@ vault_openshift_cluster_admin_password: "${INSERT_VALUE_HERE}"
 vault_number_nodes: "2"
 vault_master_size:  "m4.2xlarge"
 vault_node_size:    "m4.xlarge"
-#vault_ami:          "ami-000db10762d0c4c05"  # RHEL7.6
-vault_ami:          "ami-0916c408cb02e310b"  # RHEL7.7
+vault_ami:          "ami-b63769a1"  # RHEL7.3
+#vault_ami:          "ami-000db10762d0c4c05"  # RHEL7.6 - untested
+#vault_ami:          "ami-0916c408cb02e310b"  # RHEL7.7 - DO NOT USE, breaks deploy
