@@ -1,20 +1,48 @@
 # file: roles/wetty/tasks/main.yml
 ---
 
+- name: Install yarn repository
+  become: yes
+  yum_repository:
+    name: yarn
+    description: "Yarn repository"
+    baseurl: 'https://dl.yarnpkg.com/rpm/'
+    gpgcheck: yes
+    gpgkey: 'https://dl.yarnpkg.com/rpm/pubkey.gpg'
+
 - name: Install required packages
   become: yes
   yum:
     name:
+    - yarn
+    - git
     - make
     - nmap-ncat
     - gcc-c++
     state: present
 
-- name: Install Wetty Globaly
-  become: yes
-  command: npm install wetty -g chdir=/home/{{ system_user }}
+#- name: Install Wetty Globaly
+#  become: yes
+#  command: npm install wetty -g chdir=/home/{{ system_user }}
+#  args:
+#    creates: /usr/lib/node_modules/wetty/bin/wetty.js
+
+- name: Pull wetty from GitHub
+  git:
+    repo: 'https://github.com/butlerx/wetty.git'
+    dest: wetty
+
+- name: Build wetty
+  shell: yarn && yarn build
   args:
-    creates: /usr/lib/node_modules/wetty/bin/wetty.js
+    chdir: "wetty"
+    creates: "dist/client"
+
+- name: Install wetty
+  become: true
+  command: yarn global add wetty
+  args:
+    chdir: "/home/{{ system_user }}/wetty"
 
 #-------------------------------------------------------
 # Patch wetty to properly handle iOS spaces
@@ -25,12 +53,12 @@
     name: patch
     state: latest
 
-- name: Patch hterm_all.js to handle iOS spaces
-  become: yes
-  patch:
-    backup: yes
-    basedir: /
-    src: hterm_all.js-iOS-patch
+#- name: Patch hterm_all.js to handle iOS spaces
+#  become: yes
+#  patch:
+#    backup: yes
+#    basedir: /
+#    src: hterm_all.js-iOS-patch
 
 #-------------------------------------------------------
 # Let's Encrypt. 
