@@ -21,7 +21,7 @@
     - gcc-c++
     state: present
 
-#- name: Install Wetty Globaly
+#- name: Install Wetty Globally
 #  become: yes
 #  command: npm install wetty -g chdir=/home/{{ system_user }}
 #  args:
