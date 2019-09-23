@@ -1,7 +1,7 @@
 # file: roles/wetty/meta/main.yml
 ---
 galaxy_info:
-  author: Brad Sollar
+  author: Alexander Jacocks
   description: Quick and easy wetty installer.
   company: Red Hat
   license: MIT
@@ -12,6 +12,6 @@ galaxy_info:
     - 7
   galaxy_tags:
     - wetty
-    - LetsEncrypt
 dependencies:
-  # - { role: LetsEncrypt }
+  - epel
+  - nodejs
