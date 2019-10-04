@@ -1,0 +1,3 @@
+[submodule "devsecops-workshop"]
+	path = devsecops-workshop
+	url = https://github.com/epe105/devsecops-workshop.git
