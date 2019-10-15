@@ -1,0 +1,5 @@
+---
+
+- name: wetty
+  service: name=wetty state=restarted
+  become: true
