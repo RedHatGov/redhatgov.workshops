@@ -31,10 +31,11 @@ To create infrastructure and a Ansible Tower instance via Terraform:
 ```
 sudo easy_install pip
 sudo pip install boto
+sudo pip install boto3
 sudo pip install ansible
 sudo pip install passlib
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install terraform
+
+And follow the Fedora guide from the 'src' creation step.
 ```
 
 #### RHEL 7
