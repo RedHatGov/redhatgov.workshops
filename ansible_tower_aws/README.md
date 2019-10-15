@@ -78,6 +78,7 @@ sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
 ```
 **IMPORTANT!:**
 For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown below.  It is recommended that you enable Cloud Access and NOT use a traditional subscription as there is a known/unresolved bug when connecting to Red Hat servers.  
+While logged into AWS Console, under Images click on 'AMIs', click on dropdown next to search bar and select 'Private Images'. Search for 'EAP' and use the AMI ID for the most recent release of RHEL.
 
 **NOTE: If following this recommendation, your variables will look like this:**
 
