@@ -92,3 +92,5 @@
     - rhel_nodes
   roles:
     - role: upgrade
+
+...

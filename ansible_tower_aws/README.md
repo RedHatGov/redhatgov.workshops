@@ -97,12 +97,8 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ ansible-playbook 2_load.yml 
 ```
 
-#### Fedora 30
+#### Fedora 30/31
 ```
-$ sudo subscription-manager repos \
---enable rhel-7-server-ansible-2.8-rpms \
---enable rhel-7-server-optional-rpms \
---enable rhel-7-server-extras-rpms
 $ sudo dnf -y install git python3-boto python3-boto3 ansible
 $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 $ sed -i 's/env python/env python3/' inventory/hosts
