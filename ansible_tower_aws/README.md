@@ -97,14 +97,33 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ ansible-playbook 2_load.yml 
 ```
 
-#### Fedora 25/26
+#### Fedora 30
 ```
-sudo dnf -y install python2-boto ansible
-wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
-sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+$ sudo subscription-manager repos \
+--enable rhel-7-server-ansible-2.8-rpms \
+--enable rhel-7-server-optional-rpms \
+--enable rhel-7-server-extras-rpms
+$ sudo dnf -y install git python3-boto python3-boto3 ansible
+$ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+$ sed -i 's/env python/env python3/' inventory/hosts
+$ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+$ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
+$ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
+$ sed \
+-e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
+-e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
+env.sh_example > env.sh
+$ sed \
+-e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
+-e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
+group_vars/all_example.yml >group_vars/all.yml
+$ vim group_vars/all.yml # fill in all the required fields
+$ source env.sh
+$ ansible-playbook 1_provision.yml
+$ ansible-playbook 2_load.yml
 ```
 
-# Custom Variable Requirements
+#### Custom Variable Requirements
 * Copy `group_vars/all_example.yml` to `group_vars/all.yml`
 * Fill in the following fields:
 ```
