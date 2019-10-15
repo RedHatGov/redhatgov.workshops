@@ -26,7 +26,7 @@ zone_id:                          ""
 # aws                      |      AWS Node Counts
 tower_rhel_count:                 "2"            # RHEL Ansible Tower node(s)
 rhel_count:                       "2"            # RHEL node(s)
-win_count:                        "2"            # Windows node(s)
+win_count:                        "0"            # Windows node(s)
 region:                           "us-east-2"    # AWS Region, configures ec2.ini too
 ebs_root_block_size:              50
 # aws.infra                |      AWS AMI IDs
