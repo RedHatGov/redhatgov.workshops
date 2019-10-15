@@ -60,7 +60,6 @@
   gather_facts: no
   roles:
     - role: nodejs
-    - role: zsh
     - role: ansible.tower
     - role: vscode
     - role: graphical
