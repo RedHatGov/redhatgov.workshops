@@ -39,14 +39,32 @@ brew install terraform
 
 #### RHEL 7
 ```
-sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-# server
-subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms"
-# workstation
-subscription-manager repos --enable="rhel-7-workstation-rpms" --enable="rhel-7-workstation-extras-rpms" --enable="rhel-7-workstation-optional-rpms"
-sudo yum -y install python2-boto ansible
-wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
-sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+$ sudo subscription-manager repos \
+--enable rhel-7-server-ansible-2.8-rpms \
+--enable rhel-7-server-optional-rpms \
+--enable rhel-7-server-extras-rpms
+$ sudo yum install -y git python-virtualenv ansible
+$ virtualenv --system-site-packages ansible
+$ source ansible/bin/activate
+(ansible) $ pip install boto boto3
+(ansible) $ mkdir src
+(ansible) $ cd src/
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
+(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
+(ansible) $ sed \
+-e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
+-e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
+env.sh_example > env.sh
+(ansible) $ sed \
+-e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
+-e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
+group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ source env.sh
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_load.yml 
 ```
 
 #### RHEL 8
