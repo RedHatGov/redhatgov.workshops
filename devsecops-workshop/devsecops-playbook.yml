@@ -5,6 +5,7 @@
 
   vars_files:
    - vars/aws.yml
+   - vars/devsecops.yml
 
   tasks:
    - import_role:
@@ -97,6 +98,7 @@
 
   vars_files:
    - vars/aws.yml
+   - vars/devsecops.yml
 
   roles:
    - install-oc
