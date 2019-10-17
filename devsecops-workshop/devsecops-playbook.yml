@@ -4,7 +4,7 @@
   connection: local
 
   vars_files:
-   - vars/aws.example.yml
+   - vars/aws.yml
 
   tasks:
    - import_role:
@@ -96,7 +96,7 @@
   any_errors_fatal: yes
 
   vars_files:
-   - vars/aws.example.yml
+   - vars/aws.yml
 
   roles:
    - install-oc
