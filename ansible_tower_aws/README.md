@@ -34,34 +34,98 @@ sudo pip install boto
 sudo pip install boto3
 sudo pip install ansible
 sudo pip install passlib
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install terraform
+
+And follow the Fedora guide from the 'src' creation step.
 ```
 
-#### RHEL/CentOS
+#### RHEL 7
 ```
-sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-# server
-subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms"
-# workstation
-subscription-manager repos --enable="rhel-7-workstation-rpms" --enable="rhel-7-workstation-extras-rpms" --enable="rhel-7-workstation-optional-rpms"
-sudo yum -y install python2-boto ansible
-wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
-sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+$ sudo subscription-manager repos \
+--enable rhel-7-server-ansible-2.8-rpms \
+--enable rhel-7-server-optional-rpms \
+--enable rhel-7-server-extras-rpms
+$ sudo yum install -y git python-virtualenv ansible
+$ virtualenv --system-site-packages ansible
+$ source ansible/bin/activate
+(ansible) $ pip install boto boto3
+(ansible) $ mkdir src
+(ansible) $ cd src/
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
+(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
+(ansible) $ sed \
+-e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
+-e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
+env.sh_example > env.sh
+(ansible) $ sed \
+-e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
+-e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
+group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ source env.sh
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_load.yml 
 ```
 
-#### Fedora 25/26
+#### RHEL 8
 ```
-sudo dnf -y install python2-boto ansible
-wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
-sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+$ sudo subscription-manager repos --enable ansible-2.8-for-rhel-8-x86_64-rpms --enable codeready-builder-for-rhel-8-x86_64-rpms
+$ sudo dnf install -y git python3-virtualenv ansible
+$ virtualenv --system-site-packages ansible
+$ source ansible/bin/activate
+(ansible) $ pip install boto boto3
+(ansible) $ mkdir src
+(ansible) $ cd src/
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ git clone https://github.com/ajacocks/terraform-rpm.git
+(ansible) $ cd terraform-rpm/
+(ansible) $ ansible-playbook -K main.yml # type sudo password
+(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
+(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
+(ansible) $ sed \
+-e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
+-e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
+env.sh_example > env.sh
+(ansible) $ sed \
+-e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
+-e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
+group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ source env.sh
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_load.yml 
 ```
-# Custom Variable Requirements
+
+#### Fedora 30/31
+```
+$ sudo dnf -y install git python3-boto python3-boto3 ansible
+$ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+$ sed -i 's/env python/env python3/' inventory/hosts
+$ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+$ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
+$ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
+$ sed \
+-e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
+-e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
+env.sh_example > env.sh
+$ sed \
+-e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
+-e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
+group_vars/all_example.yml >group_vars/all.yml
+$ vim group_vars/all.yml # fill in all the required fields
+$ source env.sh
+$ ansible-playbook 1_provision.yml
+$ ansible-playbook 2_load.yml
+```
+
+#### Custom Variable Requirements
 * Copy `group_vars/all_example.yml` to `group_vars/all.yml`
 * Fill in the following fields:
 ```
   workshop_prefix  : defaults to "tower", set to the name of your workshop
-  jboss            : defaults to "true", change it to false if you don't want to do the jboss steps in Exercise 1.0
+  jboss            : defaults to "true", comment out to disable jboss
   graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
   aws_access_key   : your Amazon AWS API key
   aws_secret_key   : your Amazon AWS secret key
@@ -77,6 +141,7 @@ sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
   rabbit_password  : pick a password for RabbitMQ in Tower, usually not needed
   local_user       : if you are using a Mac, uncomment the Mac-specific entry, and comment the RHEL/Fedora one
 ```
+
 **IMPORTANT!:**
 For the Maven/JBoss steps in Exercise 1.0 to work, you must have a JBoss-enabled Cloud Access AMI, or you must disable Cloud Access, and use a traditional subscription, as shown below.  It is recommended that you enable Cloud Access and NOT use a traditional subscription as there is a known/unresolved bug when connecting to Red Hat servers.  
 While logged into AWS Console, under Images click on 'AMIs', click on dropdown next to search bar and select 'Private Images'. Search for 'EAP' and use the AMI ID for the most recent release of RHEL.

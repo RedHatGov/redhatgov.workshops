@@ -4,12 +4,14 @@
 
 - name: Install base packages
   become: yes
-  yum: name={{ item }} state=latest enablerepo=epel-testing
-  with_items: 
+  yum:
+    name:
       - vim
       - git
       - ansible
       - nano
+    state: latest
+    enablerepo: epel-testing
 
 - name: Fake, if missing, the dbus-1 directory
   file:
