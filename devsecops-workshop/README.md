@@ -1,6 +1,6 @@
 # Prerequisites
 
-We recommend that you provision about 5-10GBs of Memory per User.  For a workshop of 20 people, we recommend 4-6 m4.xlarge app nodes or larger.
+We recommend that you provision about 5-10GBs of Memory per User.  For a workshop of 20 people, we recommend 4-6 m4.2xlarge app nodes or larger.
 
  - Modern HTML5 Standard Compliant Web Browser
  - A recent stable version of Python 2.7 and the latest stable version of the boto libraries (lxml, pip, boto, boto3, and botocore)
@@ -22,8 +22,8 @@ Your workshop users in your OpenShift Environment should have the same password.
 If you'd like to setup an individual environment, use the commands below to set it up or delete the single environment.
 
 ## Ansible Playbook for setting up the Entire Workshop Enviornment on OpenShift
-- copy over you ssh key into the /keys folder and set the permission to 400
-- the Update your configuration aws.example.env and aws.example.yml in the vars/ folder
+- copy your aws.env and aws.yml files from the OCP provisioner or copy the aws.example.env and aws.example.yml
+- then Update your configuration aws.env and aws.yml in the vars/ folder
 - run the ansible playbook using the devsecops-playbook-run.sh script
 - manually restart your OpenShift Environment after the playbook run
 $ ./devsecops-playbook-run.sh script
