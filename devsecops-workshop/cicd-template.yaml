@@ -287,12 +287,12 @@ objects:
             GOGS_HOSTNAME="gogs-$CICD_NAMESPACE.$HOSTNAME"
 
             if [ "${EPHEMERAL}" == "true" ] ; then
-              oc new-app -f https://raw.githubusercontent.com/mjhermanson/gogs-openshift-docker/master/openshift/gogs-template.yaml \
+              oc new-app -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/gogs-template.yaml \
                   --param=GOGS_VERSION=0.11.34 \
                   --param=HOSTNAME=$GOGS_HOSTNAME \
                   --param=SKIP_TLS_VERIFY=true
             else
-              oc new-app -f https://raw.githubusercontent.com/mjhermanson/gogs-openshift-docker/master/openshift/gogs-persistent-template.yaml \
+              oc new-app -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/gogs-persistent-template.yaml \
                   --param=GOGS_VERSION=0.11.34 \
                   --param=HOSTNAME=$GOGS_HOSTNAME \
                   --param=SKIP_TLS_VERIFY=true
@@ -306,7 +306,7 @@ objects:
             oc expose svc/sonarqube
             
             if [ "${WITH_CHE}" == "true" ] ; then
-              oc process -f https://raw.githubusercontent.com/mjhermanson/minishift-addons/master/add-ons/che/templates/che-single-user.yml \
+              oc process -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/che-single-user.yml \
                 --param PROJECT_NAME=$CICD_NAMESPACE \
                 --param DOMAIN_NAME=$HOSTNAME \
                 --param OPENSHIFT_OAUTH_TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
@@ -316,9 +316,9 @@ objects:
             fi
 
             if [ "${EPHEMERAL}" == "true" ] ; then
-              oc new-app -f https://raw.githubusercontent.com/mjhermanson/nexus/master/nexus3-template.yaml --param=NEXUS_VERSION=3.7.1 --param=MAX_MEMORY=2Gi
+              oc new-app -f hhttps://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/nexus3-template.yaml --param=NEXUS_VERSION=3.7.1 --param=MAX_MEMORY=2Gi
             else
-              oc new-app -f https://raw.githubusercontent.com/mjhermanson/nexus/master/nexus3-persistent-template.yaml --param=NEXUS_VERSION=3.8.0 --param=MAX_MEMORY=2Gi
+              oc new-app -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/nexus-persistent-template.yaml --param=NEXUS_VERSION=3.8.0 --param=MAX_MEMORY=2Gi
             fi
 
             GOGS_SVC=$(oc get svc gogs -o template --template='{{.spec.clusterIP}}')
