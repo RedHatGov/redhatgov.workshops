@@ -302,8 +302,9 @@ objects:
 
             #oc new-app -f https://raw.githubusercontent.com/epe105/sonarqube-openshift-docker/master/sonarqube-template.yaml --param=SONARQUBE_VERSION=7.0 --param=SONAR_MAX_MEMORY=4Gi
             #oc new-app -f https://raw.githubusercontent.com/RHsyseng/docker-rhel-sonarqube/master/templates/sonarqube-ephemeral-template.yaml --param=SONARQUBE_SERVICE_NAME=sonarqube
-            oc new-app registry.centos.org/rhsyseng/sonarqube
-            oc expose svc/sonarqube
+            #oc new-app registry.centos.org/rhsyseng/sonarqube
+            #oc expose svc/sonarqube
+            oc new-app -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/sonarqube-template.yaml --param=SONARQUBE_VERSION=6.7
             
             if [ "${WITH_CHE}" == "true" ] ; then
               oc process -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/che-single-user.yml \
@@ -316,7 +317,7 @@ objects:
             fi
 
             if [ "${EPHEMERAL}" == "true" ] ; then
-              oc new-app -f hhttps://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/nexus3-template.yaml --param=NEXUS_VERSION=3.7.1 --param=MAX_MEMORY=2Gi
+              oc new-app -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/nexus3-template.yaml --param=NEXUS_VERSION=3.7.1 --param=MAX_MEMORY=2Gi
             else
               oc new-app -f https://raw.githubusercontent.com/mjhermanson/redhatgov.workshops/ocp-4.2/devsecops-workshop/nexus-persistent-template.yaml --param=NEXUS_VERSION=3.8.0 --param=MAX_MEMORY=2Gi
             fi
@@ -326,6 +327,8 @@ objects:
             GOGS_PWD=gogs
 
             oc rollout status dc gogs
+
+            sleep 10
 
             _RETURN=$(curl -o /tmp/curl.log -sL --post302 -w "%{http_code}" http://$GOGS_SVC:3000/user/sign_up \
               --form user_name=$GOGS_USER \
