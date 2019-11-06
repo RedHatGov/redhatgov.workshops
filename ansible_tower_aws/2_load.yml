@@ -1,6 +1,5 @@
 # file: 2_load.yml
 ---
-# https://www.terraform.io/docs/providers/aws/index.html
 
 - name: Wait for AWS AMIs to become initialized
   hosts: localhost
@@ -77,7 +76,7 @@
   gather_facts: no
   roles:
     - role: wetty
-      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+      when: rhel_ver == 'rhel7'
 
 - name: Configure web console (RHEL 8)
   become: yes
@@ -86,7 +85,7 @@
   gather_facts: no
   roles:
     - role: cockpit
-      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+      when: rhel_ver == 'rhel8'
 
 - name: Stage Maven POMs
   become: yes

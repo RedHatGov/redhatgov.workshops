@@ -1,6 +1,14 @@
 ---
 # tasks file for roles/aws.remove
 
+- name: RHEL AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ regions[region][rhel_ver].ami }}"
+
+- name: Windows AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ regions[region][win_ver].ami }}"
+
 - debug:
     var: tower_instance_type
 
@@ -184,7 +192,7 @@
     group: "at-{{ workshop_prefix }}-win-sg"
     region: "{{ region }}"
     instance_type: "{{ win_instance_type }}"
-    image: "{{ win_ami_id }}"
+    image: "{{ regions[region][win_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ win_instance_ids }}"
@@ -219,7 +227,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ tower_instance_type }}"
-    image: "{{ rhel_ami_id }}"
+    image: "{{ regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ tower_rhel_instance_ids }}"
@@ -233,7 +241,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ rhel_ami_id }}"
+    image: "{{ regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ rhel_instance_ids }}"
