@@ -19,6 +19,11 @@
   become: yes
   remote_user: ec2-user
   hosts: tower_rhel_nodes
+  tasks:
+    - name: RHEL 8 on AWS via Cloud Access has no available repositories
+      fail:
+        msg: "Please use RHSM via user ID/password or org ID/activation key."
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
   roles:
     - role: epel
 
@@ -28,7 +33,7 @@
   hosts:
     - tower_rhel_nodes
     - rhel_nodes
-  gather_facts: no
+  gather_facts: yes
   roles:
     - role: subscription_manager 
 
@@ -44,6 +49,7 @@
         name: eap7-*
         state: absent
       when: jboss is defined
+      ignore_errors: yes
 
 - name: Configure repositories on nodes
   become: yes
@@ -63,26 +69,33 @@
     - role: ansible.tower
     - role: vscode
     - role: graphical
+
+- name: Configure web console (RHEL 7)
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_rhel_nodes
+  gather_facts: no
+  roles:
     - role: wetty
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- name: Configure web console (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_rhel_nodes
+  gather_facts: no
+  roles:
+    - role: cockpit
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
 - name: Stage Maven POMs
   become: yes
   remote_user: ec2-user
   hosts: rhel_nodes
-  gather_facts: no
+  gather_facts: yes
   roles:
     - role: poms
       when: jboss is defined
-
-- name: Configure Cockpit
-  become: yes
-  remote_user: ec2-user
-  hosts:
-    - tower_rhel_nodes
-    - rhel_nodes
-  gather_facts: no
-  roles:
-    - role: cockpit
 
 - name: Upgrade packages
   become: yes
@@ -92,5 +105,15 @@
     - rhel_nodes
   roles:
     - role: upgrade
+
+- name: Re-enable SCL repo when upgrade disables it
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - tower_rhel_nodes
+    - rhel_nodes
+  gather_facts: yes
+  roles:
+    - role: subscription_manager 
 
 ...

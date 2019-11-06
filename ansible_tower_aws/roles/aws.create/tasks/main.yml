@@ -122,6 +122,10 @@
       ports: 8888
       cidr_ip: 0.0.0.0/0
       rule_desc: "allow all on port 8888 (wetty)"
+    - proto: "tcp"
+      ports: 9090
+      cidr_ip: 0.0.0.0/0
+      rule_desc: "allow all on port 9090 (cockpit)"
     tags:
       username: "{{ local_user }}"
       workshop: "dp"
