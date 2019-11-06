@@ -32,11 +32,25 @@
     repo: 'https://github.com/butlerx/wetty.git'
     dest: wetty
 
-- name: Build wetty
+- name: Install Python 2 (RHEL 8)
+  yum:
+    name: python2
+    state: present
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+- name: Build wetty (RHEL 7)
   shell: yarn && yarn build
   args:
     chdir: "wetty"
     creates: "dist/client"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- name: Build wetty (RHEL 8)
+  shell: export PYTHON=/usr/bin/python2 ; yarn && yarn build
+  args:
+    chdir: "wetty"
+    creates: "dist/client"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
 - name: Install wetty
   become: true

@@ -2,27 +2,75 @@
 # tasks file for poms
 - name: Stage Maven POMs via Maven
   block:
-  - name: Get Maven and Git packages
-    package:
-      name: "{{ item }}"
+  - name: Get Maven and Git packages (RHEL 7)
+    yum:
+      name:
+      - git
+      - rh-maven35
       state: present      
-    with_items:
-    - git
-    - rh-maven35
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+  - name: Get Maven and Git packages (RHEL 8)
+    package:
+      name:
+      - 'maven'
+      - 'git'
+      state: present      
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
   - name: Get JBoss EAP Quickstarts
     git:
       repo: https://github.com/jboss-developer/jboss-eap-quickstarts.git
       dest: /var/tmp/quickstarts
-  - name: Dependency resolves via Maven
-    shell: "scl enable rh-maven35 'mvn dependency:resolve' chdir='/var/tmp/quickstarts/helloworld'"
-  - name: Remove Maven and Git
+
+  - name: Dependency resolves via Maven (RHEL 7)
+    shell: "scl enable rh-maven35 'mvn dependency:resolve' > /var/tmp/helloworld.out 2>&1 && touch /var/tmp/quickstarts/helloworld.done"
+    args:
+      chdir: "/var/tmp/quickstarts/helloworld"
+      creates: "/var/tmp/quickstarts/helloworld.done"
+    async: 10800
+    poll: 0
+    register: mvn_status
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+  - name: Dependency resolves via Maven (RHEL 8)
+    shell: "mvn dependency:resolve > /var/tmp/helloworld.out 2>&1 && touch /var/tmp/quickstarts/helloworld.done"
+    args:
+      chdir: "/var/tmp/quickstarts/helloworld"
+      creates: "/var/tmp/quickstarts/helloworld.done"
+    async: 10800
+    poll: 0
+    register: mvn_status
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+  - name: Check on Maven dependency resolves
+    async_status: jid={{ mvn_status.ansible_job_id }}
+    register: job_result
+    until: job_result.finished
+    delay: 30
+    retries: 720
+
+  - name: Remove Maven and Git (RHEL 7)
     package:
       name: "{{ item }}"
       state: absent   
     with_items:
     - git
     - rh-maven35*
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+  - name: Remove Maven and Git (RHEL 8)
+    package:
+      name: "{{ item }}"
+      state: absent   
+    with_items:
+    - git
+    - maven*
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
   - name: Remove JBoss EAP Quickstarts
     file:
       state: absent
       path: "/var/tmp/quickstarts/"
+
+...
