@@ -10,8 +10,8 @@ galaxy_info:
   - name: EL
     versions:
     - 7
+    - 8
   galaxy_tags:
     - wetty
 dependencies:
-  - epel
-  - nodejs
+  - role: system-user

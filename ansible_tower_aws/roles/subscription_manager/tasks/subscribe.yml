@@ -75,34 +75,44 @@
   when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
 - name: Subscribe to RHSM via activation key / org id
-  redhat_subscription:
-    activationkey: "{{ rhsm_activationkey }}"
-    org_id: "{{ rhsm_org_id }}"
-    force_register: true
-    state: present
+  block:
+    - redhat_subscription:
+        activationkey: "{{ rhsm_activationkey }}"
+        org_id: "{{ rhsm_org_id }}"
+        force_register: true
+        state: present
+      register: actkey_result
+  rescue:
+    - name: Retrying subscription
+      redhat_subscription:
+        activationkey: "{{ rhsm_activationkey }}"
+        org_id: "{{ rhsm_org_id }}"
+        force_register: true
+        state: present
+      register: actkey_result
   when: not cloud_access and sm_result.failed and not username
-  register: actkey_result
   tags:
     - rhel
 
 - name: Subscribe to RHSM via username/password/pool_id
-  redhat_subscription:
-    username: "{{ username }}"
-    password: "{{ password }}"
-    pool: "{{ pool_id }}"
-    force_register: true
-    state: present
+  block:
+    - redhat_subscription:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        pool: "{{ pool_id }}"
+        force_register: true
+        state: present
+  rescue:
+    - name: Retrying subscription
+      redhat_subscription:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        pool: "{{ pool_id }}"
+        force_register: true
+        state: present
   when: not cloud_access and sm_result.failed and not rhsm_activationkey
   tags:
     - rhel
-
-#- name: Subscribe RHN
-#  command: subscription-manager register --username="{{ username }}" --password="{{ password }}" --force
-#  when: sm_result.rc != 0 and sub
-
-#- name: Attach RHN Pool
-#  command: subscription-manager attach --pool "{{ pool_id }}"
-#  when: sm_result.rc != 0 and sub
 
 #---------------------------------------------------
 # Add Required Repositories
