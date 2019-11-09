@@ -1,0 +1,14 @@
+# file: roles/system-user/tasks/main.yml
+---
+
+# password_hash requires the passlib python module to generate password hashes
+# pip install passlib
+- name: Set system_user password
+  become: yes
+  user:   
+    name:      "{{ system_user }}"
+    password:  "{{ workshop_password |password_hash('sha512') }}"   
+    state:     present
+    append:    yes
+
+...

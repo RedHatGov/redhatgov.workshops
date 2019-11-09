@@ -1,6 +1,46 @@
 # file: roles/wetty/tasks/main.yml
 ---
 
+#-------------------------------------------------------
+- name: Generate Self Signed Certs
+  command: >
+    openssl req -new
+      -x509
+      -nodes
+      -days {{ item.days | default(3650) }}
+      -subj "/C={{ item.country | default('') }}/ST={{ item.state | default('') }}/L={{ item.city | default('') }}/O={{ item.organization | default('') }}/OU={{ item.unit | default('') }}/CN={{ item.name }}/emailAddress={{ item.email | default('') }}"
+      -newkey rsa:2048
+      -keyout /home/{{ system_user }}/.ssh/privkey.pem
+      -out /home/{{ system_user }}/.ssh/cert.pem
+  args:
+    creates: /home/{{ system_user }}/.ssh/*.pem
+  with_items: "{{ openssl_self_signed }}"
+  when: not letsencrypt
+
+- name: Set permissions on SSL certs
+  become: yes
+  file: 
+    path:    "/home/{{ system_user }}/.ssh/{{ item }}"
+    group:   "{{ system_user }}"  
+    owner:   "{{ system_user }}"
+    mode:    0400
+  with_items: 
+    - cert.pem
+    - privkey.pem
+
+- name: Update SSH Config
+  become: yes
+  copy:
+    src: sshd_config
+    dest: "/etc/ssh/sshd_config"
+    group: root
+    owner: root
+    mode: 0644 
+  notify: 
+    - sshd  
+
+#-------------------------------------------------------
+
 - name: Install yarn repository
   become: yes
   yum_repository:
@@ -32,11 +72,25 @@
     repo: 'https://github.com/butlerx/wetty.git'
     dest: wetty
 
-- name: Build wetty
+- name: Install Python 2 (RHEL 8)
+  yum:
+    name: python2
+    state: present
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+- name: Build wetty (RHEL 7)
   shell: yarn && yarn build
   args:
     chdir: "wetty"
     creates: "dist/client"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- name: Build wetty (RHEL 8)
+  shell: export PYTHON=/usr/bin/python2 ; yarn && yarn build
+  args:
+    chdir: "wetty"
+    creates: "dist/client"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
 - name: Install wetty
   become: true
@@ -77,35 +131,6 @@
     creates: /home/{{ system_user }}/.ssh/privkey.pem
   when: letsencrypt
 
-#-------------------------------------------------------
-# Self-Signed Certs 
-#-------------------------------------------------------
-- name: Generate Self Signed Certs
-  command: >
-    openssl req -new
-      -x509
-      -nodes
-      -days {{ item.days | default(3650) }}
-      -subj "/C={{ item.country | default('') }}/ST={{ item.state | default('') }}/L={{ item.city | default('') }}/O={{ item.organization | default('') }}/OU={{ item.unit | default('') }}/CN={{ item.name }}/emailAddress={{ item.email | default('') }}"
-      -newkey rsa:2048
-      -keyout /home/{{ system_user }}/.ssh/privkey.pem
-      -out /home/{{ system_user }}/.ssh/cert.pem
-  args:
-    creates: /home/{{ system_user }}/.ssh/*.pem
-  with_items: "{{ openssl_self_signed }}"
-  when: not letsencrypt
-
-- name: Set permissions on SSL certs
-  become: yes
-  file: 
-    path:    "/home/{{ system_user }}/.ssh/{{ item }}"
-    group:   "{{ system_user }}"  
-    owner:   "{{ system_user }}"
-    mode:    0400
-  with_items: 
-    - cert.pem
-    - privkey.pem
-
 # SYSTEMD
 - name: Template Systemd Service File for Wetty
   become: yes
@@ -117,36 +142,9 @@
     mode:  0644
   notify: wetty
 
-# password_hash requires the passlib python module to generate password hashes
-# pip install passlib
-- name: Set system_user password
-  become: yes
-  user:   
-    name:      "{{ system_user }}"
-    password:  "{{ workshop_password |password_hash('sha512') }}"   
-    state:     present
-    append:    yes
-
-- name: Update SSH Config
-  become: yes
-  copy:
-    src: sshd_config
-    dest: "/etc/ssh/sshd_config"
-    group: root
-    owner: root
-    mode: 0644 
-  notify: 
-    - sshd  
-
 #-------------------------------------------------------
 # Firewall settings
 #-------------------------------------------------------
-# - name: Open port in Firewall 
-#   become: yes
-#   firewalld:
-#     port: 8888/tcp  #"{{ wetty_port }}"
-#     permanent: true
-#     state: enabled
 
 - name: check to see if firewalld is installed
   become: yes
@@ -275,3 +273,5 @@
   shell: ncat -v -C --ssl localhost 8888 < /dev/null
   register: wetty_status
   changed_when: "wetty_status.rc != 0"
+
+...

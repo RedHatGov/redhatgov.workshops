@@ -12,15 +12,33 @@
 
   - name: RHEL 7 Tasks
     block:
+    - name: Install GUI components (cloud access)
+      yum:
+        name:
+        - "@gnome-desktop"
+        - "@x11"
+        - "@fonts"
+        - "tigervnc-server"
+        exclude: "fwupdate-efi"
+        disablerepo: "*"
+        enablerepo: "rhui-REGION-rhel-server-releases"
+        skip_broken: "yes"
+        state: present
+      when: cloud_access
+
     - name: Install GUI components
       yum:
         name:
         - "@gnome-desktop"
         - "@x11"
         - "@fonts"
+        - "tigervnc-server"
         exclude: "fwupdate-efi"
+#        disablerepo: "*"
+#        enablerepo: "rhel-7-server-rpms"
         skip_broken: "yes"
         state: present
+      when: not cloud_access
   
     - name: Install XRDP server and dependencies
       yum:
@@ -28,8 +46,9 @@
         - "xrdp"
         - "xrdp-selinux"
         - "xorgxrdp"
-        - "tigervnc-server"
-        state: latest
+#        disablerepo: "*"
+#        enablerepo: "epel"
+        state: present
 
     when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
 
@@ -56,13 +75,14 @@
         - "xorg*"
         - coreutils
         - wget
-        exclude: "fwupdate-efi"
+        exclude:
+        - fwupdate-efi
+        - file-roller-nautilus
         skip_broken: "yes"
         state: present
 
     - name: Install build tools and headers
       yum:
-#        name: https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/linux/nasm-2.14.02-0.fc27.x86_64.rpm
         name:
         - nasm
         - xorg-x11-server-devel
@@ -184,14 +204,6 @@
     command: semodule -i colord-add.pp chdir=/home/{{ system_user }}/.selinux
     notify: colord
     when: result.changed
-
-#  - name: Configure XRDP for SELinux
-#    file:
-#      path: "{{ item }}"
-#      setype: "bin_t"
-#    with_items:
-#    - "/usr/sbin/xrdp"
-#    - "/usr/sbin/xrdp-sesman"
 
   - when: ansible_facts.packages["firewalld"] is defined
     block:

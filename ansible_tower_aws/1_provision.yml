@@ -1,6 +1,5 @@
 # file: 1_provision.yml
 ---
-# https://www.terraform.io/docs/providers/aws/index.html
 
 - name: Provision AWS Infrastucture
   hosts: localhost
