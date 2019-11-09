@@ -4,7 +4,8 @@
   connection: local
 
   vars_files:
-   - vars/aws.example.yml
+   - vars/aws.yml
+   - vars/devsecops.yml
 
   tasks:
    - import_role:
@@ -96,7 +97,8 @@
   any_errors_fatal: yes
 
   vars_files:
-   - vars/aws.example.yml
+   - vars/aws.yml
+   - vars/devsecops.yml
 
   roles:
    - install-oc

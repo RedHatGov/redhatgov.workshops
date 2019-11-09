@@ -1,0 +1,8 @@
+*.log
+*.bak
+tmp/
+webpage/*-index.html
+
+vars/aws.yml
+vars/aws.env
+vars/devsecops.yml
