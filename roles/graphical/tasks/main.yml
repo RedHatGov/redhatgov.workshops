@@ -59,18 +59,18 @@
       yum:
         name:
         - "@graphical-server-environment"
-        - git
-        - openssl-devel
-        - pam-devel
-        - libX11-devel
-        - libXfixes-devel
-        - libXrandr-devel
-        - gcc
-        - clang
-        - make
-        - automake
-        - libtool
-        - pkgconfig
+#        - git
+#        - openssl-devel
+#        - pam-devel
+#        - libX11-devel
+#        - libXfixes-devel
+#        - libXrandr-devel
+#        - gcc
+#        - clang
+#        - make
+#        - automake
+#        - libtool
+#        - pkgconfig
         - tigervnc-server
         - "xorg*"
         - coreutils
@@ -80,83 +80,94 @@
         - file-roller-nautilus
         skip_broken: "yes"
         state: present
-
-    - name: Install build tools and headers
+  
+    - name: Install XRDP server and dependencies
       yum:
         name:
-        - nasm
-        - xorg-x11-server-devel
-        enablerepo: codeready-builder-for-rhel-8-x86_64-rpms
+        - "xrdp"
+        - "xrdp-selinux"
+        - "xorgxrdp"
+#        disablerepo: "*"
+#        enablerepo: "epel"
+        state: present
 
-    - name: Create build directory
-      file:
-        path: "/home/ec2-user/src"
-        state: directory
-      become: false
+# Commented out due to the addition of Xrdp/xorgxdp to EPEL 8
+#    - name: Install build tools and headers
+#      yum:
+#        name:
+#        - nasm
+#        - xorg-x11-server-devel
+#        enablerepo: codeready-builder-for-rhel-8-x86_64-rpms
 
-    - name: Clone xrdp repo
-      git:
-        repo: "https://github.com/neutrinolabs/xrdp"
-        dest: "/home/ec2-user/src/xrdp"
-        recursive: true
-      become: false
+#    - name: Create build directory
+#      file:
+#        path: "/home/ec2-user/src"
+#        state: directory
+#      become: false
 
-    - name: Bootstrap xrdp
-      command: "./bootstrap"
-      args:
-        chdir: "/home/ec2-user/src/xrdp"
-        creates: "/home/ec2-user/src/xrdp/depcomp"
-      become: false
+#    - name: Clone xrdp repo
+#      git:
+#        repo: "https://github.com/neutrinolabs/xrdp"
+#        dest: "/home/ec2-user/src/xrdp"
+#        recursive: true
+#      become: false
 
-    - name: Configure xrdp
-      command: "./configure"
-      args:
-        chdir: "/home/ec2-user/src/xrdp"
-        creates: "/home/ec2-user/src/xrdp/Makefile"
-      become: false
+#    - name: Bootstrap xrdp
+#      command: "./bootstrap"
+#      args:
+#        chdir: "/home/ec2-user/src/xrdp"
+#        creates: "/home/ec2-user/src/xrdp/depcomp"
+#      become: false
 
-    - name: Make xrdp
-      make:
-        chdir: "/home/ec2-user/src/xrdp"
-        target: "all"
-      become: false
+#    - name: Configure xrdp
+#      command: "./configure"
+#      args:
+#        chdir: "/home/ec2-user/src/xrdp"
+#        creates: "/home/ec2-user/src/xrdp/Makefile"
+#      become: false
 
-    - name: Make install xrdp
-      make:
-        chdir: "/home/ec2-user/src/xrdp"
-        target: "install"
+#    - name: Make xrdp
+#      make:
+#        chdir: "/home/ec2-user/src/xrdp"
+#        target: "all"
+#      become: false
 
-    - name: Clone xorgxrdp repo
-      git:
-        repo: "https://github.com/neutrinolabs/xorgxrdp"
-        dest: "/home/ec2-user/src/xorgxrdp"
-        recursive: true
-      become: false
+#    - name: Make install xrdp
+#      make:
+#        chdir: "/home/ec2-user/src/xrdp"
+#        target: "install"
 
-    - name: Bootstrap xorgxrdp
-      command: "./bootstrap"
-      args:
-        chdir: "/home/ec2-user/src/xorgxrdp"
-        creates: "/home/ec2-user/src/xorgxrdp/depcomp"
-      become: false
+#    - name: Clone xorgxrdp repo
+#      git:
+#        repo: "https://github.com/neutrinolabs/xorgxrdp"
+#        dest: "/home/ec2-user/src/xorgxrdp"
+#        recursive: true
+#      become: false
 
-    - name: Configure xorgxrdp
-      command: "./configure PKG_CONFIG_PATH=/usr/local/lib/pkgconfig"
-      args:
-        chdir: "/home/ec2-user/src/xorgxrdp"
-        creates: "/home/ec2-user/src/xorgxrdp/Makefile"
-      become: false
+#    - name: Bootstrap xorgxrdp
+#      command: "./bootstrap"
+#      args:
+#        chdir: "/home/ec2-user/src/xorgxrdp"
+#        creates: "/home/ec2-user/src/xorgxrdp/depcomp"
+#      become: false
 
-    - name: Make xorgxrdp
-      make:
-        chdir: "/home/ec2-user/src/xorgxrdp"
-        target: "all"
-      become: false
+#    - name: Configure xorgxrdp
+#      command: "./configure PKG_CONFIG_PATH=/usr/local/lib/pkgconfig"
+#      args:
+#        chdir: "/home/ec2-user/src/xorgxrdp"
+#        creates: "/home/ec2-user/src/xorgxrdp/Makefile"
+#      become: false
 
-    - name: Make install xorgxrdp
-      make:
-        chdir: "/home/ec2-user/src/xorgxrdp"
-        target: "install"
+#    - name: Make xorgxrdp
+#      make:
+#        chdir: "/home/ec2-user/src/xorgxrdp"
+#        target: "all"
+#      become: false
+
+#    - name: Make install xorgxrdp
+#      make:
+#        chdir: "/home/ec2-user/src/xorgxrdp"
+#        target: "install"
 
     - name: Install Xwrapper configuration
       copy:
