@@ -27,7 +27,12 @@ zone_id:                          ""
 tower_rhel_count:                 "2"            # RHEL Ansible Tower node(s)
 rhel_count:                       "2"            # RHEL node(s)
 win_count:                        "0"            # Windows node(s)
-region:                           "us-east-2"    # AWS Region, configures ec2.ini too
+#-------------------------------------------------------------------------------
+# AWS Region, configures ec2.ini too.  Supported are: us-east-[1,2],us-west-1,eu-central-1
+#region:                           "us-east-1"
+region:                           "us-east-2"
+#region:                           "us-west-1"
+#region:                           "eu-central-1"
 #-------------------------------------------------------------------------------
 # AMI details
 #rhel_ver:                         "rhel7"
