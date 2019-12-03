@@ -26,7 +26,6 @@ regions:
       ami: "ami-0b2821bf4a7dba483" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
     win2016:
       ami: "ami-02dca99d899d09cb3" # Windows_Server-2016-English-Full-Base-2019.11.13
-regions:
   us-west-1:
     rhel7:
 #      ami: "ami-02574210e91c38419" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
