@@ -9,6 +9,7 @@
   hosts:
     - tower_rhel_nodes
     - rhel_nodes
+    - admin_rhel_node
   remote_user: ec2-user
   roles:
     - { role: unregister }

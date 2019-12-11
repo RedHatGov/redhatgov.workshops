@@ -6,6 +6,9 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/python
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
 {% endif %}
 
+[admin_rhel_node]
+{{ workshop_prefix }}.admin.{{ domain_name }}
+
 [tower_rhel_nodes]
 {% for n in range( tower_rhel_count|int ) %}
 {{ workshop_prefix }}.tower.{{ n }}.{{ domain_name }}

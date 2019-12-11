@@ -95,7 +95,11 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_load.yml 
+(ansible) $ ansible-playbook 2_preload.yml 
+(ansible) $ ssh -i .rehatgov/$(ls -1 .redhatgov/*-key | head -1) ec2-user@[ workshop name ].admin.redhatgov.io
+(admin) $ cd src/ansible_tower_aws
+(admin) $ source env.sh
+(admin) $ ansible-playbook 3_load.yml
 ```
 
 #### Fedora 30/31
@@ -177,18 +181,23 @@ pool_id:                          "1234567890abcdef01234567890abcde"
 #### Provision Workshop Nodes
 
 ```
+source env.sh
 ansible-playbook 1_provision.yml  
 ```
 #### Install packages and configure the newly provisioned nodes.
 
 ```
-ansible-playbook 2_load.yml
+ansible-playbook 2_preload.yml
+(login to admin node as ec2-user)
+cd ~/src/ansible_tower_aws)
+source env.sh
+ansible-playbook 3_load.yml
 ```
 
 #### To destroy the workshop environment
 
 ```
-ansible-playbook 3_unregister.yml
+ansible-playbook 4_unregister.yml
 rm -rf .redhatgov
 ```
 

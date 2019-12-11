@@ -204,6 +204,25 @@
 - debug:
     var: ec2_route
 
+- name: Create RHEL admin host
+  ec2:
+    assign_public_ip: yes
+    key_name: "at-{{ workshop_prefix }}-key"
+    group: "at-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ rhel_instance_type }}"
+    image: "{{ regions[region][rhel_ver].ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    wait: true
+    instance_tags:
+      Name: "at-{{ workshop_prefix }}-admin"
+      username: "{{ local_user }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      rhel_admin: "at-{{ workshop_prefix }}"
+    exact_count: 1
+    count_tag: rhel_admin
+  register: ec2_rhel_admin
+
 - name: Create RHEL instances
   ec2:
     assign_public_ip: yes
@@ -241,6 +260,9 @@
     exact_count: "{{ tower_rhel_count }}"
     count_tag: tower_rhel
   register: ec2_tower_rhel
+
+- debug:
+    var: ec2_rhel_admin
 
 - debug:
     var: ec2_rhel
@@ -284,14 +306,32 @@
     port: 22
     host: "{{ item.public_ip }}"
     timeout: 300
-  with_items: "{{ ec2_rhel.tagged_instances }}"
+  with_items:
+  - "{{ ec2_rhel_admin.instances }}"
+  - "{{ ec2_rhel.tagged_instances }}"
+  - "{{ ec2_tower_rhel.tagged_instances }}"
 
 - name: add RHEL hosts to groups
   add_host:
     name: at-{{ workshop_prefix}}-rhel-{{ item.id }}
     ansible_ssh_host: "{{ item.public_ip }}"
     groups: rhel_nodes
-  with_items: "{{ ec2_rhel.tagged_instances }}"
+  with_items:
+  - "{{ ec2_rhel_admin.instances }}"
+  - "{{ ec2_rhel.tagged_instances }}"
+  - "{{ ec2_tower_rhel.tagged_instances }}"
+
+- name: Create DNS records for RHEL admin
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
+    value: "{{ item.dns_name }}"
+    wait: yes
+    state: present
+  loop: "{{ ec2_rhel_admin.instances }}"
+#  ignore_errors: true
 
 - name: Create DNS records for RHEL
   route53:
