@@ -1,0 +1,4 @@
+# file: roles/admin_server_prep/defaults/main.yml
+---
+#
+# foo: default

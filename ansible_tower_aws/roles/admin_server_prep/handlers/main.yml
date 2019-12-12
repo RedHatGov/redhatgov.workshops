@@ -1,0 +1,6 @@
+# file: roles/admin_server_prep/handlers/main.yml
+---
+# For example,
+# 
+# - name: restart ntpd
+#   service: name=ntpd state=restarted

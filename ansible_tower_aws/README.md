@@ -65,7 +65,10 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_load.yml 
+(ansible) $ ansible-playbook 2_preload.yml 
+(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(admin) $ cd src/ansible_tower_aws
+(admin) $ ansible-playbook 3_load.yml
 ```
 
 #### RHEL 8
@@ -96,9 +99,8 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ssh -i .rehatgov/$(ls -1 .redhatgov/*-key | head -1) ec2-user@[ workshop name ].admin.redhatgov.io
+(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
 (admin) $ cd src/ansible_tower_aws
-(admin) $ source env.sh
 (admin) $ ansible-playbook 3_load.yml
 ```
 
@@ -121,7 +123,10 @@ group_vars/all_example.yml >group_vars/all.yml
 $ vim group_vars/all.yml # fill in all the required fields
 $ source env.sh
 $ ansible-playbook 1_provision.yml
-$ ansible-playbook 2_load.yml
+(ansible) $ ansible-playbook 2_preload.yml 
+(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(admin) $ cd src/ansible_tower_aws
+(admin) $ ansible-playbook 3_load.yml
 ```
 
 #### Custom Variable Requirements
@@ -190,7 +195,6 @@ ansible-playbook 1_provision.yml
 ansible-playbook 2_preload.yml
 (login to admin node as ec2-user)
 cd ~/src/ansible_tower_aws)
-source env.sh
 ansible-playbook 3_load.yml
 ```
 

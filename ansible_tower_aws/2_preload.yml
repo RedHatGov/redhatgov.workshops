@@ -1,4 +1,4 @@
-# file: 2_load.yml
+# file: 2_preload.yml
 ---
 
 - name: Wait for AWS AMIs to become initialized
@@ -13,37 +13,23 @@
       with_items:
         - "{{ groups.admin_rhel_node }}"
 
-- name: Configure repositories on admin node
+- name: Prep files for admin server
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - role: admin_server_prep
+
+- name: Configure admin server
   become: yes
   remote_user: ec2-user
   hosts:
     - admin_rhel_node
   gather_facts: yes
   roles:
+    - role: firewalld 
     - role: subscription_manager 
-  tasks:
-  - name: install required packages
-    package:
-      name:
-      - python3-pip
-      - rsync
-      state: present
-  - name: install required Python packages
-    pip:
-      name:
-      - ansible
-      - boto
-      - boto3
-  - name: create src directory
-    file:
-      path: "~/src"
-      state: directory
-  - name: sync content to admin host
-    synchronize:
-      src: "{{ item }}"
-      dest: "~/src/"
-    with_items:
-    - "{{ lookup('env','PWD') }}/../roles"
-    - "{{ lookup('env','PWD') }}"
+    - role: epel 
+    - role: cockpit 
+    - role: admin_server_config 
 
 ...
