@@ -2,9 +2,9 @@
 
 ![ansible](img/Ansible-Tower-Logotype-Large-RGB-FullGrey-300x124.png)
 
-`Ansible_Tower_Workshop` is a ansible playbook to provision Ansible Tower in AWS. This playbook uses Ansible to wrap Terraform, for provisioning AWS infrastructure and nodes. To find more info about Terraform [check here](https://www.terraform.io/docs/providers/aws/index.html)
+`Ansible_Tower_Workshop` is a ansible playbook to provision Ansible Tower in AWS. This playbook uses Ansible to provision AWS infrastructure and nodes.
 
-These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up you AWS environment on you local machine.
+These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up your AWS environment, on you local machine.
 
 Fill out `env.sh` & Export the AWS API Keys
 
@@ -16,29 +16,51 @@ source env.sh
 
 This repo also requires that you have Ansible installed on your local machine. For the most upto date methods of installing Ansible for your operating system [check here](http://docs.ansible.com/ansible/intro_installation.html).
 
-This repo also requires that Terraform be installed if you are using the aws.infra.terraform role. For the most upto data methods of installing Terraform for your operating system [check here](https://www.terraform.io/downloads.html).
+## Detailed AWS Infrastructure Creation Guides
 
+#### OS X Catalina (10.15.x)
 
+For easy installation and maintenance of the required tools, please first install [Homebrew](https://brew.sh/). From their site, the following command will install it to your system: 
 
-## AWS Infrastructure Roles
-
-
-### roles/aws.infra.terraform
-
-To create infrastructure and a Ansible Tower instance via Terraform:
-
-#### OS X
 ```
-sudo easy_install pip
-sudo pip install boto
-sudo pip install boto3
-sudo pip install ansible
-sudo pip install passlib
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
 
-And follow the Fedora guide from the 'src' creation step.
+Next, you need to install the required management tools, for Ansible and AWS:
+
+```
+$ brew install python3
+$ pip3 install virtualenv
+$ virtualenv ansible
+$ source ansible/bin/activate
+(ansible) $ pip install ansible boto boto3
+(ansible) $ mkdir src
+(ansible) $ cd src
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
+(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
+(ansible) $ sed \
+-e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
+-e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
+env.sh_example > env.sh
+(ansible) $ sed \
+-e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
+-e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
+group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ source env.sh
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_preload.yml 
+(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(admin) $ cd src/ansible_tower_aws
+(admin) $ ansible-playbook 3_load.yml
 ```
 
 #### RHEL 7
+
+Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
+
 ```
 $ sudo subscription-manager repos \
 --enable rhel-7-server-ansible-2.8-rpms \
@@ -72,8 +94,11 @@ group_vars/all_example.yml >group_vars/all.yml
 ```
 
 #### RHEL 8
+
+Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
+
 ```
-$ sudo subscription-manager repos --enable ansible-2.8-for-rhel-8-x86_64-rpms --enable codeready-builder-for-rhel-8-x86_64-rpms
+$ sudo subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms --enable codeready-builder-for-rhel-8-x86_64-rpms
 $ sudo dnf install -y git python3-virtualenv ansible
 $ virtualenv --system-site-packages ansible
 $ source ansible/bin/activate
