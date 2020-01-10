@@ -4,6 +4,8 @@
 - name: Wait for AWS AMIs to become initialized
   hosts: localhost
   gather_facts: no
+  tags:
+    - wait
   tasks:
     - wait_for:
         host: "{{ item }}"
@@ -11,22 +13,25 @@
         state: started
         timeout: 300
       with_items:
-        - "{{ groups.tower_rhel_nodes }}"
         - "{{ groups.rhel_nodes }}"
 
-- name: Configure repositories on all RHEL nodes
+- name: Subscribe system
   become: yes
   remote_user: ec2-user
   hosts:
     - rhel_nodes
+  tags:
+    - rhsm
   gather_facts: yes
   roles:
     - role: subscription_manager 
 
-- name: Configure epel on tower nodes
+- name: Configure epel on nodes
   become: yes
   remote_user: ec2-user
   hosts: rhel_nodes
+  tags:
+    - epel
   tasks:
     - name: RHEL 8 on AWS via Cloud Access has no available repositories
       fail:
@@ -35,25 +40,13 @@
   roles:
     - role: epel
 
-#- name: Remove Red Hat EAP packages
-#  become: yes
-#  remote_user: ec2-user
-#  hosts:
-#    - tower_rhel_nodes
-#    - rhel_nodes
-#  gather_facts: no
-#  tasks:
-#    - package:
-#        name: eap7-*
-#        state: absent
-#      when: jboss is defined
-#      ignore_errors: yes
-
 - name: Configure repositories on nodes
   become: yes
   remote_user: ec2-user
   hosts: le_node
   gather_facts: no
+  tags:
+    - letsencrypt
   roles:
     - role: LetsEncrypt
 
@@ -62,8 +55,9 @@
   remote_user: ec2-user
   hosts: rhel_nodes
   gather_facts: no
+  tags:
+    - software
   roles:
-#    - role: nodejs
     - role: ansible.tower
     - role: vscode
     - role: graphical
@@ -74,6 +68,8 @@
   remote_user: ec2-user
   hosts: rhel_nodes
   gather_facts: no
+  tags:
+    - wetty
   roles:
     - role: wetty
       when: rhel_ver == 'rhel7'
@@ -83,6 +79,8 @@
   remote_user: ec2-user
   hosts: rhel_nodes
   gather_facts: no
+  tags:
+    - webconsole
   roles:
     - role: cockpit
       when: rhel_ver == 'rhel8'
@@ -91,8 +89,9 @@
   become: yes
   remote_user: ec2-user
   hosts:
-    - tower_rhel_nodes
     - rhel_nodes
+  tags:
+    - upgrade
   roles:
     - role: upgrade
 
@@ -100,10 +99,35 @@
   become: yes
   remote_user: ec2-user
   hosts:
-    - tower_rhel_nodes
     - rhel_nodes
   gather_facts: yes
+  tags:
+    - upgrade
   roles:
     - role: subscription_manager 
+
+- name: Install purposefully out-of-date httpd
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tags:
+    - httpd
+  tasks:
+    - name: search for httpd versions
+      yum:
+        list: httpd
+      register: result
+
+    - set_fact:
+        httpd_packages: "{{ httpd_packages|default([]) }} + [ '{{ item.name + '-' + item.version + '-' + item.release + '.' + item.arch }}']"
+      with_items:
+      - "{{ result.results }}"
+
+    - name: install oldest available version
+      yum:
+        name: "{{ httpd_packages | sort_versions | first }}"
+        state: present
 
 ...
