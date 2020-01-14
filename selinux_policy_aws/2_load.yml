@@ -24,6 +24,7 @@
         password:  "{{ workshop_password |password_hash('sha512') }}"
         state:     present
         append:    yes
+   tags: password
 
 #- name: Configure epel on nodes
 #  become: yes
@@ -32,7 +33,7 @@
 #  roles:
 #    - role: epel
 
-- name: Configure repositories on all RHEL nodes
+- name: Configure subscriptions
   become: yes
   remote_user: ec2-user
   hosts:
@@ -40,6 +41,7 @@
   gather_facts: no
   roles:
     - role: subscription_manager 
+  tags: rhsm
 
 - name: Configure repositories on nodes
   become: yes
@@ -48,6 +50,7 @@
   gather_facts: no
   roles:
     - role: LetsEncrypt
+  tags: repositories
 
 - name: Configure software on nodes
   become: yes
@@ -62,6 +65,7 @@
     - role: vscode
 #    - role: wetty
     - role: upgrade
+  tags: configure
 
 - name: Install a test SELinux log
   become: yes
