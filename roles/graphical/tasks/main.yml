@@ -56,30 +56,22 @@
     block:
 
     - name: Install GUI components and Xrdp build reqs on RHEL 8
-      yum:
-        name:
-        - "@graphical-server-environment"
-#        - git
-#        - openssl-devel
-#        - pam-devel
-#        - libX11-devel
-#        - libXfixes-devel
-#        - libXrandr-devel
-#        - gcc
-#        - clang
-#        - make
-#        - automake
-#        - libtool
-#        - pkgconfig
-        - tigervnc-server
-        - "xorg*"
-        - coreutils
-        - wget
-        exclude:
-        - fwupdate-efi
-        - file-roller-nautilus
-        skip_broken: "yes"
-        state: present
+      command: yum -y install @graphical-server-environment tigervnc-server 'xorg-*' coreutils wget --skip-broken
+      # currently, the group is not properly resolved, against RHUI, with yum
+#      yum:
+#        name:
+#        - "@Server with GUI"
+##        - "@^Server with GUI"
+##        - '@^graphical-server-environment'
+#        - tigervnc-server
+#        - "xorg*"
+#        - coreutils
+#        - wget
+##        exclude:
+##        - fwupdate-efi
+##        - file-roller-nautilus
+#        skip_broken: "yes"
+#        state: present
   
     - name: Install XRDP server and dependencies
       yum:
