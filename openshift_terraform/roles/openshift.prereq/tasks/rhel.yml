@@ -5,16 +5,48 @@
   yum:
     name: "{{ rhel_base_pkgs }}"
     state: present
+  async: 10800
+  poll: 0
+  register: rhel_base_pkg_status
+
+- name: 'Check on base package install ...'
+  async_status: jid={{ rhel_base_pkg_status.ansible_job_id }}
+  register: job_result
+  until: job_result.finished
+  delay: 30
+  retries: 720
+
 
 - name: Update the system to the latest packages
   yum:
     name: "*"
     state: latest
+  async: 10800
+  poll: 0
+  register: rhel_upgrade_status
+
+- name: 'Check on latest package update ...'
+  async_status: jid={{ rhel_upgrade_status.ansible_job_id }}
+  register: job_result
+  until: job_result.finished
+  delay: 30
+  retries: 720
 
 - name: Install OpenShift packages
   yum:
     name: "{{ rhel_ose_pkgs }}"
     state: present
+  async: 10800
+  poll: 0
+  register: install_rhocp_packages_status
+
+- name: 'Check on rhocp packages install ...'
+  async_status: jid={{ install_rhocp_packages_status.ansible_job_id }}
+  register: job_result
+  until: job_result.finished
+  delay: 30
+  retries: 720
+
 
 #- name: Remove atomic-openshift packages in the host’s /etc/yum.conf file when installing
 #  command: atomic-openshift-excluder unexclude
