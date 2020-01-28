@@ -1,0 +1,19 @@
+# Compiled files
+*.tfstate
+*.tfstate.backup
+.*
+secrets.yml
+users.yml
+extra_vars.yml
+*.txt
+.vagrant
+.terraform
+.redhatgov
+.vault.yml
+vault.yml
+group_vars/vault.yml
+group_vars/all
+group_vars/all.yml
+env.sh
+inventory/ec2.ini
+inventory/hosts

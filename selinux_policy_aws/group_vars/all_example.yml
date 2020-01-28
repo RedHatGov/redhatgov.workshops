@@ -24,7 +24,7 @@ domain_name:                      ""
 zone_id:                          ""
 # aws                      |      AWS Node Counts
 rhel_count:                       "2"            # RHEL node(s)
-win_count:                        "2"            # Windows node(s)
+win_count:                        "0"            # Windows node(s)
 region:                           "us-east-2"    # AWS Region, configures ec2.ini too
 ebs_root_block_size:              50
 # aws.infra                |      AWS AMI IDs
@@ -33,12 +33,20 @@ ebs_root_block_size:              50
 # rhel_ami_id:                "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
 # rhel_ami_id:                "ami-0240b09539b9692a0" # RHEL-7.6_HVM_GA-20190128-x86_64-0-Access2-GP2
 # rhel_ami_id:                "ami-0729967d6d95d8317" # RHEL-8.0.0_HVM-20190426-x86_64-1-Access2-GP2
-# win_ami_id:                 "ami-0bf148826ef491d16" # Windows_Server-2016-English-Full-Base-2019.02.13
+# rhel_ami_id:                "ami-002cdac160d085b42" # RHEL-8.1.0_HVM-20191029-x86_64-0-Access2-GP2
+# win_ami_id:                 "ami-00c96c304f033dfbe" # Windows_Server-2016-English-Full-Base-2019.12.16
 # us-east-2
-#rhel_ami_id:                "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-rhel_ami_id:                "ami-0ee3b6d31319e5fde" # RHEL-7.6_HVM_GA-20190128-x86_64-0-Access2-GP2
+# rhel_ami_id:                "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+# rhel_ami_id:                "ami-0ee3b6d31319e5fde" # RHEL-7.6_HVM_GA-20190128-x86_64-0-Access2-GP2
 # rhel_ami_id:                "ami-0bc2bdfd487d3ae8d" # RHEL-8.0.0_HVM-20190426-x86_64-1-Access2-GP2
-win_ami_id:                 "ami-08b4a0f6e106c1dba" # Windows_Server-2016-English-Full-Base-2019.02.13
+rhel_ami_id:                "ami-0d31ffafc92cb1a4a" # RHEL-8.1.0_HVM-20191029-x86_64-0-Access2-GP2
+win_ami_id:                 "ami-084c1257f64cd7db9" # Windows_Server-2016-English-Full-Base-2019.12.16
+# eu-central-1
+#rhel_ami_id:                "ami-07d3f0705bebac978" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+# rhel_ami_id:                "ami-0af1378dc29c40afb" # RHEL-7.6_HVM_GA-20190128-x86_64-0-Access2-GP2
+# rhel_ami_id:                "ami-08093a8d716390c86" # RHEL-8.0.0_HVM-20190426-x86_64-1-Access2-GP2
+# rhel_ami_id:                "ami-08c04369895785ac4" # RHEL-8.1.0_HVM-20191029-x86_64-0-Access2-GP2
+# win_ami_id:                 "ami-0d0a7c3ad4944bbde" # Windows_Server-2016-English-Full-Base-2019.12.16
 #-------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3.large"

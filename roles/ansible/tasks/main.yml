@@ -17,6 +17,16 @@
 - name: RHEL 8 Tasks
   block:
 
+    - name: Determine newest Ansible repo
+      shell: "subscription-manager repos --list | egrep '^Repo Name:' | egrep 'Ansible Engine.*\\(RPMs\\)' | sort -V -k 5 | cut -d\\  -f 3- | tail -1"
+      register: result
+
+    - set_fact:
+        version: "{{ result.stdout }}"
+
+    - debug:
+        var: version
+
     - name: Install PIP
       yum:
         name: python3-pip
