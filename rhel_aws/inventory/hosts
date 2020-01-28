@@ -1,0 +1,19 @@
+
+[local_target]
+localhost  ansible_connection=local
+
+[tower_rhel_nodes]
+
+[tower_rhel_nodes:vars]
+
+[rhel_nodes]
+
+[rhel_nodes:vars]
+
+[win_nodes]
+
+[win_nodes:vars]
+
+[all_nodes:children]
+rhel_nodes
+win_nodes

@@ -24,6 +24,7 @@
         password:  "{{ workshop_password |password_hash('sha512') }}"
         state:     present
         append:    yes
+  tags: password
 
 #- name: Configure epel on nodes
 #  become: yes
@@ -32,7 +33,7 @@
 #  roles:
 #    - role: epel
 
-- name: Configure repositories on all RHEL nodes
+- name: Configure subscriptions
   become: yes
   remote_user: ec2-user
   hosts:
@@ -40,6 +41,7 @@
   gather_facts: no
   roles:
     - role: subscription_manager 
+  tags: rhsm
 
 - name: Configure repositories on nodes
   become: yes
@@ -48,12 +50,13 @@
   gather_facts: no
   roles:
     - role: LetsEncrypt
+  tags: repositories
 
 - name: Configure software on nodes
   become: yes
   remote_user: ec2-user
   hosts: rhel_nodes
-  gather_facts: no
+  gather_facts: yes
   roles:
     - role: ansible
     - role: cockpit
@@ -62,16 +65,23 @@
     - role: vscode
 #    - role: wetty
     - role: upgrade
+  tags: software
 
-- name: Install a test SELinux log
+- name: Install required files for the workshop
   become: yes
   remote_user: ec2-user
   hosts: rhel_nodes
   tasks:
-    - copy:
+    - name: Install a test SELinux log
+      copy:
         src: testaudit
         dest: /root/testaudit
         mode: 0600
         setype: _default
+    - name: Remove unneeded file
+      file:
+        path: /usr/share/selinux/devel/include/services/container.if
+        state: absent
+  tags: install
 
 ...

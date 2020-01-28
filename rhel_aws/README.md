@@ -1,8 +1,8 @@
-# Ansible Tower Workshop - AWS Version
+# RHEL 8 Workshop - AWS Version
 
 ![ansible](img/Ansible-Tower-Logotype-Large-RGB-FullGrey-300x124.png)
 
-`Ansible_Tower_Workshop` is a ansible playbook to provision Ansible Tower in AWS. This playbook uses Ansible to provision AWS infrastructure and nodes.
+`rhel8_aws` is a playbook to provision RHEL 8 in AWS. This playbook uses Ansible to provision AWS infrastructure and nodes.
 
 These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up your AWS environment, on you local machine.
 

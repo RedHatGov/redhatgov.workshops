@@ -6,13 +6,12 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/python
 localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
 {% endif %}
 
-[admin_rhel_node]
-{{ workshop_prefix }}.admin.{{ domain_name }}
-
 [tower_rhel_nodes]
+{% if tower_rhel_count is defined %}
 {% for n in range( tower_rhel_count|int ) %}
 {{ workshop_prefix }}.tower.{{ n }}.{{ domain_name }}
 {% endfor %}
+{% endif %}
 
 [tower_rhel_nodes:vars]
 ansible_ssh_private_key_file={{ ssh_key_path }}
@@ -39,6 +38,8 @@ ansible_port=5986
 ansible_winrm_server_cert_validation=ignore
 
 [all_nodes:children]
+{% if tower_rhel_count is defined %}
 tower_rhel_nodes
+{% endif %}
 rhel_nodes
 win_nodes

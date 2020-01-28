@@ -11,8 +11,8 @@
         state: started
         timeout: 300
       with_items:
-        - "{{ groups.tower_rhel_nodes }}"
         - "{{ groups.rhel_nodes }}"
+        - "{{ groups.tower_rhel_nodes }}"
 
 - name: Configure repositories on all RHEL nodes
   become: yes

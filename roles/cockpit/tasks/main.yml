@@ -30,6 +30,7 @@
     - cockpit-session-recording
     - cockpit-machines
     - cockpit-packagekit
+    - cockpit-podman
     - cockpit-storaged
     when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
