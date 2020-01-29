@@ -62,6 +62,14 @@
     - role: vscode
     - role: graphical
     - role: system-user
+  tasks:
+    - name: install container management tools
+      yum:
+        name:
+        - buildah
+        - podman
+        - skopeo
+        state: present
 
 - name: Configure web console (RHEL 7)
   become: yes
