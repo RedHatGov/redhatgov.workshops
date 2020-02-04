@@ -223,6 +223,26 @@
     count_tag: rhel
   register: ec2_rhel
 
+- name: Attach additional network interface to RHEL nodes
+  ec2_eni:
+    instance_id: "{{ item.id }}"
+    device_index: 1
+    subnet_id: "{{ ec2_subnet.subnet.id }}"
+    region: "{{ region }}"
+    state: present
+  with_items: "{{ ec2_rhel.tagged_instances }}"
+  register: eni
+
+- debug:
+    var: eni
+
+- name: Set additional interfaces to auto delete on instance termination
+  ec2_eni:
+    eni_id: "{{ item.interface.id }}"
+    delete_on_termination: yes
+    region: "{{ region }}"
+  with_items: "{{ eni.results }}"
+
 - name: Create RHEL Tower instances
   ec2:
     assign_public_ip: yes
