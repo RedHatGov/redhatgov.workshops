@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  become: yes
+  vars:
+    network_connections:
+      - name: DBnic
+        state: up
+        type: ethernet
+        interface_name: eth1
+        autoconnect: yes
+        ip:
+          dhcp4: no
+          auto6: no
+          address:
+           - "10.10.10.{{ 254 | random( start=2) }}/24"
+  roles:
+    - role: rhel-system-roles.network
