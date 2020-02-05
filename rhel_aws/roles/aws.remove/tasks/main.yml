@@ -311,6 +311,13 @@
     vpc_id: "{{ vpc_id }}"
     state: absent
 
+- name: Delete private subnet
+  ec2_vpc_subnet:
+    region: "{{ region }}"
+    cidr: "10.0.3.0/24"
+    vpc_id: "{{ vpc_id }}"
+    state: absent
+
 - name: Delete Windows security group
   ec2_group:
     name: "at-{{ workshop_prefix }}-win-sg"
