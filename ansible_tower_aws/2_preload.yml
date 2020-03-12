@@ -15,7 +15,8 @@
 
 - name: Prep files for admin server
   hosts: localhost
-  gather_facts: no
+  gather_facts: yes
+  become: no
   roles:
     - role: admin_server_prep
 
