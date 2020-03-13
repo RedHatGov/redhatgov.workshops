@@ -228,6 +228,9 @@ ansible-playbook 3_load.yml
 ```
 ansible-playbook 4_unregister.yml
 rm -rf .redhatgov
+
+#### Or, if you just want to clear out the config, and not attempt to unsubscribe the RHEL nodes:
+ansible-playbook 4_unregister.yml -e NOSSH=true
 ```
 
 ## Login to the primary workshop node
