@@ -145,6 +145,15 @@
         name: "{{ httpd_packages | sort_versions | first }}"
         state: present
 
+- name: Pre-load system role playbook
+  become: no
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tags:
+    - custom
+  tasks:
     - name: install system role network playbook
       copy:
         dest: "~/example-network-playbook.yml"
