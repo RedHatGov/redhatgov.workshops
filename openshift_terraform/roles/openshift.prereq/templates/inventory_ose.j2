@@ -44,7 +44,7 @@ openshift_disable_check="docker_image_availability"
 # Host group for masters
 [masters]
 {% for host in inventory_ose_masters %}
-{% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
+{% if (hostvars[host]['inventory_hostname'] is match("master") ) %}
 {{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes
 {% endif %}
 {% endfor %}
@@ -52,7 +52,7 @@ openshift_disable_check="docker_image_availability"
 # Host group for etcd
 [etcd]
 {% for host in inventory_ose_masters %}
-{% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
+{% if (hostvars[host]['inventory_hostname'] is match("master") ) %}
 {{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes
 {% endif %}
 {% endfor %}
@@ -60,13 +60,13 @@ openshift_disable_check="docker_image_availability"
 # Host group for nodes, includes region info
 [nodes]
 {% for host in inventory_ose_masters %}
-{% if (hostvars[host]['inventory_hostname'] | match("master") ) %}
+{% if (hostvars[host]['inventory_hostname'] is match("master") ) %}
 {{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_schedulable=true ansible_connection=local ansible_become=yes openshift_node_group_name='node-config-master-infra'
 {% endif %}
 {% endfor %}
 
 {% for host in inventory_ose_nodes %}
-{% if (hostvars[host]['inventory_hostname'] | match("node")) %}
+{% if (hostvars[host]['inventory_hostname'] is match("node")) %}
 {{ hostvars[host]['inventory_hostname'] }} openshift_public_ip={{ hostvars[host]['ansible_ec2_public_ipv4'] }} openshift_public_hostname={{ hostvars[host]['ansible_ec2_public_hostname'] }} openshift_node_group_name='node-config-compute'
 {% endif %}
 {% endfor %}

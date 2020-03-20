@@ -218,7 +218,7 @@ ansible-playbook 1_provision.yml
 
 ```
 ansible-playbook 2_preload.yml
-(login to admin node as ec2-user)
+ssh -i .redhatgov/{{ workshop prefix }}-key ec2-user@{{ workshop prefix }}.admin.{{ domain name }}
 cd ~/src/ansible_tower_aws)
 ansible-playbook 3_load.yml
 ```
@@ -230,12 +230,20 @@ ansible-playbook 4_unregister.yml
 rm -rf .redhatgov
 ```
 
+
+#### Or, if you just want to clear out the config, and not attempt to unsubscribe the RHEL nodes:
+
+```
+ansible-playbook 4_unregister.yml -e NOSSH=true
+```
+```
+
 ## Login to the primary workshop node
 
 Browse to the URL of the EC2 instance and enter the `ec2-user`'s password `workshop_password:` located in `group_vars/all.yml`.
 
 ```
-https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
+https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:9090
 ```
 
 ## Alternative interface: RDP (Microsoft Remote Desktop)
