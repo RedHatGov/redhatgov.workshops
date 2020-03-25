@@ -69,6 +69,7 @@
     - role: vscode
     - role: graphical
     - role: system-user
+    - role: powerline
 
 - name: Configure web console (RHEL 7)
   become: yes

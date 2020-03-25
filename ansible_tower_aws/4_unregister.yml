@@ -20,5 +20,14 @@
   connection: local
   roles:
   - { role: aws.remove, tags: ["delete"] }
+  tasks:
+  - name: remove known_hosts entries
+    known_hosts:
+      name: "{{ item }}"
+      state: absent
+    with_flattened:
+      - "{{ groups['tower_rhel_nodes'] }}"
+      - "{{ groups['rhel_nodes'] }}"
+      - "{{ groups['admin_rhel_node'] }}"
 
 ...
