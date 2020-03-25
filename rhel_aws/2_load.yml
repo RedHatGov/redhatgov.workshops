@@ -156,7 +156,7 @@
   tasks:
     - name: install system role network playbook
       copy:
-        dest: "~/example-network-playbook.yml"
+        dest: "/home/ec2-user/example-network-playbook.yml"
         src: "example-network-playbook.yml"
         mode: 0644
 
