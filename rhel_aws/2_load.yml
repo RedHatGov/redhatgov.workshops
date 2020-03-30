@@ -70,6 +70,13 @@
         - podman
         - skopeo
         state: present
+    - name: install session recording tools
+      yum:
+        name:
+        - tlog
+        - cockpit-session-recording
+        - systemd-journal-remote
+        state: present
 
 - name: Configure web console (RHEL 7)
   become: yes
@@ -114,14 +121,14 @@
   roles:
     - role: subscription_manager 
 
-- name: Install purposefully out-of-date httpd
+- name: Custom installations
   become: yes
   remote_user: ec2-user
   hosts:
     - rhel_nodes
   gather_facts: yes
   tags:
-    - httpd
+    - custom
   tasks:
     - name: search for httpd versions
       yum:
@@ -133,9 +140,24 @@
       with_items:
       - "{{ result.results }}"
 
-    - name: install oldest available version
+    - name: install oldest available version of httpd
       yum:
         name: "{{ httpd_packages | sort_versions | first }}"
         state: present
+
+- name: Pre-load system role playbook
+  become: no
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tags:
+    - custom
+  tasks:
+    - name: install system role network playbook
+      copy:
+        dest: "/home/ec2-user/example-network-playbook.yml"
+        src: "example-network-playbook.yml"
+        mode: 0644
 
 ...

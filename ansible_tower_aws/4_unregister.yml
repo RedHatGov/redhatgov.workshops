@@ -12,12 +12,22 @@
     - admin_rhel_node
   remote_user: ec2-user
   roles:
-    - { role: unregister }
+    - role: unregister
+      when: NOSSH is undefined
 
 - name: Remove infrastructure
   hosts: localhost
   connection: local
   roles:
   - { role: aws.remove, tags: ["delete"] }
+  tasks:
+  - name: remove known_hosts entries
+    known_hosts:
+      name: "{{ item }}"
+      state: absent
+    with_flattened:
+      - "{{ groups['tower_rhel_nodes'] }}"
+      - "{{ groups['rhel_nodes'] }}"
+      - "{{ groups['admin_rhel_node'] }}"
 
 ...
