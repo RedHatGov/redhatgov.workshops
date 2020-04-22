@@ -1,4 +1,0 @@
----
-
-- import_tasks: wetty.yml
-  when: install_wetty

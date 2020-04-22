@@ -1,6 +1,0 @@
----
-
-- name: Install jq command-line JSON processor
-  shell: "curl -L https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 -o /usr/bin/jq && chmod +x /usr/bin/jq"
-  become: true
-  when: install_tools

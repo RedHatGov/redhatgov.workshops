@@ -1,4 +1,0 @@
----
-
-- import_tasks: epel.yml
-  when: install_tools
