@@ -16,7 +16,6 @@
 
 - block:
   - name: Determine newest Ansible repo
-#    shell: "subscription-manager repos --list | egrep '^Repo ID:' | egrep 'ansible.*64-rpms' | grep -v ansible-2.9- | sort -V -k3 | sed 's/.* //' | tail -1 "
     shell: "subscription-manager repos --list | egrep '^Repo ID:' | egrep 'ansible.*64-rpms' | sort -V -k3 | sed 's/.* //' | tail -1 "
     register: result
 
