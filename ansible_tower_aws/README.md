@@ -52,8 +52,9 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(ansible) $ ./admin.sh                       # logs you into the admin host
 (admin) $ cd src/ansible_tower_aws
+(admin) $ source env.sh                      # enter your workshop password here
 (admin) $ ansible-playbook 3_load.yml
 ```
 
@@ -88,8 +89,9 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(ansible) $ ./admin.sh                       # logs you into the admin host
 (admin) $ cd src/ansible_tower_aws
+(admin) $ source env.sh                      # enter your workshop password here
 (admin) $ ansible-playbook 3_load.yml
 ```
 
@@ -124,8 +126,9 @@ group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(ansible) $ ./admin.sh                       # logs you into the admin host
 (admin) $ cd src/ansible_tower_aws
+(admin) $ source env.sh                      # enter your workshop password here
 (admin) $ ansible-playbook 3_load.yml
 ```
 
@@ -149,8 +152,9 @@ $ vim group_vars/all.yml # fill in all the required fields
 $ source env.sh
 $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(ansible) $ ./admin.sh                       # logs you into the admin host
 (admin) $ cd src/ansible_tower_aws
+(admin) $ source env.sh                      # enter your workshop password here
 (admin) $ ansible-playbook 3_load.yml
 ```
 
