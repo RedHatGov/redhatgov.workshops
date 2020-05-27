@@ -6,7 +6,7 @@
 vault_default_domain:    "${INSERT_VALUE_HERE}"
 vault_cluster_name:      "${INSERT_VALUE_HERE}"
 vault_cluster_id:        "bdsa"
-vault_openshift_release: "3.11"
+vault_openshift_release: "3.10"
 vault_users_count:       20
 vault_redhat_uid:        "${INSERT_VALUE_HERE}"
 vault_redhat_pwd:        "${INSERT_VALUE_HERE}"
@@ -14,8 +14,8 @@ vault_redhat_pwd:        "${INSERT_VALUE_HERE}"
 #####################################################
 # AWS access keys
 #####################################################
-vault_aws_access_key_id:     "${INSERT_VALUE_HERE}"
-vault_aws_secret_access_key: "${INSERT_VALUE_HERE}"
+vault_aws_access_key_id:     "{{ lookup('env','AWS_ACCESS_KEY_ID') }}"
+vault_aws_secret_access_key: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
 
 #####################################################
 # AWS R53 Zone ID
