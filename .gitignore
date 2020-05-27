@@ -9,11 +9,6 @@ extra_vars.yml
 .vagrant
 .terraform
 .redhatgov
-.vault.yml
-vault.yml
-group_vars/vault.yml
-group_vars/all
-env.sh
 *~
 \#*#
 .idea/
@@ -40,8 +35,7 @@ multi_ec2.yaml
 *.egg-info
 .eggs
 cover/
-vault
-setup.sh.example
 ansible.cfg
 callback_plugins/
-inventory/
+inventory/ec2.ini
+inventory/terraform.py
