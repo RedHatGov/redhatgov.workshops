@@ -8,7 +8,6 @@
 #----------------------------------------------
 # Variables
 #----------------------------------------------
-
 variable "security_group" { default = "{{ default_subdomain }}-openshift-sg" }
 variable "keypair" { default = "{{ default_subdomain }}-openshift" }
 variable "aws_region" { default = "{{ region }}" }
@@ -18,8 +17,6 @@ variable "number_nodes" { default = "{{ number_nodes }}" }
 # API Keys
 #----------------------------------------------
 provider "aws" {
-    #access_key = "${var.aws_access_key}"
-    #secret_key = "${var.aws_secret_key}"
     region     = "${var.aws_region}"
 }
 #----------------------------------------------
