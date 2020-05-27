@@ -106,9 +106,13 @@ You will be prompted to create a password and once complete, you can put this pa
 
 ### Provision
 
-Before you launch the provisioning script, you must have your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY variables exported as environment variables. You may do this manually, using the tool of your choice to manage aws profiles, or use the env.sh script to export them from your ~/.aws/credentials file for you.
+**IMPORTANT**: This sets up the pre-commit hook to help prevent accidental vault.yml checkins
 
-To utilize the `env.sh` script, source the script as shown below
+Before you launch the provisioning script, you must have your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY variables exported as environment variables. You may do this manually, using the tool of your choice to manage aws profiles, or `env.sh` script will export them from your ~/.aws/credentials file for you.
+
+The `env.sh` script does 2 things:
+1. Sets up the repo to use the included pre-commit githook- This helps prevent accidental unencrypted vault.yml files
+2. Ensures that your AWS environment variables are exported properly
 
 ```
 source env.sh
