@@ -112,7 +112,7 @@ To utilize the `env.sh` script, source the script as shown below
 
 ```
 source env.sh
-... <output below> ...
+... <sample output below> ...
 AWS Keys exported successfully
 AWS_SECRET_ACCESS_KEY=01234567890abcdefghijlkmnopqrstuvwxyz!@#
 AWS_ACCESS_KEY_ID=0123456789abcdefghij
