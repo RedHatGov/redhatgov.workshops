@@ -117,6 +117,7 @@ The `env.sh` script does 2 things:
 ```
 source env.sh
 ... <sample output below> ...
+Updating repo to use versioned githooks
 AWS Keys exported successfully
 AWS_SECRET_ACCESS_KEY=01234567890abcdefghijlkmnopqrstuvwxyz!@#
 AWS_ACCESS_KEY_ID=0123456789abcdefghij
