@@ -1,8 +1,0 @@
----
-
-- name: Install Git a version-control system
-  yum:
-    name:
-      - "git"
-  become: true
-  when: install_tools

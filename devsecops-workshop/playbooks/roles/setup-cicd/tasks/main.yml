@@ -1,4 +1,0 @@
----
-
-- import_tasks: cicd.yml
-  when: install_cicd_projects or install_quay
