@@ -8,8 +8,6 @@
 #----------------------------------------------
 # Variables
 #----------------------------------------------
-variable "aws_access_key" { default = "{{ aws_access_key_id }}" }
-variable "aws_secret_key" { default = "{{ aws_secret_access_key }}" }
 variable "security_group" { default = "{{ default_subdomain }}-openshift-sg" }
 variable "keypair" { default = "{{ default_subdomain }}-openshift" }
 variable "aws_region" { default = "{{ region }}" }
@@ -19,8 +17,6 @@ variable "number_nodes" { default = "{{ number_nodes }}" }
 # API Keys
 #----------------------------------------------
 provider "aws" {
-    access_key = "{{ aws_access_key_id }}"
-    secret_key = "{{ aws_secret_access_key }}"
     region     = "{{ region }}"
 }
 #----------------------------------------------
@@ -195,6 +191,7 @@ resource "aws_instance" "{{ ec2_master_group_name }}" {
         type                = "{{ terraform_provisioner_connection_type }}"
         user                = "{{ default_user }}"
         private_key         = file("{{ terraform_working_dir }}/{{ default_keypair }}")
+        agent               = false
       }
     }
 }
@@ -220,7 +217,8 @@ resource "aws_instance" "{{ ec2_node_group_name }}" {
       Name                = "{{ ec2_node_tag_name }}-${count.index}"
       sshUser             = "{{ default_user }}"
       role                = "{{ ec2_node_tag_role }}"
-      "kubernetes.io/cluster/{{ openshift_cluster_name }}" = "{{ openshift_cluster_id }}" }
+      "kubernetes.io/cluster/{{ openshift_cluster_name }}" = "{{ openshift_cluster_id }}"
+    }
     volume_tags = {
       "kubernetes.io/cluster/{{ openshift_cluster_name }}" = "{{ openshift_cluster_id }}"
     }
@@ -230,6 +228,7 @@ resource "aws_instance" "{{ ec2_node_group_name }}" {
       connection {
         host              = self.public_ip
         type              = "{{ terraform_provisioner_connection_type }}"
+        agent             = false
         user              = "{{ default_user }}"
         private_key       = file("{{ terraform_working_dir }}/{{ default_keypair }}")
       }

@@ -37,14 +37,6 @@ vault_default_domain: "redhatgov.io"
 vault_cluster_name:   "nyc-workshop"
 ```
 
-* Insert your [AWS access and secret access keys](https://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html).
-
-##### Example:
-```
-vault_aws_access_key_id:     "ABCD3FGIELSKDJD"
-vault_aws_secret_access_key: "dlsi#DJEHHSsldkEESJla;89374o30"
-```
-
 * The next value can be obtained from the AWS Route53 GUI, or by using the command below the example:
 
 ##### Example:
@@ -106,7 +98,6 @@ You can update the `vault_number_nodes` variable in `group_vars/all/vault.yml` t
 # Usage
 
 **!Important** You must encrypt your group_vars/all/vault.yml before running your playbook.  You must add a vault_pass.txt to your home directory containing your password.
-
 ```
 ansible-vault encrypt group_vars/all/vault.yml
 ```
@@ -115,11 +106,19 @@ You will be prompted to create a password and once complete, you can put this pa
 
 ### Provision
 
-Before you launch the provisioning script, copy the file `env.sh_example` to `env.sh`, and replace the placeholders with your AWS access key ID and secret access key.  Then, source that file, to place the variables into your environment.
+**IMPORTANT**: This sets up the pre-commit hook to help prevent accidental vault.yml checkins
+
+Before you launch the provisioning script, you must have your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY variables exported as environment variables. You may do this manually, using the tool of your choice to manage aws profiles, or `env.sh` script will export them from your ~/.aws/credentials file for you.
+
+The `env.sh` script does 2 things:
+1. Sets up the repo to use the included pre-commit githook- This helps prevent accidental unencrypted vault.yml files
+2. Ensures that your AWS environment variables are exported properly
 
 ```
 source env.sh
-AWS Keys exported
+... <sample output below> ...
+Updating repo to use versioned githooks
+AWS Keys exported successfully
 AWS_SECRET_ACCESS_KEY=01234567890abcdefghijlkmnopqrstuvwxyz!@#
 AWS_ACCESS_KEY_ID=0123456789abcdefghij
 ```
