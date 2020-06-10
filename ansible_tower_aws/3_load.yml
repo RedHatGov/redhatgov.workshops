@@ -57,6 +57,17 @@
   gather_facts: no
   roles:
     - role: LetsEncrypt
+    
+- name: Ensure python3-pip installed for powerline (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_rhel_nodes
+  gather_facts: no
+  tasks:
+    - package:
+        name: python3-pip
+        state: latest
+      when: rhel_ver == 'rhel8'    
 
 - name: Configure software on nodes
   become: yes
