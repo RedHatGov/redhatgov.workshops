@@ -19,17 +19,17 @@
   roles:
     - role: subscription_manager
 
-- name: Configure epel on nodes (RHEL 8)
-  become: yes
-  remote_user: ec2-user
-  hosts: nodes
-  tasks:
-    - name: RHEL 8 on AWS via Cloud Access has no available repositories
-      fail:
-        msg: "Please use RHSM via user ID/password or org ID/activation key."
-      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
-  roles:
-    - role: epel
+      #- name: Configure epel on nodes (RHEL 8)
+      #become: yes
+      #remote_user: ec2-user
+      #hosts: nodes
+      #tasks:
+      #- name: RHEL 8 on AWS via Cloud Access has no available repositories
+      #fail:
+      #msg: "Please use RHSM via user ID/password or org ID/activation key."
+      #when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+      #roles:
+      #- role: epel
 
 - name: Configure epel on nodes (RHEL 7)
   become: yes
@@ -103,5 +103,13 @@
   hosts: nodes
   roles:
     - role: upgrade
+
+- name: Re-enable repo when upgrade disables it
+  become: yes
+  remote_user: ec2-user
+  hosts: nodes
+  gather_facts: yes
+  roles:
+    - role: subscription_manager 
 
 ...
