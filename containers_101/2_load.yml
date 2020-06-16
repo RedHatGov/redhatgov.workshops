@@ -17,37 +17,91 @@
   remote_user: ec2-user
   hosts: nodes
   roles:
-    - { role: subscription_manager }
-    - { role: epel }
+    - role: subscription_manager
+
+- name: Configure epel on nodes (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: nodes
+  tasks:
+    - name: RHEL 8 on AWS via Cloud Access has no available repositories
+      fail:
+        msg: "Please use RHSM via user ID/password or org ID/activation key."
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+  roles:
+    - role: epel
+
+- name: Configure epel on nodes (RHEL 7)
+  become: yes
+  remote_user: ec2-user
+  hosts: nodes
+  tasks:
+    - name: RHEL 7 on AWS via Cloud Access has no available repositories
+      fail:
+        msg: "Please use RHSM via user ID/password or org ID/activation key."
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+  roles:
+    - role: epel
+      when: rhel_ver == 'rhel7'
 
 - name: Configure LetsEncrypt on Specified Node
   become: yes
   remote_user: ec2-user
-  hosts: le_node
+  hosts: nodes
+  gather_facts: no
   roles:
-    - { role: LetsEncrypt }
+    - role: LetsEncrypt
 
-- name: Configure software on nodes
+      #- name: Ensure python3-pip installed for powerline (RHEL 8)
+      #become: yes
+      #remote_user: ec2-user
+      #hosts: nodes
+      #gather_facts: no
+      #tasks:
+      #- package:
+      #  name: python3-pip
+      #  state: latest
+      #when: rhel_ver == 'rhel8'
+
+- name: Configure software on nodes (RHEL 8)
   become: yes
   remote_user: ec2-user
   hosts: nodes
   roles:
-    - { role: nodejs }
-    - { role: wetty }
-    - { role: zsh }
+    - role: nodejs
+      when: rhel_ver == 'rhel8'
+    - role: system-user
+      when: rhel_ver == 'rhel8'
+      #  - role: powerline
+      #when: rhel_ver == 'rhel8'
 
-- name: Configure Cockpit
+- name: Configure web console (RHEL 7)
   become: yes
   remote_user: ec2-user
   hosts: nodes
+  gather_facts: no
   roles:
-    - { role: cockpit }
+    - role: nodejs
+      when: rhel_ver == 'rhel7'
+    - role: wetty
+      when: rhel_ver == 'rhel7'
+    - role: zsh
+      when: rhel_ver == 'rhel7'
+
+- name: Configure web console (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: nodes
+  gather_facts: no
+  roles:
+    - role: cockpit
+      when: rhel_ver == 'rhel8'
 
 - name: Upgrade packages
   become: yes
   remote_user: ec2-user
   hosts: nodes
   roles:
-    - { role: upgrade }
+    - role: upgrade
 
 ...
