@@ -1,0 +1,50 @@
+# file: roles/docker/tasks/main.yml
+---
+
+- name: Install Docker
+#  yum: name=docker-1.10.3 state=present
+  yum:
+    name: docker
+#    state: present
+    state: latest
+  tags:
+    - rhel
+
+- name: Start docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  tags:
+    - rhel
+
+- name: Enable insecure registry
+  lineinfile:
+    dest: /etc/sysconfig/docker
+    state: present
+    line: "INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'"
+    regexp: "^#?INSECURE_REGISTRY"
+  tags:
+    - rhel
+
+- name: Setup docker-storage-setup
+  command: echo -e "DEVS=/dev/xvdb\nVG=docker-vg" >> /etc/sysconfig/docker-storage-setup
+  tags:
+    - rhel
+
+- name: restart docker
+  command: systemctl restart docker
+
+# - name: Enable docker-registry
+#   become: yes
+#   command: systemctl enable docker-registry
+#   tags:
+#     - rhel
+
+# - name: Start docker-registry
+#   become: yes
+#   command: systemctl start docker-registry
+#   notify:
+#     - docker
+#   tags:
+#     - rhel

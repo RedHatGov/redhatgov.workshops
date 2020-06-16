@@ -1,0 +1,199 @@
+#! /usr/bin/env stap
+# Copyright (C) 2016 Red Hat, Inc.
+# Written by William Cohen <wcohen@redhat.com>
+#
+#   container_check.stp watches for use of
+#   prohibited capabilities, use of prohibited syscalls, and
+#   syscall failures) that would indicate that this application
+#   would not operate properly in a restricted contiainer.
+#
+#   By default this script monitors all systemcalls system-wide.
+#   To limit to limit container_check.stp to monitoring a particular
+#   process and it children use the systemtap -x <pid> option
+#   or -c <command> option.
+#
+#   By default this script lists all capabilities requested.
+#   To limit it to a subset of capabilities use the following
+#   option on the command line with a '-' separated list of
+#   forbidden capabilites:
+#
+#   -G forbidden_capabilities="badcap1-badcap2"
+#
+#   By default this script allows all syscalls.
+#   To mark syscalls as forbidden use a '-' separate list: 
+#   
+#   -G forbidden_syscalls="syscall1-syscall2"
+#
+# control-c to exit data collection
+
+global forbidden_capabilities="" # '-' separated list of forbidden capabilities
+global forbidden_syscalls=""     # '-' separated list of forbidden syscalls
+
+global capability, cap_use
+global badcaps = -1, cap_name
+global cap_syscall
+global badsyscall
+global problem_syscall
+global syscall_errno
+
+# Determine whether t is a ancestor of target()
+# returns 1  if ancestor of target()
+# returns 0  if not an ancestor of target()
+function child_of_target:long (t:long)
+{
+  if (!target()) return 1
+  while(t && t != task_parent(t)) {
+    if (task_pid(t) == target()) return 1
+    t = task_parent(t)
+  }
+  return 0
+}
+
+function init_cap_name2num()
+{
+  /* set up the names */
+  cap_name[0]="cap_chown"
+  cap_name[1]="cap_dac_override"
+  cap_name[2]="cap_dac_read_search"
+  cap_name[3]="cap_fowner"
+  cap_name[4]="cap_fsetid"
+  cap_name[5]="cap_kill"
+  cap_name[6]="cap_setgid"
+  cap_name[7]="cap_setuid"
+  cap_name[8]="cap_setpcap"
+  cap_name[9]="cap_linux_immutable"
+  cap_name[10]="cap_net_bind_service"
+  cap_name[11]="cap_net_broadcast"
+  cap_name[12]="cap_net_admin"
+  cap_name[13]="cap_net_raw"
+  cap_name[14]="cap_ipc_lock"
+  cap_name[15]="cap_ipc_owner"
+  cap_name[16]="cap_sys_module"
+  cap_name[17]="cap_sys_rawio"
+  cap_name[18]="cap_sys_chroot"
+  cap_name[19]="cap_sys_ptrace"
+  cap_name[20]="cap_sys_pacct"
+  cap_name[21]="cap_sys_admin"
+  cap_name[22]="cap_sys_boot"
+  cap_name[23]="cap_sys_nice"
+  cap_name[24]="cap_sys_resource"
+  cap_name[25]="cap_sys_time"
+  cap_name[26]="cap_sys_tty_config"
+  cap_name[27]="cap_mknod"
+  cap_name[28]="cap_lease"
+  cap_name[29]="cap_audit_write"
+  cap_name[30]="cap_audit_control"
+  cap_name[31]="cap_setfcap"
+  cap_name[32]="cap_mac_override"
+  cap_name[33]="cap_mac_admin"
+  cap_name[34]="cap_syslog"
+  cap_name[35]="cap_wake_alarm"
+  cap_name[36]="cap_block_suspend"
+}
+
+function parse_capabilities() {
+  /* convert optional list of forbidden capabilities into a bitmask */
+  caps = 0
+  cname = tokenize(forbidden_capabilities, "-")
+  while (cname != "") {
+    i =36
+    while(i>0) {
+      if(cname == cap_name[i]) {
+        caps |= 1<<i
+	i = -1
+      }
+      i -= 1
+    }
+    cname = tokenize("", "-")
+  }
+  if (caps) badcaps = caps
+}
+
+function parse_syscalls() {
+  /* The following assignment is to ensure that badsyscall has typeinfo. */
+  badsyscall["no_a_syscall"]=1
+  /* Put in optional list of bad syscalls. */
+  sysname = tokenize(forbidden_syscalls, "-")
+  while (sysname != "") {
+    badsyscall[sysname] = 1
+    sysname = tokenize("", "-")
+  }
+}
+
+probe begin {
+  init_cap_name2num()
+  parse_capabilities()
+  parse_syscalls()
+
+  printf ("starting container_check.stp. monitoring %d\n", target())
+}
+
+probe kprobe.function("ns_capable")!, kprobe.function("capable") {
+  cap = 1 << int_arg(2)
+  if ((cap & badcaps) && child_of_target(task_current()))
+    cap_use[tid()] |= cap
+}
+
+probe nd_syscall.*.return {
+  # note any problem capabilities use during syscall
+  cap = cap_use[tid()]
+  if (cap && child_of_target(task_current())) {
+     capability[execname()] |= cap
+     cap_syscall[execname(), name, cap] <<< 1
+     delete cap_use[tid()]
+  }
+
+  # note any prohibited systemcalls
+  if (name in badsyscall &&  child_of_target(task_current())) {
+    problem_syscall[execname(), name] <<< 1
+  }
+
+  # note any syscalls returning errors
+  if (returnval() < 0 && child_of_target(task_current())) {
+    syscall_errno[execname(), name, returnval()] <<< 1
+  }
+}
+
+probe end {
+  printf("\n\ncapabilities used by executables\n");
+  printf("%16s: %20s\n\n", "executable", "prob capability")
+  foreach(e+ in capability) {
+      cap = capability[e]
+      i=0
+      while (cap) {
+        if (cap & 1)
+	  printf("%16s: %20s\n", e, cap_name[i] );
+	cap = cap >> 1
+	i += 1
+      }
+      printf("\n")
+  }
+
+  printf("\n\ncapabilities used by syscalls\n");
+  printf("%16s, %20s ( %16s ) : %16s\n", "executable", "syscall", "capability", "count")
+  foreach([e+,s,c] in cap_syscall){
+	printf("%16s, %20s ( ", e, s);
+	cap = c
+	i=0
+	while (cap) {
+	  if (cap & 1)
+	    printf("%16s ", cap_name[i] );
+	  cap = cap >> 1
+	  i += 1
+	}
+	printf(") : %16d\n", @count(cap_syscall[e,s,c]) );
+  }
+  
+  printf("\n\nforbidden syscalls\n");
+  printf("%16s, %20s: %16s\n", "executable", "syscall", "count")
+  foreach([e+,s] in problem_syscall){
+      printf("%16s, %20s: %16d\n", e, s, @count(problem_syscall[e,s]) );
+  }
+
+  printf("\n\nfailed syscalls\n");
+  printf("%16s, %20s = %16s: %16s\n", "executable", "syscall", "errno", "count")
+  foreach([e+,s,v] in syscall_errno){
+      printf("%16s, %20s = %16s: %16d\n", e, s, errno_str(v),
+             @count(syscall_errno[e,s,v]) );
+  }
+}

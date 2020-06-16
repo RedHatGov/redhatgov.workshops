@@ -89,6 +89,18 @@
       #- role: zsh
     - role: cockpit
       when: rhel_ver == 'rhel7'
+    - role: ansible_ssh_pipelining
+      when: rhel_ver == 'rhel7'
+    - role: docker
+      when: rhel_ver == 'rhel7'
+    - role: atomic_scanner_plugins
+      when: rhel_ver == 'rhel7'
+    - role: container_check_stp
+      when: rhel_ver == 'rhel7'
+    - role: jq
+      when: rhel_ver == 'rhel7'
+    - role: skopeo
+      when: rhel_ver == 'rhel7'
 
 - name: Configure web console (RHEL 8)
   become: yes

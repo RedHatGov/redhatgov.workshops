@@ -1,0 +1,88 @@
+# file: roles/atomic_scanner_plugins/tasks/main.yml
+---
+
+- name: Install Atomic commmand
+  become: yes
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libcap-ng-utils
+    - libcap-ng
+    - atomic
+
+- name: Setup workshop directories
+  file:
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode:  0700
+    path:  /home/{{ system_user }}/workshopfiles
+    state: directory 
+
+- name: Copy Scanner Files to Hosts. 
+  copy:
+    src: "{{ item }}"
+    dest: /home/{{ system_user }}/workshopfiles
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0755
+  with_items:
+    - Dockerfile
+    - example_plugin
+    - install.sh
+    - list_rpms.py
+
+- name: Setup Dockerfile directories
+  file:
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode:  0700
+    path:  /home/{{ system_user }}/workshopfiles/{{item}}
+    state: directory
+  with_items:
+    - alpine
+    - fedora
+
+- name: Seccom alpine Dockerfile
+  copy:
+    src: "{{ item }}"
+    dest: /home/{{ system_user }}/workshopfiles/alpine
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0755
+  with_items:
+    - alpine/Dockerfile
+
+- name: Seccom alpine Dockerfile
+  copy:
+    src: "{{ item }}"
+    dest: /home/{{ system_user }}/workshopfiles/fedora
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0755
+  with_items:
+    - fedora/Dockerfile
+
+- name: Seccom Files
+  copy:
+    src: "{{ item }}"
+    dest: /home/{{ system_user }}/workshopfiles
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0755
+  with_items:
+    - 1_chmod.json
+
+
+- name: Build alpine image
+  docker_image:
+    path: /home/{{ system_user }}/workshopfiles/alpine
+    name: redhatgov/alpine
+    state: present
+
+- name: Build fedora image
+  docker_image:
+    path: /home/{{ system_user }}/workshopfiles/fedora
+    name: redhatgov/fedora
+    state: present
+
