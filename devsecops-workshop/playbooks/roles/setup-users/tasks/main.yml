@@ -1,4 +1,0 @@
----
-
-- import_tasks: users.yml
-  when: install_wetty or install_users
