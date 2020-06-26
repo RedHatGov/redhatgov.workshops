@@ -1,6 +1,6 @@
 # RHEL 8 Workshop - AWS Version
 
-![ansible](img/Ansible-Tower-Logotype-Large-RGB-FullGrey-300x124.png)
+![rhel 8](img/Logo-Red_Hat-Enterprise_Linux_8-B-Standard-RGB.png)
 
 `rhel8_aws` is a playbook to provision RHEL 8 in AWS. This playbook uses Ansible to provision AWS infrastructure and nodes.
 

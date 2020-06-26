@@ -104,7 +104,7 @@ $ source ansible/bin/activate
 (admin) $ ansible-playbook 3_load.yml
 ```
 
-#### Fedora 30/31
+#### Fedora 30/31/32
 ```
 $ sudo dnf -y install git python3-boto python3-boto3 ansible awscli
 $ aws configure # fill out at least your AWS API keys, other variables are optional
@@ -128,8 +128,6 @@ $ ansible-playbook 1_provision.yml
   workshop_prefix  : defaults to "tower", set to the name of your workshop
   jboss            : defaults to "true", comment out to disable jboss
   graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
-  aws_access_key   : your Amazon AWS API key
-  aws_secret_key   : your Amazon AWS secret key
   domain_name      : your DNS domain, likely "redhagov.io"
   zone_id:         : the AWS Route 53 zone ID for your domain
   tower_rhel_count : the number of tower instances, usually 1 per student
