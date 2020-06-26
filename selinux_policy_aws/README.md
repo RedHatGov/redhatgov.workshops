@@ -6,55 +6,103 @@
 
 These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up you AWS environment on you local machine.
 
-Fill out `env.sh` & Export the AWS API Keys
-
-First, copy env.sh_example to env.sh, and then fill in your API keys.  Once that is complete, source the script, to export your AWS environment variables.
-
-```
-source env.sh
-```
-
 This repo also requires that you have Ansible installed on your local machine. For the most upto date methods of installing Ansible for your operating system [check here](http://docs.ansible.com/ansible/intro_installation.html).
 
-This repo also requires that Terraform be installed if you are using the aws.infra.terraform role. For the most upto data methods of installing Terraform for your operating system [check here](https://www.terraform.io/downloads.html).
+## Detailed AWS Infrastructure Creation Guides
 
+#### OS X Catalina (10.15.x)
 
+For easy installation and maintenance of the required tools, please first install [Homebrew](https://brew.sh/). From their site, the following command will install it to your system:
 
-## AWS Infrastructure Roles
-
-
-### roles/aws.infra.terraform
-
-To create infrastructure and a Ansible Tower instance via Terraform:
-
-#### OS X
 ```
-sudo easy_install pip
-sudo pip install boto
-sudo pip install ansible
-sudo pip install passlib
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install terraform
 ```
 
-#### RHEL/CentOS
+Next, you need to install the required management tools, for Ansible and AWS:
+
 ```
-sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-# server
-subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms"
-# workstation
-subscription-manager repos --enable="rhel-7-workstation-rpms" --enable="rhel-7-workstation-extras-rpms" --enable="rhel-7-workstation-optional-rpms"
-sudo yum -y install python2-boto ansible
-wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
-sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+$ brew install python3
+$ pip3 install virtualenv
+$ virtualenv ansible
+$ source ansible/bin/activate
+(ansible) $ pip install ansible boto boto3 awscli
+(ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
+(ansible) $ mkdir src
+(ansible) $ cd src
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
+(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
+(ansible) $ sed \
+-e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
+-e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
+env.sh_example > env.sh
+(ansible) $ sed \
+-e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
+-e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
+group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ source env.sh
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_load.yml
 ```
 
-#### Fedora 25/26
+#### RHEL 7
+
+Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
+
 ```
-sudo dnf -y install python2-boto ansible
-wget https://releases.hashicorp.com/terraform/0.9.11/terraform_0.9.11_linux_amd64.zip # current release as of this date...check to see if a newer version is availabke
-sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
+$ sudo subscription-manager repos \
+--enable rhel-7-server-ansible-2.8-rpms \
+--enable rhel-7-server-optional-rpms \
+--enable rhel-7-server-extras-rpms
+$ sudo yum install -y git python-virtualenv ansible
+$ virtualenv --system-site-packages ansible
+(ansible) $ pip install boto boto3 awscli
+(ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
+(ansible) $ mkdir src
+(ansible) $ cd src/
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ source env.sh
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_load.yml
 ```
+
+#### RHEL 8
+
+Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
+```
+$ sudo subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms --enable codeready-builder-for-rhel-8-x86_64-rpms
+$ sudo dnf install -y git python3-virtualenv ansible
+$ virtualenv --system-site-packages ansible
+$ source ansible/bin/activate
+(ansible) $ pip install boto boto3 awscli
+(ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
+(ansible) $ mkdir src
+(ansible) $ cd src/
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ source env.sh
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_load.yml
+```
+
+#### Fedora 30/31/32
+```
+$ sudo dnf -y install git python3-boto python3-boto3 ansible awscli
+$ aws configure # fill out at least your AWS API keys, other variables are optional
+$ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+$ sed -i 's/env python/env python3/' inventory/hosts
+$ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+$ vim group_vars/all.yml # fill in all the required fields
+$ source env.sh
+$ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_load.yml
+```
+
 # Custom Variable Requirements
 * Copy `group_vars/all_example.yml` to `group_vars/all.yml`
 * Fill in the following fields:
@@ -62,8 +110,6 @@ sudo unzip terraform_0.9.11_linux_amd64.zip -d /usr/local/bin terraform
   workshop_prefix  : defaults to "selinux", set to the name of your workshop
   jboss            : defaults to "true", change it to false if you don't want to do the jboss steps in Exercise 1.0
   graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
-  aws_access_key   : your Amazon AWS API key
-  aws_secret_key   : your Amazon AWS secret key
   domain_name      : your DNS domain, likely "redhagov.io"
   zone_id:         : the AWS Route 53 zone ID for your domain
   rhel_count       : the number of regular RHEL instances, usually 1 per student

@@ -16,9 +16,6 @@ graphical:                        "false" # when true, install a graphical deskt
 ################################################################################
 # aws                      |      deployment working dir 
 deploy_working_dir:               "{{ lookup('env','PWD') }}/.redhatgov"
-# aws                      |      AWS API KEYS
-aws_access_key:                   ""
-aws_secret_key:                   ""
 # aws                      |      AWS Route 53
 domain_name:                      ""
 zone_id:                          ""

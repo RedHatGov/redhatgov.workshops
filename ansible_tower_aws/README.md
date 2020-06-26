@@ -6,14 +6,6 @@
 
 These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up your AWS environment, on you local machine.
 
-Fill out `env.sh` & Export the AWS API Keys
-
-First, copy env.sh_example to env.sh, and then fill in your API keys.  Once that is complete, source the script, to export your AWS environment variables.
-
-```
-source env.sh
-```
-
 This repo also requires that you have Ansible installed on your local machine. For the most upto date methods of installing Ansible for your operating system [check here](http://docs.ansible.com/ansible/intro_installation.html).
 
 ## Detailed AWS Infrastructure Creation Guides
