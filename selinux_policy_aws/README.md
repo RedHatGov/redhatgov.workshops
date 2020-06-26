@@ -1,6 +1,6 @@
 # SELinux Policy Workshop - AWS Version
 
-![ansible](img/Ansible-Tower-Logotype-Large-RGB-FullGrey-300x124.png)
+![selinux](img/200px-SELinux_logo.svg.png)
 
 `selinux_policy_aws` is a ansible playbook to provision RHEL nodes in AWS, for SELinux workshops. This playbook uses Ansible to wrap Terraform, for provisioning AWS infrastructure and nodes. To find more info about Terraform [check here](https://www.terraform.io/docs/providers/aws/index.html)
 
