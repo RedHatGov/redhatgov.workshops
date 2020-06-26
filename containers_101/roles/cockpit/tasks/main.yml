@@ -11,6 +11,12 @@
     - cockpit-dashboard
     - cockpit-shell
     - cockpit-ws
+    - cockpit-doc
+    - cockpit-docker
+    - rsync
+    - vim
+    - wget
+
   - name: Ensure cockpit is started
     service:
       name: cockpit.socket

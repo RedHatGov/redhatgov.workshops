@@ -34,11 +34,11 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
  
-  tags { 
+  tags = { 
     Name = "{{ workshop_prefix }}-containers-101-vpc" 
   }
 }
-output "aws_vpc main" {
+output "aws_vpc_main" {
   value = "Completed {{ workshop_prefix }}-containers-101-vpc"
 }
 
@@ -47,18 +47,18 @@ resource "aws_subnet" "public" {
     vpc_id                  = "${aws_vpc.main.id}"
     cidr_block              = "10.0.2.0/24"
     map_public_ip_on_launch = true
-    tags { Name = "{{ workshop_prefix }}-containers-101-public-subnet" }
+    tags = { Name = "{{ workshop_prefix }}-containers-101-public-subnet" }
 }
-output "aws_subnet public" {
+output "aws_subnet_public" {
   value = "Completed {{ workshop_prefix }}-containers-101-public-subnet"
 }
 
 # Internet accessible route table + gateway for the public subnet
 resource "aws_internet_gateway" "public" {
   vpc_id = "${aws_vpc.main.id}"
-  tags { Name = "{{ workshop_prefix }}-containers-101-igw" }
+  tags = { Name = "{{ workshop_prefix }}-containers-101-igw" }
 }
-output "aws_internet_gateway public" {
+output "aws_internet_gateway_public" {
   value = "Completed {{ workshop_prefix }}-containers-101-igw"
 }
 
@@ -68,9 +68,9 @@ resource "aws_route_table" "public" {
       cidr_block = "0.0.0.0/0"
       gateway_id = "${aws_internet_gateway.public.id}"
   }
-  tags { Name = "{{ workshop_prefix }}-containers-101-public-rt" }
+  tags = { Name = "{{ workshop_prefix }}-containers-101-public-rt" }
 }
-output "aws_route_table public" {
+output "aws_route_table_public" {
   value = "Completed {{ workshop_prefix }}-containers-101-public-rt"
 }
 
@@ -78,7 +78,7 @@ resource "aws_route_table_association" "public" {
   subnet_id      = "${aws_subnet.public.id}"
   route_table_id = "${aws_route_table.public.id}"
 }
-output "aws_route_table_association public" {
+output "aws_route_table_association_public" {
   value = "Completed association of ${aws_subnet.public.id} to ${aws_route_table.public.id}"
 }
 
@@ -151,7 +151,7 @@ resource "aws_security_group" "containers-101-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-output "aws_security_group containers-101-sg" {
+output "aws_security_group_containers-101-sg" {
   value = "Completed {{ workshop_prefix }}-containers-101-sg"
 }
 
@@ -168,7 +168,7 @@ resource "aws_route53_record" "nodes" {
   # matches up record N to instance N
   records = ["${element(aws_instance.node.*.public_ip, count.index)}"]
 }
-output "aws_route53_record nodes" {
+output "aws_route53_record_nodes" {
   value = "Completed {{ workshop_prefix }}.nodes.{{ domain_name }}"
 }
 
@@ -183,11 +183,11 @@ resource "aws_instance" "node" {
     key_name          = "${var.keypair}"
     security_groups   = [ "${aws_security_group.containers-101-sg.id}" ]
 
-	  root_block_device = {
+    root_block_device {
       volume_type     = "gp2"
       volume_size     = "${var.ebs_root_block_size}"
-	  }
-    tags {
+    }
+    tags = {
         Name     = "{{ workshop_prefix }}-${count.index}"
         Role     = "{{ workshop_prefix }}-node"
         Workshop = "{{ workshop_prefix }}"
@@ -196,7 +196,7 @@ resource "aws_instance" "node" {
 
     }
 }
-output "aws_instance node" {
+output "aws_instance_node" {
   value = "Completed {{ workshop_prefix }}-node"
 }
 

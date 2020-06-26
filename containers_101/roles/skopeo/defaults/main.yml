@@ -1,0 +1,4 @@
+# file: roles/skopeo/defaults/main.yml
+---
+#
+# foo: default
