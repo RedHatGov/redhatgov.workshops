@@ -6,14 +6,6 @@
 
 These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up your AWS environment, on you local machine.
 
-Fill out `env.sh` & Export the AWS API Keys
-
-First, copy env.sh_example to env.sh, and then fill in your API keys.  Once that is complete, source the script, to export your AWS environment variables.
-
-```
-source env.sh
-```
-
 This repo also requires that you have Ansible installed on your local machine. For the most upto date methods of installing Ansible for your operating system [check here](http://docs.ansible.com/ansible/intro_installation.html).
 
 ## Detailed AWS Infrastructure Creation Guides
@@ -33,7 +25,8 @@ $ brew install python3
 $ pip3 install virtualenv
 $ virtualenv ansible
 $ source ansible/bin/activate
-(ansible) $ pip install ansible boto boto3
+(ansible) $ pip install ansible boto boto3 awscli
+(ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
 (ansible) $ mkdir src
 (ansible) $ cd src
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
@@ -70,21 +63,12 @@ $ sudo subscription-manager repos \
 $ sudo yum install -y git python-virtualenv ansible
 $ virtualenv --system-site-packages ansible
 $ source ansible/bin/activate
-(ansible) $ pip install boto boto3
+(ansible) $ pip install boto boto3 awscli
+(ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
 (ansible) $ mkdir src
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 (ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
-(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
-(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
-(ansible) $ sed \
--e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
--e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
-env.sh_example > env.sh
-(ansible) $ sed \
--e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
--e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
-group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
@@ -104,24 +88,12 @@ $ sudo subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms --
 $ sudo dnf install -y git python3-virtualenv ansible
 $ virtualenv --system-site-packages ansible
 $ source ansible/bin/activate
-(ansible) $ pip install boto boto3
+(ansible) $ pip install boto boto3 awscli
+(ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
 (ansible) $ mkdir src
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-(ansible) $ git clone https://github.com/ajacocks/terraform-rpm.git
-(ansible) $ cd terraform-rpm/
-(ansible) $ ansible-playbook -K main.yml # type sudo password
 (ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
-(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
-(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
-(ansible) $ sed \
--e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
--e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
-env.sh_example > env.sh
-(ansible) $ sed \
--e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
--e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
-group_vars/all_example.yml >group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
@@ -132,22 +104,13 @@ group_vars/all_example.yml >group_vars/all.yml
 (admin) $ ansible-playbook 3_load.yml
 ```
 
-#### Fedora 30/31
+#### Fedora 30/31/32
 ```
-$ sudo dnf -y install git python3-boto python3-boto3 ansible
+$ sudo dnf -y install git python3-boto python3-boto3 ansible awscli
+$ aws configure # fill out at least your AWS API keys, other variables are optional
 $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 $ sed -i 's/env python/env python3/' inventory/hosts
 $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
-$ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
-$ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
-$ sed \
--e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
--e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
-env.sh_example > env.sh
-$ sed \
--e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
--e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
-group_vars/all_example.yml >group_vars/all.yml
 $ vim group_vars/all.yml # fill in all the required fields
 $ source env.sh
 $ ansible-playbook 1_provision.yml
@@ -165,8 +128,6 @@ $ ansible-playbook 1_provision.yml
   workshop_prefix  : defaults to "tower", set to the name of your workshop
   jboss            : defaults to "true", comment out to disable jboss
   graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
-  aws_access_key   : your Amazon AWS API key
-  aws_secret_key   : your Amazon AWS secret key
   domain_name      : your DNS domain, likely "redhagov.io"
   zone_id:         : the AWS Route 53 zone ID for your domain
   tower_rhel_count : the number of tower instances, usually 1 per student
