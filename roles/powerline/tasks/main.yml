@@ -8,6 +8,7 @@
   vars:
     packages:
     - python2-pip
+    - python3-pip
     - vim
 
 - name: Install powerline
