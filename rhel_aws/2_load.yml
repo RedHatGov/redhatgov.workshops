@@ -160,4 +160,17 @@
         src: "example-network-playbook.yml"
         mode: 0644
 
+- name: Check to make sure that the web console is listening
+  become: no
+  hosts:
+    - rhel_nodes
+  gather_facts: no
+  tasks:
+    - uri:
+        url: "https://{{ inventory_hostname }}:9090/system"
+        url_username: "{{ system_user }}"
+        url_password: "{{ workshop_password }}"
+        validate_certs: no
+      delegate_to: localhost
+
 ...
