@@ -74,14 +74,26 @@
     - 1_chmod.json
 
 
-- name: Build alpine image
+- name: Build alpine image for docker
   docker_image:
     path: /home/{{ system_user }}/workshopfiles/alpine
     name: redhatgov/alpine
     state: present
 
-- name: Build fedora image
+- name: Build fedora image for docker
   docker_image:
+    path: /home/{{ system_user }}/workshopfiles/fedora
+    name: redhatgov/fedora
+    state: present
+
+- name: Build alpine image for podman
+  podman_image:
+    path: /home/{{ system_user }}/workshopfiles/alpine
+    name: redhatgov/alpine
+    state: present
+
+- name: Build fedora image for podman
+  podman_image:
     path: /home/{{ system_user }}/workshopfiles/fedora
     name: redhatgov/fedora
     state: present
