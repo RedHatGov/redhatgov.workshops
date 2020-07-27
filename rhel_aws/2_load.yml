@@ -145,11 +145,6 @@
         name: "{{ httpd_packages | sort_versions | first }}"
         state: present
 
-    - name: install oldest available version of httpd
-      yum:
-        name: "{{ httpd_packages | sort_versions | first }}"
-        state: present
-
     - name: create ssh key for ec2-user
       openssh_keypair:
         path: /home/ec2-user/.ssh/id_rsa
