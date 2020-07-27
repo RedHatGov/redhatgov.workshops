@@ -145,6 +145,32 @@
         name: "{{ httpd_packages | sort_versions | first }}"
         state: present
 
+    - name: install oldest available version of httpd
+      yum:
+        name: "{{ httpd_packages | sort_versions | first }}"
+        state: present
+
+    - name: create ssh key for ec2-user
+      openssh_keypair:
+        path: /home/ec2-user/.ssh/id_rsa
+        owner: ec2-user
+        group: ec2-user
+        mode: 0700
+        state: present
+      register: sshkey
+
+    - name: add key to authorized_key
+      authorized_key:
+        user: ec2-user
+        key: "{{ sshkey.public_key }}"
+        state: present
+
+    - name: Add host key to known_hosts
+      shell: ssh-keyscan -t ecdsa localhost > /home/ec2-user/.ssh/known_hosts
+      args:
+        creates: /home/ec2-user/.ssh/known_hosts
+
+
 - name: Pre-load system role playbook
   become: no
   remote_user: ec2-user
