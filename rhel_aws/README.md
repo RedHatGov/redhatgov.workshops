@@ -31,18 +31,8 @@ $ source ansible/bin/activate
 (ansible) $ cd src
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 (ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
-(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
-(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
-(ansible) $ sed \
--e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
--e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
-env.sh_example > env.sh
-(ansible) $ sed \
--e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
--e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
-group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
-(ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_preload.yml 
 (ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
@@ -68,16 +58,7 @@ $ source ansible/bin/activate
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 (ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
-(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
-(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
-(ansible) $ sed \
--e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
--e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
-env.sh_example > env.sh
-(ansible) $ sed \
--e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
--e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
-group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
@@ -99,6 +80,7 @@ $ source ansible/bin/activate
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 (ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
@@ -112,10 +94,11 @@ $ aws configure # fill out at least your AWS API keys, other variables are optio
 $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 $ sed -i 's/env python/env python3/' inventory/hosts
 $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+$ cp group_vars/all_example.yml group_vars/all.yml
 $ vim group_vars/all.yml # fill in all the required fields
 $ source env.sh
 $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_load.yml 
+$ ansible-playbook 2_load.yml 
 ```
 
 #### Custom Variable Requirements
