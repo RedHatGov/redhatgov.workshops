@@ -55,23 +55,27 @@
   - name: RHEL 8 Tasks
     block:
 
+    - name: Make sure using latest version of dnf
+      yum:
+        name: "dnf"
+        state: latest
+
     - name: Install GUI components and Xrdp build reqs on RHEL 8
-      command: yum -y install @graphical-server-environment tigervnc-server 'xorg-*' coreutils wget --skip-broken
-      # currently, the group is not properly resolved, against RHUI, with yum
-#      yum:
-#        name:
+#      command: yum -y install @graphical-server-environment tigervnc-server 'xorg-*' coreutils wget --skip-broken
+      yum:
+        name:
 #        - "@Server with GUI"
 ##        - "@^Server with GUI"
-##        - '@^graphical-server-environment'
-#        - tigervnc-server
-#        - "xorg*"
-#        - coreutils
-#        - wget
+        - '@graphical-server-environment'
+        - tigervnc-server
+        - "xorg-*"
+        - coreutils
+        - wget
 ##        exclude:
 ##        - fwupdate-efi
 ##        - file-roller-nautilus
 #        skip_broken: "yes"
-#        state: present
+        state: present
   
     - name: Install XRDP server and dependencies
       yum:
