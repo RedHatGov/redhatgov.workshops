@@ -17,7 +17,7 @@
     state: "started"
     enabled: true
     daemon_reload: true
-  when: result.failed is true
+  when: result|failed
 
 - name: check to see if cockpit is listening (again)
   become: no
