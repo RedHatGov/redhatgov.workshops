@@ -4,9 +4,19 @@
 #  Provisioning
 #===============================================================================
 
+- name: set RHEL AMI to use
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].ami }}"
+  when: beta != 'true'
+
+- name: set RHEL AMI to use (beta)
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
+  when: beta == 'true'
+
 - name: RHEL AMI
   debug:
-    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ regions[region][rhel_ver].ami }}"
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami }}"
 
 - name: Windows AMI
   debug:
@@ -127,6 +137,10 @@
       cidr_ip: 0.0.0.0/0
       rule_desc: "allow all on port 8080 (jboss)"
     - proto: "tcp"
+      ports: 8443
+      cidr_ip: 0.0.0.0/0
+      rule_desc: "allow all on port 8443 (vscode)"
+    - proto: "tcp"
       ports: 8888
       cidr_ip: 0.0.0.0/0
       rule_desc: "allow all on port 8888 (wetty)"
@@ -211,7 +225,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ regions[region][rhel_ver].ami }}"
+    image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -230,7 +244,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ regions[region][rhel_ver].ami }}"
+    image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -249,7 +263,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ tower_instance_type }}"
-    image: "{{ regions[region][rhel_ver].ami }}"
+    image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
