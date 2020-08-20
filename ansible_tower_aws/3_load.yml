@@ -72,10 +72,12 @@
   roles:
     - role: nodejs
     - role: ansible.tower
-    - role: vscode
-    - role: graphical
     - role: system-user
     - role: powerline
+    - role: vscode
+      when: graphical == 'true'
+    - role: graphical
+      when: graphical == 'true'
 
 - name: Configure web console (RHEL 7)
   become: yes

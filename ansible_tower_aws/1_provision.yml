@@ -5,5 +5,9 @@
   hosts: localhost
   roles:
   - { role: aws.create, tags: ["create"] }
+  tasks:
+  - name: explain how to login
+    debug:
+      msg: "Please run 'ansible-playbook 2_preload' to load the admin server."
 
 ...
