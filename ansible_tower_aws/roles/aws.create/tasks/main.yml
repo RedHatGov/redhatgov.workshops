@@ -4,22 +4,23 @@
 #  Provisioning
 #===============================================================================
 
+- name: set RHEL AMI to use
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].ami }}"
+  when: beta != 'true'
+
+- name: set RHEL AMI to use (beta)
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
+  when: beta == 'true'
+
 - name: RHEL AMI
   debug:
-    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ regions[region][rhel_ver].ami }}"
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami }}"
 
 - name: Windows AMI
   debug:
     msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ regions[region][win_ver].ami }}"
-
-#---------------------------------------------------
-#  Ansible Hosts Creation
-#---------------------------------------------------
-- name: Template Ansible Hosts File
-  template:
-    dest: "{{ inventory_working_dir }}/hosts"
-    src: "hosts.j2"
-  when: execution is defined
 
 #---------------------------------------------------
 #  Deployment directory creation
@@ -127,6 +128,10 @@
       cidr_ip: 0.0.0.0/0
       rule_desc: "allow all on port 8080 (jboss)"
     - proto: "tcp"
+      ports: 8443
+      cidr_ip: 0.0.0.0/0
+      rule_desc: "allow all on port 8443 (vscode)"
+    - proto: "tcp"
       ports: 8888
       cidr_ip: 0.0.0.0/0
       rule_desc: "allow all on port 8888 (wetty)"
@@ -211,7 +216,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ regions[region][rhel_ver].ami }}"
+    image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -230,7 +235,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ regions[region][rhel_ver].ami }}"
+    image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -249,7 +254,7 @@
     group: "at-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ tower_instance_type }}"
-    image: "{{ regions[region][rhel_ver].ami }}"
+    image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -321,6 +326,29 @@
   - "{{ ec2_rhel.tagged_instances }}"
   - "{{ ec2_tower_rhel.tagged_instances }}"
 
+- name: create inventory list (admin host)
+  lineinfile:
+    create: true
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ ec2_rhel_admin.instances.0.public_ip }} {{ workshop_prefix }}.admin.{{ domain_name }} admin"
+    regexp: ".*{{ workshop_prefix }}.admin.{{ domain_name }}"
+
+- name: create inventory list (tower hosts)
+  lineinfile:
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ item.public_ip }} {{ workshop_prefix }}.tower.{{ item.ami_launch_index }}.{{ domain_name }} tower.{{ item.ami_launch_index }}"
+    regexp: ".*{{ workshop_prefix }}.tower.{{ item.ami_launch_index }}.{{ domain_name }}.*"
+  with_items:
+  - "{{ ec2_tower_rhel.tagged_instances }}"
+
+- name: create inventory list (node hosts)
+  lineinfile:
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ item.public_ip }} {{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }} node.{{ item.ami_launch_index }}"
+    regexp: ".*{{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }}.*"
+  with_items:
+  - "{{ ec2_rhel.tagged_instances }}"
+
 - name: Create DNS records for RHEL admin
   route53:
     zone: "{{ domain_name }}"
@@ -385,5 +413,14 @@
     state: present
   loop: "{{ ec2_win.instances }}"
 #  ignore_errors: true
+
+#---------------------------------------------------
+#  Ansible Hosts Creation
+#---------------------------------------------------
+- name: Template Ansible Hosts File
+  template:
+    dest: "{{ inventory_working_dir }}/hosts"
+    src: "hosts.j2"
+  when: execution is defined
 
 ...
