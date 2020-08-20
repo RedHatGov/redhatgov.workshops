@@ -78,6 +78,7 @@
       when: graphical == 'true'
     - role: graphical
       when: graphical == 'true'
+    - role: code-server
 
 - name: Configure web console (RHEL 7)
   become: yes

@@ -1,0 +1,4 @@
+---
+# defaults file for code-server
+code_port: 8443
+code_pass: 'thisIsNotSecure!@#$'
