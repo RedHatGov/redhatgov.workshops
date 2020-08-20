@@ -145,10 +145,26 @@
     ignore_errors: True
     tags:
       - rhel
+    when: beta != "true"
+
+  - name: Check to see if requisite repos are already enabled (rhel 8 beta)
+    become: yes
+    shell: subscription-manager repos --list-enabled | egrep 'rhel-8-for-x86_64-baseos-rpms|rhel-8-for-x86_64-appstream-htb-rpms|jb-eap-7.2-for-rhel-8-x86_64-rpms' | wc -l
+    register: smr_beta_result
+    ignore_errors: True
+    tags:
+      - rhel
+    when: beta == "true"
 
   - name: Disable all repos by default (rhel 8)
     command: subscription-manager repos --disable "*"
-    when: smr_result.stdout != "3" 
+    when: smr_result.stdout != "3" and beta != "true"
+    tags:
+      - rhel
+
+  - name: Disable all repos by default (rhel 8 beta)
+    command: subscription-manager repos --disable "*"
+    when: smr_beta_result.stdout != "3" and beta == "true"
     tags:
       - rhel
   
@@ -156,6 +172,13 @@
     shell: subscription-manager repos --enable="rhel-8-for-x86_64-baseos-rpms" --enable="rhel-8-for-x86_64-appstream-rpms" --enable="jb-eap-7.2-for-rhel-8-x86_64-rpms"
 #    shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" --enable="rhel-server-rhscl-7-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
     when: smr_result.stdout != "3"
+    tags:
+      - rhel
+  
+  - name: Enable the requisite repos (rhel 8 beta)
+    shell: subscription-manager repos --enable="rhel-8-for-x86_64-baseos-rpms" --enable="rhel-8-for-x86_64-appstream-rpms" --enable="jb-eap-7.2-for-rhel-8-x86_64-rpms"
+#    shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" --enable="rhel-server-rhscl-7-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
+    when: smr_beta_result.stdout != "3" and beta == "true"
     tags:
       - rhel
 

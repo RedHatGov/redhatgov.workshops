@@ -11,6 +11,7 @@ workshop_prefix:                  "tower" # Workshop name - NO underscores!
 execution:                        "local" # when not running from Tower, define this variable
 jboss:                            "true" # when this is defined, configure JBoss/Maven
 graphical:                        "false" # when true, install a graphical desktop on the tower nodes
+beta:                             "false" # when true, use beta respoitories
 
 ################################################################################
 # ANSIBLE ROLE KEY         |      VALUE

@@ -1,63 +1,60 @@
 ---
 # tasks file for graphical
-- when: graphical == 'true'
+- name: Gather package facts
+  package_facts:
+    manager: auto
+
+- name: Gather service facts
+  service_facts:
+
+- name: RHEL 7 Tasks
   block:
+  - name: Install GUI components (cloud access)
+    yum:
+      name:
+      - "@gnome-desktop"
+      - "@x11"
+      - "@fonts"
+      - "tigervnc-server"
+      exclude: "fwupdate-efi"
+      disablerepo: "*"
+      enablerepo: "rhui-REGION-rhel-server-releases"
+      skip_broken: "yes"
+      state: present
+    when: cloud_access
 
-  - name: Gather package facts
-    package_facts:
-      manager: auto
-
-  - name: Gather service facts
-    service_facts:
-
-  - name: RHEL 7 Tasks
-    block:
-    - name: Install GUI components (cloud access)
-      yum:
-        name:
-        - "@gnome-desktop"
-        - "@x11"
-        - "@fonts"
-        - "tigervnc-server"
-        exclude: "fwupdate-efi"
-        disablerepo: "*"
-        enablerepo: "rhui-REGION-rhel-server-releases"
-        skip_broken: "yes"
-        state: present
-      when: cloud_access
-
-    - name: Install GUI components
-      yum:
-        name:
-        - "@gnome-desktop"
-        - "@x11"
-        - "@fonts"
-        - "tigervnc-server"
-        exclude: "fwupdate-efi"
+  - name: Install GUI components
+    yum:
+      name:
+      - "@gnome-desktop"
+      - "@x11"
+      - "@fonts"
+      - "tigervnc-server"
+      exclude: "fwupdate-efi"
 #        disablerepo: "*"
 #        enablerepo: "rhel-7-server-rpms"
-        skip_broken: "yes"
-        state: present
-      when: not cloud_access
-  
-    - name: Install XRDP server and dependencies
-      yum:
-        name:
-        - "xrdp"
-        - "xrdp-selinux"
-        - "xorgxrdp"
+      skip_broken: "yes"
+      state: present
+    when: not cloud_access
+
+  - name: Install XRDP server and dependencies
+    yum:
+      name:
+      - "xrdp"
+      - "xrdp-selinux"
+      - "xorgxrdp"
 #        disablerepo: "*"
 #        enablerepo: "epel"
-        state: present
+      state: present
 
-    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
 
-  - name: RHEL 8 Tasks
-    block:
+- name: RHEL 8 Tasks
+  block:
 
-    - name: Install GUI components and Xrdp build reqs on RHEL 8
-      command: yum -y install @graphical-server-environment tigervnc-server 'xorg-*' coreutils wget --skip-broken
-      # currently, the group is not properly resolved, against RHUI, with yum
+  - name: Install GUI components and Xrdp build reqs on RHEL 8
+    command: yum -y install @graphical-server-environment tigervnc-server 'xorg-*' coreutils wget --skip-broken
+    # currently, the group is not properly resolved, against RHUI, with yum
 #      yum:
 #        name:
 #        - "@Server with GUI"
@@ -72,16 +69,16 @@
 ##        - file-roller-nautilus
 #        skip_broken: "yes"
 #        state: present
-  
-    - name: Install XRDP server and dependencies
-      yum:
-        name:
-        - "xrdp"
-        - "xrdp-selinux"
-        - "xorgxrdp"
+
+  - name: Install XRDP server and dependencies
+    yum:
+      name:
+      - "xrdp"
+      - "xrdp-selinux"
+      - "xorgxrdp"
 #        disablerepo: "*"
 #        enablerepo: "epel"
-        state: present
+      state: present
 
 # Commented out due to the addition of Xrdp/xorgxdp to EPEL 8
 #    - name: Install build tools and headers
@@ -161,84 +158,84 @@
 #        chdir: "/home/ec2-user/src/xorgxrdp"
 #        target: "install"
 
-    - name: Install Xwrapper configuration
-      copy:
-        dest: "/etc/X11/Xwrapper.config"
-        src: "Xwrapper.config"
-        mode: 0644
-
-    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
-
-  - name: Install xrdp configuration
+  - name: Install Xwrapper configuration
     copy:
-      dest: "/etc/xrdp/xrdp.ini"
-      src: "xrdp.ini"
+      dest: "/etc/X11/Xwrapper.config"
+      src: "Xwrapper.config"
       mode: 0644
 
-  - name: Create SELinux dir
-    file:
-      group: "{{ system_user }}"
-      owner: "{{ system_user }}"
-      mode:  0700
-      path:  "/home/{{ system_user }}/.selinux"
-      state: directory
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
-  - name: Copy over SELinux modules for colord
-    copy:
-      src:   "{{ item }}"
-      dest:  "/home/{{ system_user }}/.selinux"
-      group: "{{system_user}}"
-      owner: "{{system_user}}"
-      mode:  0600
-    with_items:
-      - colord-add.pp
-      - colord-add.te
-    register: result
+- name: Install xrdp configuration
+  copy:
+    dest: "/etc/xrdp/xrdp.ini"
+    src: "xrdp.ini"
+    mode: 0644
 
-  - name: Copy over polikt config for colord
-    copy:
-      src:   "02-allow-colord.rules"
-      dest:  "/etc/polkit-1/rules.d/02-allow-colord.rules"
-      group: "root"
-      owner: "root"
-      mode:  0644
+- name: Create SELinux dir
+  file:
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+    mode:  0700
+    path:  "/home/{{ system_user }}/.selinux"
+    state: directory
 
-  - name: Update SELinux for colord
-    command: semodule -i colord-add.pp chdir=/home/{{ system_user }}/.selinux
-    notify: colord
-    when: result.changed
+- name: Copy over SELinux modules for colord
+  copy:
+    src:   "{{ item }}"
+    dest:  "/home/{{ system_user }}/.selinux"
+    group: "{{system_user}}"
+    owner: "{{system_user}}"
+    mode:  0600
+  with_items:
+    - colord-add.pp
+    - colord-add.te
+  register: result
 
-  - when: ansible_facts.packages["firewalld"] is defined
-    block:
+- name: Copy over polikt config for colord
+  copy:
+    src:   "02-allow-colord.rules"
+    dest:  "/etc/polkit-1/rules.d/02-allow-colord.rules"
+    group: "root"
+    owner: "root"
+    mode:  0644
+
+- name: Update SELinux for colord
+  command: semodule -i colord-add.pp chdir=/home/{{ system_user }}/.selinux
+  notify: colord
+  when: result.changed
+
+- when: ansible_facts.packages["firewalld"] is defined
+  block:
+
+  - name: open XRDP port in firewalld (permanent)
+    firewalld:
+      port: "3389/tcp"
+      state: enabled
+      permanent: yes
+
+  - name: open XRDP port in firewalld (immediate)
+    firewalld:
+      port: "3389/tcp"
+      state: enabled
+      immediate: yes
+    when: ansible_facts.services["firewalld.service"].state == "running"
   
-    - name: open XRDP port in firewalld (permanent)
-      firewalld:
-        port: "3389/tcp"
-        state: enabled
-        permanent: yes
-  
-    - name: open XRDP port in firewalld (immediate)
-      firewalld:
-        port: "3389/tcp"
-        state: enabled
-        immediate: yes
-      when: ansible_facts.services["firewalld.service"].state == "running"
-    
-  - when: ansible_facts.packages["firewalld"] is undefined
-    block:
+- when: ansible_facts.packages["firewalld"] is undefined
+  block:
 
-    - name: open XRDP port in iptables
-      iptables:
-        chain: INPUT
-        protocol: tcp
-        destination_port: 3389
-        jump: ACCEPT
-      when: ansible_facts.services["firewalld.service"].state == "running"
+  - name: open XRDP port in iptables
+    iptables:
+      chain: INPUT
+      protocol: tcp
+      destination_port: 3389
+      jump: ACCEPT
+    when: ansible_facts.services["firewalld.service"].state == "running"
 
-  - name: Enable XRDP auto-start
-    service:
-      name: "xrdp"
-      enabled: "yes"
-      state: started
+- name: Enable XRDP auto-start
+  service:
+    name: "xrdp"
+    enabled: "yes"
+    state: started
 
 ...
