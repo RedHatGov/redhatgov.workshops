@@ -23,6 +23,7 @@
   gather_facts: yes
   roles:
     - role: subscription_manager 
+    - role: firewalld
 
 - name: Configure epel on tower nodes
   become: yes
