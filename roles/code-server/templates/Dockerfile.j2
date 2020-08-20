@@ -1,7 +1,6 @@
 FROM registry.access.redhat.com/ubi8/ubi:latest
 MAINTAINER ajacocks email alexander@redhat.com
-LABEL description="This is a simple UBI8 container that runs code-server, on por
-t 8443, with SSL"
+LABEL description="This is a simple UBI8 container that runs code-server, on port 8443, with SSL"
 RUN yum -y update
 RUN yum install -y openssl
 RUN curl -fsSL https://code-server.dev/install.sh | sh
@@ -13,5 +12,5 @@ password: {{ code_pass }} \n\
 cert: true \
 " > ~/.config/code-server/config.yaml
 RUN setcap cap_net_bind_service=+ep /usr/lib/code-server/lib/node
-CMD ["/usr/bin/code-server","]
+CMD ["/usr/bin/code-server"]
 EXPOSE 8443/tcp
