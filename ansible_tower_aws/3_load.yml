@@ -80,6 +80,7 @@
     - role: graphical
       when: graphical == 'true'
     - role: code-server
+      code_pass: "{{ workshop_password }}"
 
 - name: Configure web console (RHEL 7)
   become: yes
