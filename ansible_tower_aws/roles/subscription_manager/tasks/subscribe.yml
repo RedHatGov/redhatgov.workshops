@@ -137,97 +137,19 @@
 # Add Required Repositories
 #---------------------------------------------------
 - name: RHEL 8 tasks
-  block:
-  - name: Check to see if requisite repos are already enabled (rhel 8)
-    become: yes
-    shell: subscription-manager repos --list-enabled | egrep 'rhel-8-for-x86_64-baseos-rpms|rhel-8-for-x86_64-appstream-rpms|jb-eap-7.2-for-rhel-8-x86_64-rpms' | wc -l
-    register: smr_result
-    ignore_errors: True
-    tags:
-      - rhel
-    when: beta != "true"
+  import_tasks: repos-rhel8.yml
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and beta != 'true'
 
-  - name: Check to see if requisite repos are already enabled (rhel 8 beta)
-    become: yes
-    shell: subscription-manager repos --list-enabled | egrep 'rhel-8-for-x86_64-baseos-rpms|rhel-8-for-x86_64-appstream-htb-rpms|jb-eap-7.2-for-rhel-8-x86_64-rpms' | wc -l
-    register: smr_beta_result
-    ignore_errors: True
-    tags:
-      - rhel
-    when: beta == "true"
-
-  - name: Disable all repos by default (rhel 8)
-    command: subscription-manager repos --disable "*"
-    when: smr_result.stdout != "3" and beta != "true"
-    tags:
-      - rhel
-
-  - name: Disable all repos by default (rhel 8 beta)
-    command: subscription-manager repos --disable "*"
-    when: smr_beta_result.stdout != "3" and beta == "true"
-    tags:
-      - rhel
-  
-  - name: Enable the requisite repos (rhel 8)
-    shell: subscription-manager repos --enable="rhel-8-for-x86_64-baseos-rpms" --enable="rhel-8-for-x86_64-appstream-rpms" --enable="jb-eap-7.2-for-rhel-8-x86_64-rpms"
-#    shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" --enable="rhel-server-rhscl-7-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-    when: smr_result.stdout != "3"
-    tags:
-      - rhel
-  
-  - name: Enable the requisite repos (rhel 8 beta)
-    shell: subscription-manager repos --enable="rhel-8-for-x86_64-baseos-rpms" --enable="rhel-8-for-x86_64-appstream-rpms" --enable="jb-eap-7.2-for-rhel-8-x86_64-rpms"
-#    shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" --enable="rhel-server-rhscl-7-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-    when: smr_beta_result.stdout != "3" and beta == "true"
-    tags:
-      - rhel
-
-  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+- name: RHEL 8 beta tasks
+  import_tasks: repos-rhel8beta.yml
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and beta == "true"
 
 - name: RHEL 7 tasks
-  block:
-  - name: Check to see if requisite repos are already enabled (rhel 7)
-    become: yes
-    shell: subscription-manager repos --list-enabled | egrep 'rhel-7-server-extras-rpms|rhel-7-server-optional-rpms|rhel-7-server-rpms|jb-eap-7.1-for-rhel-7-server-rpms|rhel-server-rhscl-7-rpms' | wc -l
-    register: smr_result
-    ignore_errors: True
-    tags:
-      - rhel
-  
-  - name: Disable all repos by default (rhel 7)
-    command: subscription-manager repos --disable "*"
-    when: smr_result.stdout != "5" 
-    tags:
-      - rhel
-  
-  - name: Enable the requisite repos (rhel 7)
-    shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-7-server-rpms" --enable="rhel-server-rhscl-7-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-    when: smr_result.stdout != "5"
-    tags:
-      - rhel
-
+  import_tasks: repos-rhel7.yml
   when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
 
 - name: RHEL 6 tasks
-  block:
-  - name: Check to see if requisite repos are already enabled (rhel 6)
-    become: yes
-    shell: subscription-manager repos --list-enabled | egrep 'rhel-6-server-extras-rpms|rhel-6-server-optional-rpms|rhel-6-server-rpms|jb-eap-7.1-for-rhel-6-server-rpms|rhel-server-rhscl-6-rpms' | wc -l
-    register: smr_result
-    ignore_errors: True
-    tags:
-      - rhel
-  
-  - name: Disable all repos by default (rhel 6)
-    command: subscription-manager repos --disable "*"
-    when: smr_result.stdout != "5" 
-    tags:
-      - rhel
-  
-  - name: Enable the requisite repos (rhel 6)
-    shell: subscription-manager repos --enable="rhel-6-server-rpms" --enable="rhel-6-server-extras-rpms" --enable="rhel-6-server-optional-rpms" --enable="jb-eap-7.1-for-rhel-6-server-rpms" --enable="rhel-server-rhscl-6-rpms" #--enable="rhel-7-server-ose-3.4-rpms"
-    when: smr_result.stdout != "5"
-    tags:
-      - rhel
-
+  import_tasks: repos-rhel6.yml
   when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+
+...

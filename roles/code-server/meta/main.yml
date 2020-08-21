@@ -1,0 +1,16 @@
+# file: roles/cockpit/meta/main.yml
+---
+galaxy_info:
+  author: Alexander Jacocks
+  description: Quick and easy cockpit installer.
+  company: Red Hat
+  license: MIT
+  min_ansible_version: 2.3
+  platforms:
+  - name: EL
+    versions:
+    - 7
+    - 8
+  galaxy_tags:
+    - cockpit
+dependencies:

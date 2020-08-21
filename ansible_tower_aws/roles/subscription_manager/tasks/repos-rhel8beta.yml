@@ -1,0 +1,23 @@
+---
+
+- name: Check to see if requisite repos are already enabled (rhel 8 beta)
+  become: yes
+  shell: subscription-manager repos --list-enabled | egrep 'rhel-8-for-x86_64-baseos-rpms|rhel-8-for-x86_64-appstream-htb-rpms|jb-eap-7.2-for-rhel-8-x86_64-rpms' | wc -l
+  register: smr_beta_result
+  ignore_errors: True
+  tags:
+    - rhel
+
+- name: Disable all repos by default (rhel 8 beta)
+  command: subscription-manager repos --disable "*"
+  when: smr_beta_result.stdout != "3"
+  tags:
+    - rhel
+
+- name: Enable the requisite repos (rhel 8 beta)
+  shell: subscription-manager repos --enable="rhel-8-for-x86_64-baseos-rpms" --enable="rhel-8-for-x86_64-appstream-rpms" --enable="jb-eap-7.2-for-rhel-8-x86_64-rpms"
+  when: smr_beta_result.stdout != "3"
+  tags:
+    - rhel
+
+...
