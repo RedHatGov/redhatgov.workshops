@@ -9,9 +9,9 @@
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "tower" # Workshop name - NO underscores!
 execution:                        "local" # when not running from Tower, define this variable
-jboss:                            "true" # when this is defined, configure JBoss/Maven
+#jboss:                            "true" # when this is defined, configure JBoss/Maven
 graphical:                        "false" # when true, install a graphical desktop on the tower nodes
-beta:                             "false" # when true, use beta respoitories
+beta:                             "true"  # when true, use beta respoitories
 
 ################################################################################
 # ANSIBLE ROLE KEY         |      VALUE
@@ -44,7 +44,7 @@ tower_instance_type:              "t3.large"
 rhel_instance_type:               "t3.small"
 #-------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
-cloud_access:                     false
+cloud_access:                     true
 # subscription_manager     |      Red Hat Subscription via username & password
 username:                         ""
 password:                         ""
