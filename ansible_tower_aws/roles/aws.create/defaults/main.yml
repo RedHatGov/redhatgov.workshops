@@ -36,7 +36,7 @@ regions:
       ami: "ami-92ec0df1" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
     rhel8:
       beta:
-        ami: "" # RHEL-8.3.0_HVM_BETA-20200701-x86_64-2-Access2-GP2
+        ami: "ami-0331c24396b0d7863" # RHEL-8.3.0_HVM_BETA-20200701-x86_64-2-Access2-GP2
       ami: "ami-0721a1b2a798c8424" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
     win2016:
       ami: "ami-0255ad7855945d5ef" # Windows_Server-2016-English-Full-Base-2019.11.13
