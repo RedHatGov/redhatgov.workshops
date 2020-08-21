@@ -51,11 +51,19 @@
   file:
     state: directory
     path: "~/build"
+  become: no
 
 - name: push out container build file
   template:
     src: Dockerfile.j2
     dest: "~/build/Dockerfile"
+  become: no
+
+- name: push out kubernetes deployment
+  copy:
+    src: code-server.yml
+    dest: "~/build/code-server.yml"
+  become: no
 
 - name: Build a Docker formatted image
   podman_image:
@@ -63,5 +71,6 @@
     path: "~/build"
     build:
       format: docker
+  become: no
 
 ...
