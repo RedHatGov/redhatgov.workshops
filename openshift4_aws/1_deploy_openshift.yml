@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+
+
+  tasks:
+    - name: create cluster admin and user accounts
+      include_role:
+        name: deploy_openshift

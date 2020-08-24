@@ -1,0 +1,47 @@
+---
+
+- name: create build directory for deployment artifacts
+  file:
+    path: "{{ openshift_build_path }}"
+    state: directory
+    mode: 0700
+
+- name: download and extract openshift installer
+  unarchive:
+    src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift_version }}/openshift-install-linux-{{ openshift_version }}.tar.gz
+    dest: "{{ openshift_build_path }}"
+    remote_src: yes
+
+- name: download and extract openshift oc cli tool
+  unarchive:
+    src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift_version }}/openshift-client-linux-{{ openshift_version }}.tar.gz
+    dest: "{{ openshift_build_path }}"
+    remote_src: yes
+
+- name: extract openshift odo developer cli tool
+  unarchive:
+    src: https://mirror.openshift.com/pub/openshift-v4/clients/odo/v{{ openshift_odo_version }}/odo-linux-amd64.tar.gz
+    dest: "{{ openshift_build_path }}"
+    remote_src: yes
+
+- name: generate cluster ssh key pair
+  openssh_keypair:
+    path: "{{ openshift_build_path }}/{{ openshift_cluster_name }}-key"
+    size: 4096
+    type: rsa
+
+- name: create openshift install-config.yaml file
+  template:
+    src: "install-config.yaml.j2"
+    dest: "{{ openshift_build_path }}/install-config.yaml"
+
+- name: backup install-config.yaml file as install-config.yaml.backup
+  copy:
+    src: "{{ openshift_build_path }}/install-config.yaml"
+    dest: "{{ openshift_build_path }}/install-config.yaml.backup"
+
+- debug:
+    msg:
+      - "execute the following command to deploy the openshift cluster"
+      - "--------------------"
+      - "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
