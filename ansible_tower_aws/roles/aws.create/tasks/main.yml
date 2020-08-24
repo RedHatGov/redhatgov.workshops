@@ -77,7 +77,7 @@
     dns_support: yes
     tags:
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
     state: present
   register: ec2_vpc
@@ -93,12 +93,35 @@
     tags:
       Name: "at-{{ workshop_prefix }}-igw"
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_igw
 
 - debug:
     var: ec2_igw
+
+
+- set_fact:
+    ports_list_of_dicts: |
+        {% set res = [] -%}
+        {% if ports.tcp != None %}
+        {% for key in ports.tcp.keys() -%}
+           {% for value in ports.tcp[key] -%}
+            {% set ignored = res.extend([{ 'proto': 'tcp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+           {%- endfor %}
+        {%- endfor %}
+        {%- endif %}
+        {% if ports.udp != None %}
+        {% for key in ports.udp.keys() -%}
+           {% for value in ports.udp[key] -%}
+            {% set ignored = res.extend([{ 'proto': 'udp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+           {%- endfor %}
+        {%- endfor %}
+        {%- endif %}
+        {{ res }}
+
+- debug:
+    var: ports_list_of_dicts
 
 - name: Create RHEL security group
   ec2_group:
@@ -106,45 +129,17 @@
     description: "SG for RHEL hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
-    rules:
-    - proto: "tcp"
-      ports: 22
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 22 (SSH)"
-    - proto: "tcp"
-      ports: 80
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 80 (http)"
-    - proto: "tcp"
-      ports: 443
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 443 (https)"
-    - proto: "tcp"
-      ports: 3389
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 3389 (rdp)"
-    - proto: "tcp"
-      ports: 8080
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 8080 (jboss)"
-    - proto: "tcp"
-      ports: 8443
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 8443 (vscode)"
-    - proto: "tcp"
-      ports: 8888
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 8888 (wetty)"
-    - proto: "tcp"
-      ports: 9090
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 9090 (cockpit)"
+    rules: "{{ ports_list_of_dicts }}"
     tags:
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
       rhel: "at-{{ workshop_prefix }}"
     state: present
+  register: result
+
+- debug:
+    var: result
 
 - name: Create Windows security group
   ec2_group:
@@ -152,22 +147,10 @@
     description: "SG for Windows hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
-    rules:
-    - proto: "tcp"
-      ports: 3389
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on TCP port 3389 (Remote Desktop)"
-    - proto: "udp"
-      ports: 3389
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on UDP port 3389 (Remote Desktop)"
-    - proto: "tcp"
-      ports: 5986
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 5986 (WinRM HTTPS)"
+    rules: "{{ ports_list_of_dicts }}"
     tags:
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
       win: "at-{{ workshop_prefix }}"
     state: present
@@ -180,7 +163,7 @@
     tags:
       Name: "at-{{ workshop_prefix }}-subnet"
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
     wait: yes
   register: ec2_subnet
@@ -201,7 +184,7 @@
     tags:
       Name: "at-{{ workshop_prefix }}-route"
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
     state: present
   register: ec2_route

@@ -1,14 +1,10 @@
 ---
 # defaults file for roles/aws
-#region: "us-east-2"
-#nodes:
-#  rhel:
-#    ami_id: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-#    instance_type: "t2.small"
-#  win:
-#    ami_id: "ami-0ca3e3965ada31684" # Windows_Server-2016-English-Full-Base-2018.09.15
-#    instance_type: "t2.large"
 
+# workshop tag
+workshop_name: 'changeme'
+
+# AWS region AMI info
 regions:
   us-east-1:
     rhel7:

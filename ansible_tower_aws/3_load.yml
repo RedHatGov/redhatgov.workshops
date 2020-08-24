@@ -81,6 +81,15 @@
       when: graphical|bool
     - role: code-server
       code_pass: "{{ workshop_password }}"
+  tasks:
+    - name: push out student templates
+      copy:
+        src: "{{ item }}"
+        dest: "~{{ system_user }}/{{ item }}"
+        mode: 0644
+      with_items:
+      - "hello.js"
+      - "hello.service"
 
 - name: Configure web console (RHEL 7)
   become: yes
