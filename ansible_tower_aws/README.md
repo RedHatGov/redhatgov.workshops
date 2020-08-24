@@ -54,7 +54,6 @@ group_vars/all_example.yml >group_vars/all.yml
 #### RHEL 7
 
 Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
-
 ```
 $ sudo subscription-manager repos \
 --enable rhel-7-server-ansible-2.8-rpms \
@@ -82,7 +81,6 @@ $ source ansible/bin/activate
 #### RHEL 8
 
 Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
-
 ```
 $ sudo subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms --enable codeready-builder-for-rhel-8-x86_64-rpms
 $ sudo dnf install -y git python3-virtualenv ansible
@@ -128,7 +126,8 @@ $ ansible-playbook 1_provision.yml
   workshop_prefix  : defaults to "tower", set to the name of your workshop
   jboss            : defaults to "true", comment out to disable jboss
   graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
-  domain_name      : your DNS domain, likely "redhagov.io"
+  beta             : defaults to "false", change it to true if you want to use RHEL HTB releases. *required* for podman kube module in exercise 1, until RHEL 8.3 is released
+  domain_name      : your DNS domain, likely "redhatgov.io" or "rhnaps.io"
   zone_id:         : the AWS Route 53 zone ID for your domain
   tower_rhel_count : the number of tower instances, usually 1 per student
   rhel_count       : the number of regular RHEL instances, usually 1 per student

@@ -1,0 +1,76 @@
+---
+# tasks file for code-server
+- name: gather facts
+  gather_facts:
+
+- name: Gather package facts
+  package_facts:
+    manager: auto
+
+- name: Gather service facts
+  service_facts:
+
+- name: Install dependencies
+  block:
+  - name: Ensure required packages exist
+    package:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+    - buildah
+    - podman
+
+- when: ansible_facts.packages["firewalld"] is defined
+  block:
+
+  - name: open code-server port in firewalld (permanent)
+    firewalld:
+      port: "{{ code_port }}/tcp"
+      state: enabled
+      permanent: yes
+
+  - name: open code-server port in firewalld (immediate)
+    firewalld:
+      port: "{{ code_port }}/tcp"
+      state: enabled
+      immediate: yes
+    when: ansible_facts.services["firewalld.service"].state == "running"
+
+- when: ansible_facts.packages["firewalld"] is undefined
+  block:
+
+  - name: open code-server port in iptables
+    iptables:
+      chain: INPUT
+      protocol: tcp
+      destination_port: "{{ code_port }}"
+      jump: ACCEPT
+    when: ansible_facts.packages["iptables"] is defined
+
+- name: create container build directory
+  file:
+    state: directory
+    path: "~/build"
+  become: no
+
+- name: push out container build file
+  template:
+    src: Dockerfile.j2
+    dest: "~/build/Dockerfile"
+  become: no
+
+- name: push out kubernetes deployment
+  copy:
+    src: code-server.yml
+    dest: "~/build/code-server.yml"
+  become: no
+
+- name: Build a Docker formatted image
+  podman_image:
+    name: code-server
+    path: "~/build"
+    build:
+      format: docker
+  become: no
+
+...

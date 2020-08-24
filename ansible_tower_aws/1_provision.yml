@@ -8,6 +8,6 @@
   tasks:
   - name: explain how to login
     debug:
-      msg: "Please run 'ansible-playbook 2_preload' to load the admin server."
+      msg: "Please run 'ansible-playbook 2_preload.yml' to load the admin server."
 
 ...
