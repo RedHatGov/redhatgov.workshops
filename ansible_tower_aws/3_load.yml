@@ -137,4 +137,24 @@
   roles:
     - role: subscription_manager 
 
+- name: Open ports 80,443 on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+    - name: open firewalld ports
+      firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+      with_items:
+      - 'httpd'
+      - 'https'
+    - name: restart service
+      service:
+        name: firewalld
+        state: reloaded
+
 ...
