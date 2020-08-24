@@ -28,7 +28,7 @@
   - name: Enable Ansible repo
     rhsm_repository:
       name: "{{ ansible_repo }}"
-    when: beta != "true"
+    when: not beta|bool
 
   - name: Install base packages
     become: yes

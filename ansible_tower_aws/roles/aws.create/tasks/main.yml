@@ -7,12 +7,12 @@
 - name: set RHEL AMI to use
   set_fact:
     rhel_ami: "{{ regions[region][rhel_ver].ami }}"
-  when: beta != 'true'
+  when: not beta|bool
 
 - name: set RHEL AMI to use (beta)
   set_fact:
     rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
-  when: beta == 'true'
+  when: beta|bool
 
 - name: RHEL AMI
   debug:
