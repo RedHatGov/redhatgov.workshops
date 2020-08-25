@@ -15,6 +15,10 @@
   tasks:
   - name: Automation is removing the workshop
     block:
+      - name: Get and set vars for the version of openshift
+        set_fact:
+          openshift_build_path:      "{{ ansible_env.PWD }}/build"
+
       - name: create build directory for deployment artifacts
         file:
           path: "{{ openshift_build_path }}"
@@ -76,8 +80,6 @@
       - name: Get and set vars for the version of openshift
         set_fact:
           openshift_version: "{{ lookup('file', 'openshift_version.txt' ) }}"
-          openshift_installer_path: "{{ ansible_env.PWD }}"
-          openshift_build_path:      "{{ openshift_installer_path }}/build"
 
       - name: get working directory
         shell: "pwd"
