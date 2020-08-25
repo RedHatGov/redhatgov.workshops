@@ -6,6 +6,12 @@
     state: directory
     mode: 0700
 
+- name: Set default variables for automated build (facts)
+    set_fact:
+      openshift_installer_path:      "{{ ansible_env.PWD }}"
+      openshift_builder_path:      "{{ openshift_installer_path }}/build"
+  when: openshift_installer_type != "automation"
+
 - name: Set binary type
   set_fact:
     openshift_binary_type: "mac"
