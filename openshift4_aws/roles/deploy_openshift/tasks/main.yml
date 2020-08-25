@@ -140,6 +140,11 @@
         kubeadmin_password: "kubeadmin_password: {{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
         kubeconfig: "{{lookup('file', '{{ openshift_build_path }}/auth/kubeconfig') }}"
 
+    - name: create cluster admin and user accounts
+      include_role:
+        name: create_openshift_users
+      when: create_openshift_users
+
     - name: Print OCP url
       debug:
         msg: "{{ ocp_url }}"
@@ -147,6 +152,7 @@
     - name: Print kubeadmin-password info
       debug:
         msg: "kubeadmin_password: {{ kubeadmin_password }}"
+
 
 #    - name: Print KUBECONFIG
 #      debug:
