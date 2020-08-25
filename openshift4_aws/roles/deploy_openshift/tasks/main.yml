@@ -101,7 +101,7 @@
     - name: Check to see if cluster already exists with this name.
       fail:
         msg: Cluster already exists with this name
-      when: not s3output.failed or s3output.s3_keys|length != 0
+      when: s3output.s3_keys|length != 0
 
     - name: Installing the OCP cluster (this will take a while. ~60 minutes)
       shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
