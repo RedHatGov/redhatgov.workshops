@@ -92,10 +92,6 @@
           dest: "{{ openshift_build_path }}"
           remote_src: yes
 
-      - name: Installing the OCP cluster (this will take a while. ~60 minutes)
-        shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
-
-
       - name: Run the un-install
         shell: "{{ openshift_build_path }}/openshift-install destroy cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
 
