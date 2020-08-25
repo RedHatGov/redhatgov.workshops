@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+
+
+  tasks:
+  - debug:
+      msg:
+        - "execute the following command to teardown the openshift cluster"
+        - "---------------------"
+        - "{{ openshift_build_path }}/openshift-install destroy cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"

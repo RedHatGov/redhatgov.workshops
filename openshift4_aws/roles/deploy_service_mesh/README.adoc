@@ -1,0 +1,45 @@
+== ServiceMesh
+
+This role intalls all the components required for OSSM OpenShift Service Mesh
+
+=== Requirements
+Assumes you are running the playbook from a host that has a authenticated
+session with appropriate permissions to install operators and setup
+servicemesh.
+
+Role Variables
+--------------
+
+This is an initial take with minimal to no role variables used.
+
+This role should work for a regular OCP 4.x cluster and installs servicemesh.
+There are no variables to customise the storage requirements for the some of
+the servicemesh controlplane instances.
+
+You will have to edit the yaml files where they are defined.
+
+TODO: Should have role defaults for storage rquirements , so that it cab be
+parameterised.
+
+Example Playbook
+----------------
+
+Including an example of how to use your role.
+
+[source,yaml]
+----
+- name: Configure you OpenShift cluster
+  hosts: localhost
+  tasks:
+    - name: Setup LDAP oAuth integration
+      include_role:
+        name: service-mesh
+----
+
+applying the role for testing without having to include it in a playbook.
+
+[source,bash]
+----
+ansible-playbook roles/service-mesh/apply/main.yml
+----
+
