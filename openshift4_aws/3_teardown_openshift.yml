@@ -80,7 +80,7 @@
 
       - name: Get and set vars for the version of openshift
         set_fact:
-          openshift_version: "{{ lookup('file', 'openshift_version.txt' ) }}"
+          openshift_version: "{{ lookup('file', '{{ openshift_build_path }}/openshift_version.txt' ) }}"
 
       - name: get working directory
         shell: "pwd"
