@@ -152,5 +152,4 @@
       debug:
           msg: "KUBECONFIG: \n {{ kubeconfig }}"
 
-
   when: s3_bucket is defined and openshift_installer_type == "automation"
