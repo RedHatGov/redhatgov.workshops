@@ -74,7 +74,7 @@
     dest: "{{ openshift_build_path }}/install-config.yaml.backup"
 
 - name: Write OCP version to openshift_version.txt
-  copy: content="{{ openshift_version }}" dest=./openshift_version.txt
+  copy: content="{{ openshift_version }}" dest="{{ openshift_build_path }}/openshift_version.txt"
   when: openshift_installer_type == "automation"
 
 - debug:
@@ -127,11 +127,30 @@
       aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
-        src: "auth/{{ item }}"
+        src: "{{ openshift_build_path }}/auth/{{ item }}"
         mode: put
       with_items:
-        - "{{ openshift_build_path }}/kubeconfig"
-        - "{{ openshift_build_path }}/kubeadmin-password"
+        - "kubeconfig"
+        - "kubeadmin-password"
       ignore_errors: yes
+
+    - name: Set facts for auth info
+      set_fact:
+        ocp_url: "https://console-openshift-console.apps.{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
+        kubeadmin_password: "kubeadmin_password: {{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
+        kubeconfig: "{{lookup('file', '{{ openshift_build_path }}/auth/kubeconfig') }}"
+
+    - name: Print OCP url
+      debug:
+        msg: "{{ ocp_url }}"
+
+    - name: Print kubeadmin-password info
+      debug:
+        msg: "kubeadmin_password: {{ kubeadmin_password }}"
+
+    - name: Print KUBECONFIG
+      debug:
+          msg: "KUBECONFIG: \n {{ kubeconfig }}"
+
 
   when: s3_bucket is defined and openshift_installer_type == "automation"
