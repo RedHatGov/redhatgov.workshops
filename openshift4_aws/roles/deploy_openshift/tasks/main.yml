@@ -101,7 +101,7 @@
     - name: Check to see if cluster already exists with this name.
       fail:
         msg: Cluster already exists with this name
-      when: not s3output.failed
+      when: not s3output.failed or s3output.s3_keys|length != 0
 
     - name: Installing the OCP cluster (this will take a while. ~60 minutes)
       shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
@@ -111,16 +111,16 @@
       aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
-        src: "{{ item }}"
+        src: "build/{{ item }}"
         mode: put
       with_items:
-        - "{{ openshift_build_path }}/install-config.yaml.backup"
-        - "{{ openshift_build_path }}/metadata.json"
-        - "{{ openshift_build_path }}/openshift_version.txt"
-        - "{{ openshift_build_path }}/terraform.aws.auto.tfvars"
-        - "{{ openshift_build_path }}/terraform.tfstate"
-        - "{{ openshift_build_path }}/terraform.tfvars.json"
-        - "{{ openshift_build_path }}/{{ openshift_cluster_name}}-key.pub"
+        - "install-config.yaml.backup"
+        - "metadata.json"
+        - "openshift_version.txt"
+        - "terraform.aws.auto.tfvars"
+        - "terraform.tfstate"
+        - "terraform.tfvars.json"
+        - "{{ openshift_cluster_name}}-key.pub"
       ignore_errors: yes
 
     - name: Copy kubeconfig file to S3
