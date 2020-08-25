@@ -98,7 +98,7 @@
       debug:
         msg: "{{ s3output }}"
 
-    - name: Check to see if cluster already exists with this name.
+    - name: Fail if cluster already exists with this name.
       fail:
         msg: Cluster already exists with this name
       when: s3output.s3_keys|length != 0
