@@ -77,7 +77,7 @@
         set_fact:
           openshift_version: "{{ lookup('file', 'openshift_version.txt' ) }}"
           openshift_installer_path: "{{ ansible_env.PWD }}"
-          openshift_builder_path:      "{{ openshift_installer_path }}/build"
+          openshift_build_path:      "{{ openshift_installer_path }}/build"
 
       - name: get working directory
         shell: "pwd"

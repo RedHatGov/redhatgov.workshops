@@ -9,7 +9,7 @@
 - name: Set default variables for automated build (facts)
   set_fact:
     openshift_installer_path:      "{{ ansible_env.PWD }}"
-    openshift_builder_path:      "{{ openshift_installer_path }}/build"
+    openshift_build_path:      "{{ openshift_installer_path }}/build"
   when: openshift_installer_type != "automation"
 
 - name: Set binary type
