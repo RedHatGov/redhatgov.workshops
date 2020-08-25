@@ -1,6 +1,9 @@
 # Go to the following URL for a list of available OpenShift versions for installation
 # https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
 
+# Valid values are 'local', and 'automation' # 'automation' is intended for automated builds/deploys
+openshift_installer_type:               automation
+
 # get installation files playbook variables
 openshift_version:                      4.4.17
 openshift_installer_path:               "{{ ansible_env.PWD }}"
