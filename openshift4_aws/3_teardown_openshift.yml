@@ -76,6 +76,7 @@
           mode: get
         with_items:
           - "kubeconfig"
+        ignore_errors: yes
 
       - name: Get and set vars for the version of openshift
         set_fact:
