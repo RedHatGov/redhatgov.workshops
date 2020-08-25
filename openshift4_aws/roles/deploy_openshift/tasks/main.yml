@@ -86,6 +86,23 @@
 
 - name: Block to try and copy off installation files to S3
   block:
+    - name: Check to see if workshop already exists
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        mode: list
+        prefix: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/"
+        max_keys: 500
+      register: s3output
+
+    - name: "Print the s3output object returned"
+      debug:
+        msg: "{{ s3output }}"
+
+    - name: Check to see if cluster already exists with this name.
+      fail:
+        msg: Cluster already exists with this name
+      when: not s3output.failed
+
     - name: Installing the OCP cluster (this will take a while. ~60 minutes)
       shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
 
