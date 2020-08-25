@@ -87,7 +87,7 @@
 - name: Block to try and copy off installation files to S3
   block:
     - name: Installing the OCP cluster (this will take a while. ~60 minutes)
-      shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_installer_path }} --log-level={{ openshift_installer_log_level }}"
+      shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
 
   always:
     - name: Copying terraform state files to S3
