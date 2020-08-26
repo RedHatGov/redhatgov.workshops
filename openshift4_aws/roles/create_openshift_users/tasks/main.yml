@@ -20,6 +20,8 @@
     {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username=kubeadmin --password={{ kubeadmin_password }}
     {{ openshift_build_path }}/oc create secret generic htpass-secret --from-file=htpasswd={{ openshift_build_path }}/users.htpasswd -n openshift-config
   ignore_errors: yes
+  environment:
+    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
 
 - name: template htpasswd custom resource config file
   template:
@@ -31,6 +33,8 @@
     {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username=kubeadmin --password={{ kubeadmin_password }}
     {{ openshift_build_path }}/oc apply -f {{ openshift_build_path }}/htpasswd-cr.yaml
   ignore_errors: yes
+  environment:
+    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
 
 - name: create default project settings template
   template:
@@ -39,12 +43,16 @@
 
 - name: apply default project settings
   shell: "{{ openshift_build_path }}/oc apply -f {{ openshift_build_path }}/defaultProject.yaml"
+  environment:
+    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
 
 - name: add default project settings to openshift config
   shell: >
     {{ openshift_build_path }}/oc get project.config.openshift.io/cluster -o yaml
     | sed 's/spec: {}/spec: {"projectRequestTemplate":{"name": "project-request"}}/g'
     | {{ openshift_build_path }}/oc apply -f -
+  environment:
+    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
 
 - name: pausing 120 seconds to allow htpasswd authentication provider to start
   pause:
@@ -53,13 +61,19 @@
 - name: prime cluster_admin user and validate login
   shell: "{{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username={{ openshift_cluster_admin_username }} --password={{ openshift_cluster_admin_password }}"
   ignore_errors: yes
+  environment:
+    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
 
 - name: add cluster role to new admin account
   shell: |
     {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username=kubeadmin --password={{ kubeadmin_password }}
     {{ openshift_build_path }}/oc adm policy add-cluster-role-to-user cluster-admin {{ openshift_cluster_admin_username }}
+  environment:
+    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
 
 - name: delete kubeadmin
   shell: |
     {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username={{ openshift_cluster_admin_username }} --password={{ openshift_cluster_admin_password }}
     {{ openshift_build_path }}/oc delete secrets kubeadmin -n kube-system
+  environment:
+    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
