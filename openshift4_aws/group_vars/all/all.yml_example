@@ -1,6 +1,9 @@
 # Go to the following URL for a list of available OpenShift versions for installation
 # https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
 
+# Valid values are 'local', and 'automation' # 'automation' is intended for automated builds/deploys
+openshift_installer_type:               local
+
 # get installation files playbook variables
 openshift_version:                      4.4.17
 openshift_installer_path:               "{{ ansible_env.PWD }}"
@@ -36,3 +39,10 @@ jaegar_operator_version:                stable
 kiali_operator_version:                 stable
 servicemesh_operator_version:           stable
 keycloak_operator_version:              "v10.0.0"
+
+## Automation related variables
+## These get assembled to store OCP state in a bucket with a prefix like this:
+## s3://{{ s3_bucket }}/{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/stateFilesHere
+#s3_bucket:                              "myStateFilesBucket"
+#s3_prefix:                              "mycustom/path/to/state/files"
+#workshop_type:                          "ocp4"

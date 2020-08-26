@@ -108,6 +108,17 @@ ansible-playbook 3_teardown_openshift.yml
 NOTE: The OpenShift Service Mesh workshop lab guide is located on [redhatgov.io](http://redhatgov.io/workshops/openshift_service_mesh/).
 
 ---
+## Deploys from automation tooling
+OpenShift 4 requires a priviliged AWS user account to run the installation. In order to prevent giving escalated priviliges to many users, the automation model allows for a single set of credentials to be centrally managed from your automation tooling. 
+
+With the 'automation' mode, cluster state files are copied to an S3 bucket for later retrieval when you need to delete the cluster
+The automation tooling will need access to an AWS user with required permissions as well as access to manage the designated S3 bucket (put, delete, list, etc.)
+
+To use this playbook in automation environment:
+- Set or pass the var 'openshift_installer_type' to 'automation'
+- Set or pass vars 's3_bucket', 's3_prefix', 'workshop_type' which will be assembled to form the full S3 path for storing state files (see all.yml_example notes)
+- Automation tooling would need ansible and standard required python libraries to support ansible (see the notes below and ansible installation guide)
+---
 ## Fedora 32 - Dependencies setup (DRAFT)
 Clone the ansible-ocp4-install-aws repo and change directory into the repo directory.
 

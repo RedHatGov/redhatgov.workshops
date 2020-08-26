@@ -1,9 +1,6 @@
 ---
 - hosts: localhost
 
-  environment:
-    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
-
   vars:
     kubeadmin_password: "{{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
 
