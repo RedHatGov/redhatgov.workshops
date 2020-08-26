@@ -39,3 +39,10 @@ jaegar_operator_version:                stable
 kiali_operator_version:                 stable
 servicemesh_operator_version:           stable
 keycloak_operator_version:              "v10.0.0"
+
+## Automation related variables
+## These get assembled to store OCP state in a bucket with a prefix like this:
+## s3://{{ s3_bucket }}/{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/stateFilesHere
+#s3_bucket:                              "myStateFilesBucket"
+#s3_prefix:                              "mycustom/path/to/state/files"
+#workshop_type:                          "ocp4"
