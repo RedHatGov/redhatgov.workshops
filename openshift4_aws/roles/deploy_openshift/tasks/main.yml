@@ -131,8 +131,6 @@
     - name: Set facts for auth info
       set_fact:
         ocp_url: "https://console-openshift-console.apps.{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
-        kubeadmin_password: "kubeadmin_password: {{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
-        kubeconfig: "{{lookup('file', '{{ openshift_build_path }}/auth/kubeconfig') }}"
         openshift_cluster_fqdn: "{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
 
     - name: create cluster admin and user accounts
