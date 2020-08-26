@@ -149,14 +149,4 @@
     - name: Print OCP url
       debug:
         msg: "{{ ocp_url }}"
-
-    - name: Print kubeadmin-password info
-      debug:
-        msg: "kubeadmin_password: {{ kubeadmin_password }}"
-
-
-#    - name: Print KUBECONFIG
-#      debug:
-#          msg: "KUBECONFIG: \n {{ kubeconfig }}"
-
   when: s3_bucket is defined and openshift_installer_type == "automation"
