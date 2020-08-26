@@ -77,13 +77,7 @@
   copy: content="{{ openshift_version }}" dest="{{ openshift_build_path }}/openshift_version.txt"
   when: openshift_installer_type == "automation"
 
-- debug:
-    msg:
-      - "execute the following command to deploy the openshift cluster"
-      - "--------------------"
-      - "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
-  when: openshift_installer_type != "automation"
-
+# Automation Componenets
 - name: Block to try and copy off installation files to S3
   block:
     - name: Check to see if workshop already exists
@@ -150,3 +144,10 @@
       debug:
         msg: "{{ ocp_url }}"
   when: s3_bucket is defined and openshift_installer_type == "automation"
+
+- debug:
+    msg:
+      - "execute the following command to deploy the openshift cluster"
+      - "--------------------"
+      - "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
+  when: openshift_installer_type != "automation"
