@@ -9,14 +9,14 @@
     - name: create cluster admin and user accounts
       include_role:
         name: create_openshift_users
-      when: create_openshift_users == 'True'
+      when: create_openshift_users == true
 
     - name: deploy openshift service mesh
       include_role:
         name: deploy_service_mesh
-      when: deploy_service_mesh == 'True'
+      when: deploy_service_mesh == true
 
     - name: deploy and configure openshift workshop resources
       include_role:
         name: deploy_service_mesh_workshop
-      when: deploy_service_mesh_workshop == 'True'
+      when: deploy_service_mesh_workshop == true
