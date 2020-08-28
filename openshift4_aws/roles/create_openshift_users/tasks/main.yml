@@ -68,9 +68,3 @@
   shell: |
     {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username={{ openshift_cluster_admin_username }} --password={{ openshift_cluster_admin_password }}
     {{ openshift_build_path }}/oc delete secrets kubeadmin -n kube-system
-
-- name: prime cluster_admin user and validate login
-  shell: "{{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username={{ openshift_cluster_admin_username }} --password={{ openshift_cluster_admin_password }}"
-  ignore_errors: yes
-  environment:
-    KUBECONFIG: "{{ openshift_build_path }}/auth/kubeconfig"
