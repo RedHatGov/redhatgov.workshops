@@ -4,7 +4,6 @@
   set_fact:
     openshift_installer_path:      "{{ ansible_env.PWD }}"
     openshift_build_path:      "{{ ansible_env.PWD }}/build"
-    kubeadmin_password: "{{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
   when: openshift_installer_type == "automation"
 
 - name: create build directory for deployment artifacts
