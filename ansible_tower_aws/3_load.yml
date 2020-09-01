@@ -150,7 +150,7 @@
         permanent: yes
         state: enabled
       with_items:
-      - 'httpd'
+      - 'http'
       - 'https'
     - name: restart service
       service:

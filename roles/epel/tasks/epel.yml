@@ -1,7 +1,69 @@
-- name: install EPEL Repository (RHEL 7)
-  action: "{{ ansible_pkg_mgr }} name={{ epel_url_7 }} state=present"
+---
+
+- name: RHEL 6 EPEL setup
+  block:
+
+  - name: get EPEL release key
+    get_url:
+      url: "{{ epel_key_6 }}"
+      dest: "/tmp/epel.key"
+      mode: '0644'
+
+  - name: Import keys
+#   shell: rpmkeys --import "/tmp/epel.key"
+    rpm_key:
+      state: present
+      key: "{{ item }}"
+    with_items:
+      - "/tmp/epel.key"
+
+  - name: install EPEL Repository (RHEL 6)
+    action: "{{ ansible_pkg_mgr }} name={{ epel_url_6 }} state=present"
+
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+
+- name: RHEL 7 EPEL setup
+  block:
+
+  - name: get EPEL release key
+    get_url:
+      url: "{{ epel_key_7 }}"
+      dest: "/tmp/epel.key"
+      mode: '0644'
+
+  - name: Import keys
+#   shell: rpmkeys --import "/tmp/epel.key"
+    rpm_key:
+      state: present
+      key: "{{ item }}"
+    with_items:
+      - "/tmp/epel.key"
+
+  - name: install EPEL Repository (RHEL 7)
+    action: "{{ ansible_pkg_mgr }} name={{ epel_url_7 }} state=present"
+
   when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
 
-- name: install EPEL Repository (RHEL 8)
-  action: "{{ ansible_pkg_mgr }} name={{ epel_url_8 }} state=present"
+- name: RHEL 8 EPEL setup
+  block:
+
+  - name: get EPEL 8 release key
+    get_url:
+      url: "{{ epel_key_8 }}"
+      dest: "/tmp/epel.key"
+      mode: '0644'
+
+  - name: Import keys
+#   shell: rpmkeys --import "/tmp/epel.key"
+    rpm_key:
+      state: present
+      key: "{{ item }}"
+    with_items:
+      - "/tmp/epel.key"
+
+  - name: install EPEL Repository (RHEL 8)
+    action: "{{ ansible_pkg_mgr }} name={{ epel_url_8 }} state=present"
+
   when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+...
