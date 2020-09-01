@@ -1,19 +1,19 @@
 # file: group_vars
-################################################################################
+###############################################################################
 #
 #                  ////IMPORTANT////
 #
 #      Prefixed to all resources for cleanup & identifcation.
-################################################################################
+###############################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "rhel" # Workshop name - NO underscores!
 execution:                        "local" # when not running from Tower, define this variable
 graphical:                        "true" # when true, install a graphical desktop on the tower nodes
 
-################################################################################
+###############################################################################
 # ANSIBLE ROLE KEY         |      VALUE
-################################################################################
+###############################################################################
 # aws                      |      deployment working dir 
 deploy_working_dir:               "{{ lookup('env','PWD') }}/.redhatgov"
 # aws                      |      AWS Route 53
@@ -23,17 +23,18 @@ zone_id:                          ""
 rhel_count:                       "2"            # RHEL node(s)
 win_count:                        "0"            # Windows node(s)
 region:                           "us-east-2"    # AWS Region, configures ec2.ini too
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # AMI details
 #rhel_ver:                         "rhel7"
 rhel_ver:                         "rhel8"
 win_ver:                          "win2016"
 ebs_root_block_size:              50
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3.large"
 rhel_instance_type:               "t3.small"
-#-------------------------------------------------------------------------------
+tower_instance_type:              "t3.small"
+#------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                     false
 # subscription_manager     |      Red Hat Subscription via username & password
@@ -43,18 +44,37 @@ pool_id:                          ""
 # subscription_manager     |      Red Hat Subscription via activation keys
 rhsm_activationkey:               ""
 rhsm_org_id:                      ""
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # LetsEncrypt              |      email
 letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # wetty                    |      password
 workshop_password:                "" # Note that Windows 2016 requires 3 character classes and 10 characters
-#-------------------------------------------------------------------------------
-
-################################################################################
+#------------------------------------------------------------------------------
+# ports to open            |      Add any ports that you may need to this dict
+ports:
+  tcp:
+    22:
+    - "ssh"
+    80:
+    - "http"
+    443:
+    - "https"
+    3389:
+    - "rdp"
+    8443:
+    - "vscode"
+    8888:
+    - "wetty"
+    9090:
+    - "cockpit"
+  udp: 
+#    53:
+#    - "dns"
+###############################################################################
 # ANSIBLE config           |      VALUE
-################################################################################
+###############################################################################
 # Dynamic Inventory 
 inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars
@@ -68,3 +88,4 @@ ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
 system_user:                      "ec2-user"    # AWS
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
 workshop:                         "rhel8"
+workshop_name:                    "{{ workshop }}"

@@ -7,12 +7,12 @@
 - name: set RHEL AMI to use
   set_fact:
     rhel_ami: "{{ regions[region][rhel_ver].ami }}"
-  when: beta != 'true'
+  when: not beta|bool
 
 - name: set RHEL AMI to use (beta)
   set_fact:
     rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
-  when: beta == 'true'
+  when: beta|bool
 
 - name: RHEL AMI
   debug:
@@ -77,7 +77,7 @@
     dns_support: yes
     tags:
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
     state: present
   register: ec2_vpc
@@ -93,12 +93,35 @@
     tags:
       Name: "at-{{ workshop_prefix }}-igw"
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_igw
 
 - debug:
     var: ec2_igw
+
+
+- set_fact:
+    ports_list_of_dicts: |
+        {% set res = [] -%}
+        {% if ports.tcp != None %}
+        {% for key in ports.tcp.keys() -%}
+           {% for value in ports.tcp[key] -%}
+            {% set ignored = res.extend([{ 'proto': 'tcp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+           {%- endfor %}
+        {%- endfor %}
+        {%- endif %}
+        {% if ports.udp != None %}
+        {% for key in ports.udp.keys() -%}
+           {% for value in ports.udp[key] -%}
+            {% set ignored = res.extend([{ 'proto': 'udp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+           {%- endfor %}
+        {%- endfor %}
+        {%- endif %}
+        {{ res }}
+
+- debug:
+    var: ports_list_of_dicts
 
 - name: Create RHEL security group
   ec2_group:
@@ -106,45 +129,17 @@
     description: "SG for RHEL hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
-    rules:
-    - proto: "tcp"
-      ports: 22
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 22 (SSH)"
-    - proto: "tcp"
-      ports: 80
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 80 (http)"
-    - proto: "tcp"
-      ports: 443
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 443 (https)"
-    - proto: "tcp"
-      ports: 3389
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 3389 (rdp)"
-    - proto: "tcp"
-      ports: 8080
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 8080 (jboss)"
-    - proto: "tcp"
-      ports: 8443
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 8443 (vscode)"
-    - proto: "tcp"
-      ports: 8888
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 8888 (wetty)"
-    - proto: "tcp"
-      ports: 9090
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 9090 (cockpit)"
+    rules: "{{ ports_list_of_dicts }}"
     tags:
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
       rhel: "at-{{ workshop_prefix }}"
     state: present
+  register: result
+
+- debug:
+    var: result
 
 - name: Create Windows security group
   ec2_group:
@@ -152,22 +147,10 @@
     description: "SG for Windows hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
-    rules:
-    - proto: "tcp"
-      ports: 3389
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on TCP port 3389 (Remote Desktop)"
-    - proto: "udp"
-      ports: 3389
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on UDP port 3389 (Remote Desktop)"
-    - proto: "tcp"
-      ports: 5986
-      cidr_ip: 0.0.0.0/0
-      rule_desc: "allow all on port 5986 (WinRM HTTPS)"
+    rules: "{{ ports_list_of_dicts }}"
     tags:
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
       win: "at-{{ workshop_prefix }}"
     state: present
@@ -180,7 +163,7 @@
     tags:
       Name: "at-{{ workshop_prefix }}-subnet"
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
     wait: yes
   register: ec2_subnet
@@ -201,7 +184,7 @@
     tags:
       Name: "at-{{ workshop_prefix }}-route"
       username: "{{ local_user }}"
-      workshop: "dp"
+      workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
     state: present
   register: ec2_route
@@ -224,6 +207,12 @@
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
       rhel_admin: "at-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "at-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
     exact_count: 1
     count_tag: rhel_admin
   register: ec2_rhel_admin
@@ -243,6 +232,12 @@
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
       rhel: "at-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "at-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
     exact_count: "{{ rhel_count }}"
     count_tag: rhel
   register: ec2_rhel
@@ -262,6 +257,12 @@
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
       tower_rhel: "at-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "at-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
     exact_count: "{{ tower_rhel_count }}"
     count_tag: tower_rhel
   register: ec2_tower_rhel
@@ -291,6 +292,12 @@
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
       win: "at-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "at-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
     exact_count: "{{ win_count }}"
     count_tag: win
   register: ec2_win
@@ -315,6 +322,10 @@
   - "{{ ec2_rhel_admin.instances }}"
   - "{{ ec2_rhel.tagged_instances }}"
   - "{{ ec2_tower_rhel.tagged_instances }}"
+
+#---------------------------------------------------
+#  Ansible Hosts Creation
+#---------------------------------------------------
 
 - name: add RHEL hosts to groups
   add_host:
@@ -348,6 +359,48 @@
     regexp: ".*{{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }}.*"
   with_items:
   - "{{ ec2_rhel.tagged_instances }}"
+
+- name: create inventory list (win2016 hosts)
+  lineinfile:
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ item.public_ip }} {{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }} win2016.{{ item.ami_launch_index }}"
+    regexp: ".*{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}.*"
+  with_items:
+  - "{{ ec2_win.tagged_instances }}"
+
+- name: Template Ansible Hosts File
+  template:
+    dest: "{{ inventory_working_dir }}/hosts"
+    src: "hosts.j2"
+  when: execution is defined
+
+- name: Add tower hosts to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    insertafter: '^\[tower_rhel_nodes\]$'
+    regexp: "^{{ workshop_prefix }}.tower.{{ item.ami_launch_index }}.{{ domain_name }}"
+    line: "{{ workshop_prefix }}.tower.{{ item.ami_launch_index }}.{{ domain_name }} ansible_ssh_host={{ item.public_ip }} ansible_hosts={{ item.dns_name }} # {{ item.id }}"
+  loop: "{{ ec2_tower_rhel.tagged_instances }}"
+
+- name: Add node hosts to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    insertafter: '^\[rhel_nodes\]$'
+    regexp: "^{{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }}"
+    line: "{{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }} ansible_ssh_host={{ item.public_ip }} ansible_host={{ item.dns_name }} # {{ item.id }}"
+  loop: "{{ ec2_rhel.tagged_instances }}"
+
+- name: Add windows hosts to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    insertafter: '^\[win_nodes\]$'
+    regexp: "^{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
+    line: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }} ansible_ssh_host={{ item.public_ip }} ansible_host={{ item.dns_name }} # {{ item.id }}"
+  loop: "{{ ec2_win.tagged_instances }}"
+
+#---------------------------------------------------
+#  DNS
+#---------------------------------------------------
 
 - name: Create DNS records for RHEL admin
   route53:
@@ -413,14 +466,5 @@
     state: present
   loop: "{{ ec2_win.instances }}"
 #  ignore_errors: true
-
-#---------------------------------------------------
-#  Ansible Hosts Creation
-#---------------------------------------------------
-- name: Template Ansible Hosts File
-  template:
-    dest: "{{ inventory_working_dir }}/hosts"
-    src: "hosts.j2"
-  when: execution is defined
 
 ...
