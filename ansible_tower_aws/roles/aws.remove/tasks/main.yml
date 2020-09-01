@@ -160,6 +160,7 @@
   loop: "{{ win_instance_ids }}"
   loop_control:
     index_var: dns_idx
+  ignore_errors: true
 
 - name: Lookup existing RHEL admin DNS records
   route53:
@@ -171,6 +172,7 @@
   loop: "{{ admin_rhel_instance_ids }}"
   loop_control:
     index_var: dns_idx
+  ignore_errors: true
 
 - name: Lookup existing RHEL DNS records
   route53:
@@ -182,6 +184,7 @@
   loop: "{{ rhel_instance_ids }}"
   loop_control:
     index_var: dns_idx
+  ignore_errors: true
 
 - name: Lookup existing RHEL Tower DNS records
   route53:
@@ -193,6 +196,7 @@
   loop: "{{ tower_rhel_instance_ids }}"
   loop_control:
     index_var: dns_idx
+  ignore_errors: true
 
 
 #===============================================================================
