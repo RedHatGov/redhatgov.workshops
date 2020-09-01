@@ -10,17 +10,11 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env py
 {{ workshop_prefix }}.admin.{{ domain_name }} ansible_ssh_host={{ ec2_rhel_admin.instances[0].public_ip }}
 
 [tower_rhel_nodes]
-{% for n in range( tower_rhel_count|int ) %}
-{{ workshop_prefix }}.tower.{{ n }}.{{ domain_name }} ansible_ssh_host={{ ec2_tower_rhel.instances[n].public_ip }}
-{% endfor %}
 
 [tower_rhel_nodes:vars]
 ansible_ssh_private_key_file={{ ssh_key_path }}
 
 [rhel_nodes]
-{% for n in range( rhel_count|int ) %}
-{{ workshop_prefix }}.node.{{ n }}.{{ domain_name }} ansible_ssh_host={{ ec2_rhel.instances[n].public_ip }}
-{% endfor %}
 
 [rhel_nodes:vars]
 ansible_ssh_private_key_file={{ ssh_key_path }}

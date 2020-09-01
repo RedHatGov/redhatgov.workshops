@@ -1,0 +1,110 @@
+---
+- hosts: localhost
+
+  tasks:
+  - debug:
+      msg:
+        - "execute the following command to teardown the openshift cluster"
+        - "---------------------"
+        - "{{ openshift_build_path }}/openshift-install destroy cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
+    when: openshift_installer_type != "automation"
+
+# Below tasks run only in "automated" install type
+- hosts: localhost
+
+  tasks:
+  - name: Automation is removing the workshop
+    block:
+      - name: Get and set vars for the version of openshift
+        set_fact:
+          openshift_build_path:      "{{ ansible_env.PWD }}/build"
+
+      - name: create build directory for deployment artifacts
+        file:
+          path: "{{ openshift_build_path }}"
+          state: directory
+          mode: 0700
+
+      - name: get working directory
+        shell: "pwd"
+        register: pwd
+
+      - name: Create auth directory if it does not exist
+        file:
+          path: "{{ openshift_build_path }}/auth"
+          state: directory
+          mode: '0755'
+
+      - name: Check to see if workshop exists
+        aws_s3:
+          bucket: "{{ s3_bucket }}"
+          mode: list
+          prefix: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/"
+          max_keys: 500
+        register: s3output
+
+      - name: "Print the s3output object returned"
+        debug:
+          msg: "{{ s3output }}"
+
+      - name: Cluster does not exist or has already been deleted. Exiting.
+        fail:
+          msg: Cluster does not exist.
+        when: s3output.failed
+
+      - name: "Copy in the state files from S3"
+        aws_s3:
+          bucket: "{{ s3_bucket }}"
+          object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
+          dest: "{{ openshift_build_path }}/{{ item }}"
+          mode: get
+        with_items:
+          - "install-config.yaml.backup"
+          - "metadata.json"
+          - "openshift_version.txt"
+          - "terraform.aws.auto.tfvars"
+          - "terraform.tfstate"
+          - "terraform.tfvars.json"
+        ignore_errors: yes
+
+      - name: "Copy in kubeconfig"
+        aws_s3:
+          bucket: "{{ s3_bucket }}"
+          #      object: "/terraform/workshops/ocp4/{{ openshift_cluster_name }}/{{ item }}"
+          object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
+          dest: "{{ openshift_build_path }}/auth/{{ item }}"
+          mode: get
+        with_items:
+          - "kubeconfig"
+        ignore_errors: yes
+
+      - name: Get and set vars for the version of openshift
+        set_fact:
+          openshift_version: "{{ lookup('file', '{{ openshift_build_path }}/openshift_version.txt' ) }}"
+
+      - name: get working directory
+        shell: "pwd"
+        register: pwd
+
+      - name: download and extract openshift installer
+        unarchive:
+          src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift_version }}/openshift-install-linux-{{ openshift_version }}.tar.gz
+          dest: "{{ openshift_build_path }}"
+          remote_src: yes
+
+      - name: Run the un-install
+        shell: "{{ openshift_build_path }}/openshift-install destroy cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
+
+      - name: debug- mv s3 files to deleted folder
+        debug:
+          msg: "aws s3 mv --recursive s3://{{ s3_bucket }}/{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }} s3://{{ s3_bucket }}/{{ s3_prefix }}/deleted/{{ workshop_type }}/{{ openshift_cluster_name }} "
+
+      - name: Move S3 files to be deleted
+        shell: "aws s3 mv --recursive s3://{{ s3_bucket }}/{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }} s3://{{ s3_bucket }}/{{ s3_prefix }}/deleted/{{ workshop_type }}/{{ openshift_cluster_name }} "
+
+      - name: "Delete top level prefix"
+        aws_s3:
+          bucket: "{{ s3_bucket }}"
+          object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}"
+          mode: delobj
+    when: openshift_installer_type == "automation"

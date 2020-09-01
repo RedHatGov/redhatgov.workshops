@@ -1,0 +1,48 @@
+# Go to the following URL for a list of available OpenShift versions for installation
+# https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
+
+# Valid values are 'local', and 'automation' # 'automation' is intended for automated builds/deploys
+openshift_installer_type:               local
+
+# get installation files playbook variables
+openshift_version:                      4.4.17
+openshift_installer_path:               "{{ ansible_env.PWD }}"
+openshift_build_path:                   "{{ ansible_env.PWD }}/build"
+openshift_odo_version:                  1.2.1
+openshift_odo_path:                     /usr/local/bin/
+
+# openshift workshop user variables
+create_openshift_users:                 "True"
+openshift_cluster_admin_username:       labadmin
+openshift_cluster_admin_password:       "CHANGE_ME"
+openshift_user_count:                   20            # user1 through user{{ openshift_user_count }}
+openshift_user_password:                "CHANGE_ME"
+
+# install-config.yml variables
+aws_region:                             CHANGE_ME
+openshift_cluster_name:                 CHANGE_ME
+openshift_cluster_base_domain:          CHANGE_ME
+openshift_cluster_fqdn:                 "{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
+openshift_control_node_instance_type:   m5a.xlarge     # default = 4vCPUs / 16 GB RAM (i.e. m5a.xlarge)
+openshift_control_node_replicas:        3              # use a value of '3' only
+openshift_worker_node_instance_type:    m5a.2xlarge	   # default = 8 vCPUs / 32 GB RAM (i.e. m5a.2xlarge)
+openshift_worker_node_replicas:         3              # default = '3'  Node counts of =< 3 are valid
+openshift_install_pull_secret:          " {{ lookup('file', '{{ openshift_installer_path }}/pull-secret') }}"
+openshift_node_ssh_public_key:          "{{ lookup('file', '{{ openshift_build_path }}/{{ openshift_cluster_name }}-key.pub') }}"
+openshift_installer_log_level:          debug          # recommended log level options: info or debug
+
+# service mesh operator variables
+deploy_service_mesh:                    "False"
+deploy_service_mesh_workshop:           "False"
+elasticsearch_operator_version:         "{{ openshift_version | regex_replace('^(\d+)(\.\d+).*','\1\2') }}"
+jaegar_operator_version:                stable
+kiali_operator_version:                 stable
+servicemesh_operator_version:           stable
+keycloak_operator_version:              "v10.0.0"
+
+## Automation related variables
+## These get assembled to store OCP state in a bucket with a prefix like this:
+## s3://{{ s3_bucket }}/{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/stateFilesHere
+#s3_bucket:                              "myStateFilesBucket"
+#s3_prefix:                              "mycustom/path/to/state/files"
+#workshop_type:                          "ocp4"

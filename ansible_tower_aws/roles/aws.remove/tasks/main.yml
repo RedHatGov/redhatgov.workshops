@@ -115,7 +115,7 @@
   ec2_vpc_subnet_info:
     region: "{{ region }}"
     filters:
-      tag:workshop: "dp"
+      tag:workshop: "{{ workshop_name }}"
       tag:workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_subnet
 
@@ -128,7 +128,7 @@
   ec2_vpc_route_table_info:
     region: "{{ region }}"
     filters:
-      tag:workshop: "dp"
+      tag:workshop: "{{ workshop_name }}"
       tag:workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_route
 
@@ -141,7 +141,7 @@
   ec2_vpc_net_info:
     region: "{{ region }}"
     filters:
-      tag:workshop: "dp"
+      tag:workshop: "{{ workshop_name }}"
       tag:workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_vpc
 

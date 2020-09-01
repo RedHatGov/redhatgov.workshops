@@ -1,0 +1,151 @@
+---
+
+- name: Set default variables for automated build (facts)
+  set_fact:
+    openshift_installer_path:      "{{ ansible_env.PWD }}"
+    openshift_build_path:      "{{ ansible_env.PWD }}/build"
+  when: openshift_installer_type == "automation"
+
+- name: create build directory for deployment artifacts
+  file:
+    path: "{{ openshift_build_path }}"
+    state: directory
+    mode: 0700
+
+- name: Set binary type
+  set_fact:
+    openshift_binary_type: "mac"
+  when: ansible_os_family == "Darwin"
+
+- name: Set installer type
+  set_fact:
+    openshift_binary_type: "linux"
+  when: ansible_os_family != "Darwin"
+
+- name: download and extract openshift installer
+  unarchive:
+    src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift_version }}/openshift-install-{{ openshift_binary_type }}-{{ openshift_version }}.tar.gz
+    dest: "{{ openshift_build_path }}"
+    remote_src: yes
+
+- name: download and extract openshift oc cli tool
+  unarchive:
+    src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift_version }}/openshift-client-{{ openshift_binary_type }}-{{ openshift_version }}.tar.gz
+    dest: "{{ openshift_build_path }}"
+    remote_src: yes
+
+# Doing this because the naming of files is not consistent from the BU ("mac" vs "darwin")
+- name: Set binary installer type
+  set_fact:
+    openshift_binary_type: "darwin"
+  when: ansible_os_family == "Darwin"
+
+- name: extract openshift odo developer cli tool
+  unarchive:
+    src: https://mirror.openshift.com/pub/openshift-v4/clients/odo/v{{ openshift_odo_version }}/odo-{{ openshift_binary_type }}-amd64.tar.gz
+    dest: "{{ openshift_build_path }}"
+    remote_src: yes
+  when: openshift_installer_type != "automation"
+
+- name:  adding '+x' execute permissions because odo by default doesn't have execute
+  file:
+    path: "{{ openshift_build_path }}/odo"
+    mode: a+x
+  when: openshift_installer_type != "automation"
+
+- name: generate cluster ssh key pair
+  openssh_keypair:
+    path: "{{ openshift_build_path }}/{{ openshift_cluster_name }}-key"
+    size: 4096
+    type: rsa
+
+- name: Set ssh key fact
+  set_fact:
+    openshift_node_ssh_public_key: "{{ lookup('file', '{{ openshift_build_path }}/{{ openshift_cluster_name }}-key.pub') }}"
+
+- name: create openshift install-config.yaml file
+  template:
+    src: "install-config.yaml.j2"
+    dest: "{{ openshift_build_path }}/install-config.yaml"
+
+- name: backup install-config.yaml file as install-config.yaml.backup
+  copy:
+    src: "{{ openshift_build_path }}/install-config.yaml"
+    dest: "{{ openshift_build_path }}/install-config.yaml.backup"
+
+- name: Write OCP version to openshift_version.txt
+  copy: content="{{ openshift_version }}" dest="{{ openshift_build_path }}/openshift_version.txt"
+  when: openshift_installer_type == "automation"
+
+# Automation Componenets
+- name: Block to try and copy off installation files to S3
+  block:
+    - name: Check to see if workshop already exists
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        mode: list
+        prefix: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/"
+        max_keys: 500
+      register: s3output
+
+    - name: "Print the s3output object returned"
+      debug:
+        msg: "{{ s3output }}"
+
+    - name: Fail if cluster already exists with this name.
+      fail:
+        msg: Cluster already exists with this name
+      when: s3output.s3_keys|length != 0
+
+    - name: Installing the OCP cluster (this will take a while. ~60 minutes)
+      shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
+
+  always:
+    - name: Copying terraform state files to S3
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
+        src: "build/{{ item }}"
+        mode: put
+      with_items:
+        - "install-config.yaml.backup"
+        - "metadata.json"
+        - "openshift_version.txt"
+        - "terraform.aws.auto.tfvars"
+        - "terraform.tfstate"
+        - "terraform.tfvars.json"
+        - "{{ openshift_cluster_name}}-key.pub"
+      ignore_errors: yes
+
+    - name: Copy kubeconfig file to S3
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
+        src: "{{ openshift_build_path }}/auth/{{ item }}"
+        mode: put
+      with_items:
+        - "kubeconfig"
+        - "kubeadmin-password"
+      ignore_errors: yes
+
+    - name: Set facts for auth info
+      set_fact:
+        ocp_url: "https://console-openshift-console.apps.{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
+        openshift_cluster_fqdn: "{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
+
+    - name: create cluster admin and user accounts
+      include_role:
+        name: create_openshift_users
+      when: create_openshift_users
+
+    - name: Print OCP url
+      debug:
+        msg: "{{ ocp_url }}"
+  when: s3_bucket is defined and openshift_installer_type == "automation"
+
+- debug:
+    msg:
+      - "execute the following command to deploy the openshift cluster"
+      - "--------------------"
+      - "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
+  when: openshift_installer_type != "automation"

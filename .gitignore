@@ -39,3 +39,5 @@ ansible.cfg
 callback_plugins/
 inventory/ec2.ini
 inventory/terraform.py
+openshift4_aws/build/
+openshift4_aws/pull-secret

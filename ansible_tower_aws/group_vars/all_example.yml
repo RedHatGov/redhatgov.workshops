@@ -1,21 +1,23 @@
 # file: group_vars
-################################################################################
+###############################################################################
 #
 #                  ////IMPORTANT////
 #
 #      Prefixed to all resources for cleanup & identifcation.
-################################################################################
+###############################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "tower" # Workshop name - NO underscores!
+workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
+workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
-#jboss:                            "true" # when this is defined, configure JBoss/Maven
-graphical:                        "false" # when true, install a graphical desktop on the tower nodes
-beta:                             "true"  # when true, use beta respoitories
+jboss:                            false # when true, configure JBoss/Maven
+graphical:                        false # when true, install a graphical desktop on the tower nodes
+beta:                             true  # when true, use beta respoitories
 
-################################################################################
+###############################################################################
 # ANSIBLE ROLE KEY         |      VALUE
-################################################################################
+###############################################################################
 # aws                      |      deployment working dir 
 deploy_working_dir:               "{{ lookup('env','PWD') }}/.redhatgov"
 # aws                      |      AWS Route 53
@@ -25,24 +27,24 @@ zone_id:                          ""
 tower_rhel_count:                 "2"            # RHEL Ansible Tower node(s)
 rhel_count:                       "2"            # RHEL node(s)
 win_count:                        "0"            # Windows node(s)
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # AWS Region, configures ec2.ini too.  Supported are: us-east-[1,2],us-west-1,eu-central-1
 #region:                           "us-east-1"
 region:                           "us-east-2"
 #region:                           "us-west-1"
 #region:                           "eu-central-1"
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # AMI details
 #rhel_ver:                         "rhel7"
 rhel_ver:                         "rhel8"
 win_ver:                          "win2016"
 ebs_root_block_size:              50
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3.large"
 tower_instance_type:              "t3.large"
 rhel_instance_type:               "t3.small"
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                     true
 # subscription_manager     |      Red Hat Subscription via username & password
@@ -52,19 +54,41 @@ pool_id:                          ""
 # subscription_manager     |      Red Hat Subscription via activation keys
 rhsm_activationkey:               ""
 rhsm_org_id:                      ""
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # LetsEncrypt              |      email
 letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
-#-------------------------------------------------------------------------------
-# wetty                    |      password
+#------------------------------------------------------------------------------
+# console                  |      password
 workshop_password:                "" # Note that Windows 2016 requires 3 character classes and 10 characters
-rabbit_password:                  "" # Note that RabbitMQ password cannot have special characters
-#-------------------------------------------------------------------------------
-
-################################################################################
+#------------------------------------------------------------------------------
+# ports to open            |      Add any ports that you may need to this dict
+ports:
+  tcp:
+    22:
+    - "ssh"
+    80:
+    - "http"
+    443:
+    - "https"
+    3389:
+    - "rdp"
+    5986:
+    - "winrm https"
+    8080:
+    - "jboss"
+    8443:
+    - "vscode"
+    8888:
+    - "wetty"
+    9090:
+    - "cockpit"
+  udp: 
+#    53:
+#    - "dns"
+###############################################################################
 # ANSIBLE config           |      VALUE
-################################################################################
+###############################################################################
 # Dynamic Inventory 
 inventory_working_dir:            "{{ lookup('env','PWD') }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars
@@ -77,3 +101,4 @@ vpc_rhel_ids_path:                "{{ deploy_working_dir }}/{{ workshop_prefix }
 ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
 system_user:                      "ec2-user"    # AWS
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
+workshop_name:                    "tower" # the type of workshop being run
