@@ -52,15 +52,14 @@
     path: /usr/lib64/dbus-1/dbus-daemon-launch-helper
     state: touch
 
-- name: Install ansible.cfg and vimrc in home directory
+- name: Install vimrc in home directory
   copy:
-    src="{{ item.src }}"
-    dest="/home/{{ system_user }}/{{ item.dest }}"
-    owner="{{ system_user }}"
-    group="{{ system_user }}"
+    src: "{{ item.src }}"
+    dest: "/home/{{ system_user }}/{{ item.dest }}"
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
   with_items:
     - { src: "vimrc", dest: ".vimrc" }
-    - { src: "license", dest: "license" }
 
 - name: Copy over SSH Key to {{ system_user }} home
   copy: 
@@ -72,7 +71,8 @@
 
 - name: Template over ansible.cfg
   template:
-    dest="/home/{{ system_user }}/ansible.cfg"
-    src=ansible.cfg.j2  
-    owner="{{ system_user }}"
-    group="{{ system_user }}"
+    dest: "/home/{{ system_user }}/.ansible.cfg"
+    src: "ansible.cfg.j2"
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0644
