@@ -8,11 +8,13 @@
   template:
     src: aws_credentials_vault.yml.j2
     dest: "{{ deploy_working_dir }}/aws_credentials_vault.yml.pre"
+    mode: 0600
 
 - name: copy password file to working directory
   template:
     src: workshop-password.j2
     dest: "{{ deploy_working_dir }}/workshop-password"
+    mode: 0600
 
 - name: create encrypted credentials valult
   shell: "ansible-vault encrypt --vault-password-file {{ deploy_working_dir }}/workshop-password --output {{ deploy_working_dir }}/aws_credentials_vault.yml {{ deploy_working_dir }}/aws_credentials_vault.yml.pre"
@@ -28,6 +30,7 @@
   copy:
     src: "group_vars/all.yml"
     dest: "{{ deploy_working_dir }}/all.yml"
+    mode: 0644
 
 - name: remove AWS keys from staged file
   lineinfile:
