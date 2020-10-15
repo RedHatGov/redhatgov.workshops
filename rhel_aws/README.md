@@ -30,13 +30,13 @@ $ source ansible/bin/activate
 (ansible) $ mkdir src
 (ansible) $ cd src
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
 (ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_preload.yml 
+(ansible) $ ansible-playbook 2_load.yml 
 (ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
-(admin) $ cd src/ansible_tower_aws
+(admin) $ cd src/rhel_aws
 (admin) $ ansible-playbook 3_load.yml
 ```
 
@@ -57,7 +57,7 @@ $ source ansible/bin/activate
 (ansible) $ mkdir src
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
 (ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
@@ -79,7 +79,7 @@ $ source ansible/bin/activate
 (ansible) $ mkdir src
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
 (ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
@@ -93,7 +93,7 @@ $ sudo dnf -y install git python3-boto python3-boto3 ansible awscli
 $ aws configure # fill out at least your AWS API keys, other variables are optional
 $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 $ sed -i 's/env python/env python3/' inventory/hosts
-$ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+$ cd ~/src/redhatgov.workshops/rhel_aws/
 $ cp group_vars/all_example.yml group_vars/all.yml
 $ vim group_vars/all.yml # fill in all the required fields
 $ source env.sh
@@ -164,9 +164,9 @@ ansible-playbook 1_provision.yml
 #### Install packages and configure the newly provisioned nodes.
 
 ```
-ansible-playbook 2_preload.yml
+ansible-playbook 2_load.yml
 (login to admin node as ec2-user)
-cd ~/src/ansible_tower_aws)
+cd ~/src/rhel_aws)
 ansible-playbook 3_load.yml
 ```
 
