@@ -138,11 +138,11 @@
 #---------------------------------------------------
 - name: RHEL 8 tasks
   import_tasks: repos-rhel8.yml
-  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and not beta|bool
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and beta|default(False)==False
 
 - name: RHEL 8 beta tasks
   import_tasks: repos-rhel8beta.yml
-  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and beta|bool
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and beta|default(False)==True
 
 - name: RHEL 7 tasks
   import_tasks: repos-rhel7.yml
