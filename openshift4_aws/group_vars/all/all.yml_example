@@ -34,7 +34,7 @@ openshift_installer_log_level:          debug          # recommended log level o
 # service mesh operator variables
 deploy_service_mesh:                    "False"
 deploy_service_mesh_workshop:           "False"
-elasticsearch_operator_version:         "{{ openshift_version | regex_replace('^(\d+)(\.\d+).*','\1\2') }}"
+elasticsearch_operator_version:         "{{ openshift_version | regex_replace('^(\\d+)(\\.\\d+).*','\\1\\2') }}"
 jaegar_operator_version:                stable
 kiali_operator_version:                 stable
 servicemesh_operator_version:           stable
