@@ -31,6 +31,9 @@ openshift_install_pull_secret:          " {{ lookup('file', '{{ openshift_instal
 openshift_node_ssh_public_key:          "{{ lookup('file', '{{ openshift_build_path }}/{{ openshift_cluster_name }}-key.pub') }}"
 openshift_installer_log_level:          debug          # recommended log level options: info or debug
 
+# web terminal operator variables
+deploy_web_terminal:                    True
+
 # service mesh operator variables
 deploy_service_mesh:                    false
 deploy_service_mesh_workshop:           false
