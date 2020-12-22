@@ -60,4 +60,6 @@
 - name: delete kubeadmin
   shell: |
     {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username={{ openshift_cluster_admin_username }} --password={{ openshift_cluster_admin_password }} --insecure-skip-tls-verify
-    {{ openshift_build_path }}/oc delete secrets kubeadmin -n kube-system
+    {{ openshift_build_path }}/oc get secrets kubeadmin
+    {{ openshift_build_path }}/oc delete secrets kubeadmin -n kube-system || \
+    echo "kubeadm already deleted."

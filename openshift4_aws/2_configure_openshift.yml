@@ -1,5 +1,11 @@
 ---
 - hosts: localhost
+  module_defaults:
+    group/k8s:
+      host: "https://api.{{ openshift_cluster_fqdn }}:6443"
+      username: "{{ openshift_cluster_admin_username }}"
+      password: "{{ openshift_cluster_admin_password }}"
+      validate_certs: no
 
   vars:
     kubeadmin_password: "{{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
