@@ -30,17 +30,17 @@
       name: "{{ ansible_repo }}"
     when: not beta|default(False)
 
-  - name: Install base packages
-    become: yes
-    yum:
-      name:
-        - vim
-        - git
-        - ansible
-        - nano
-      state: latest
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and not cloud_access
 
-  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+- name: Install base packages
+  become: yes
+  yum:
+    name:
+      - vim
+      - git
+      - ansible
+      - nano
+    state: latest
 
 - name: Fake, if missing, the dbus-1 directory
   file:
