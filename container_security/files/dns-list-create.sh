@@ -5,12 +5,7 @@ export students=$2
 export domain=$3
 export workshop=$4
 
-#export students=2
-#export nodes=5
-#export domain=rhnaps.io
-#export workshop=jajcs
-
-export count=1 student=1 node=1
+export count=1 student=0 node=1
 
 while [ $count -lt `echo $nodes*$students+1 | bc` ]; do
   export mod=`echo $count%$nodes|bc`
