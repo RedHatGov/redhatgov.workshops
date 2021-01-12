@@ -69,6 +69,13 @@
   remote_user: ec2-user
   hosts: rhel_nodes
   tasks:
+    - name: Install required packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      loop:
+      - ansible
+      - git
     - name: Install a test SELinux log
       copy:
         src: testaudit
