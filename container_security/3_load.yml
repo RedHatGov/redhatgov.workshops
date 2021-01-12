@@ -12,13 +12,13 @@
         timeout: 300
       with_items:
         - "{{ groups.rhel_nodes }}"
-        - "{{ groups.tower_rhel_nodes }}"
+        - "{{ groups.bastion_rhel_nodes }}"
 
 - name: Configure repositories on all RHEL nodes
   become: yes
   remote_user: ec2-user
   hosts:
-    - tower_rhel_nodes
+    - bastion_rhel_nodes
     - rhel_nodes
   gather_facts: yes
   roles:
@@ -28,7 +28,7 @@
 - name: Configure epel on tower nodes
   become: yes
   remote_user: ec2-user
-  hosts: tower_rhel_nodes
+  hosts: bastion_rhel_nodes
   roles:
     - role: epel
 
@@ -36,7 +36,7 @@
   become: yes
   remote_user: ec2-user
   hosts:
-    - tower_rhel_nodes
+    - bastion_rhel_nodes
     - rhel_nodes
   gather_facts: no
   tasks:
@@ -57,7 +57,7 @@
 - name: Ensure python3-pip installed for powerline (RHEL 8)
   become: yes
   remote_user: ec2-user
-  hosts: tower_rhel_nodes
+  hosts: bastion_rhel_nodes
   gather_facts: no
   tasks:
     - package:
@@ -68,7 +68,7 @@
 - name: Configure software on nodes
   become: yes
   remote_user: ec2-user
-  hosts: tower_rhel_nodes
+  hosts: bastion_rhel_nodes
   gather_facts: no
   roles:
     - role: nodejs
@@ -94,7 +94,7 @@
 - name: Configure web console (RHEL 7)
   become: yes
   remote_user: ec2-user
-  hosts: tower_rhel_nodes
+  hosts: bastion_rhel_nodes
   gather_facts: no
   roles:
     - role: wetty
@@ -103,7 +103,7 @@
 - name: Configure web console (RHEL 8)
   become: yes
   remote_user: ec2-user
-  hosts: tower_rhel_nodes
+  hosts: bastion_rhel_nodes
   gather_facts: no
   roles:
     - role: cockpit
@@ -122,7 +122,7 @@
   become: yes
   remote_user: ec2-user
   hosts:
-    - tower_rhel_nodes
+    - bastion_rhel_nodes
     - rhel_nodes
   roles:
     - role: upgrade
@@ -131,7 +131,7 @@
   become: yes
   remote_user: ec2-user
   hosts:
-    - tower_rhel_nodes
+    - bastion_rhel_nodes
     - rhel_nodes
   gather_facts: yes
   roles:
@@ -161,7 +161,7 @@
   become: yes
   remote_user: ec2-user
   hosts:
-    - tower_rhel_nodes
+    - bastion_rhel_nodes
     - rhel_nodes
   gather_facts: yes
   tasks:

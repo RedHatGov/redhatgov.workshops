@@ -7,7 +7,7 @@
 ###############################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
-workshop_prefix:                  "tower" # Workshop name - NO underscores!
+workshop_prefix:                  "container" # Workshop name - NO underscores!
 workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
 workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
@@ -42,7 +42,7 @@ ebs_root_block_size:              50
 #------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3.large"
-tower_instance_type:              "t3.large"
+bastion_instance_type:            "t3.large"
 rhel_instance_type:               "t3.small"
 #------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access

@@ -60,10 +60,7 @@
   roles:
     - role: ansible
     - role: cockpit
-    - role: graphical
     - role: powerline
-    - role: vscode
-#    - role: wetty
     - role: upgrade
   tags: software
 

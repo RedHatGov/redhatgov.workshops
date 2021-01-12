@@ -9,9 +9,9 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env py
 [admin_rhel_node]
 {{ workshop_prefix }}.admin.{{ domain_name }} ansible_ssh_host={{ ec2_rhel_admin.instances[0].public_ip }}
 
-[tower_rhel_nodes]
+[bastion_rhel_nodes]
 
-[tower_rhel_nodes:vars]
+[bastion_rhel_nodes:vars]
 ansible_ssh_private_key_file={{ ssh_key_path }}
 
 [rhel_nodes]
@@ -33,6 +33,6 @@ ansible_port=5986
 ansible_winrm_server_cert_validation=ignore
 
 [all_nodes:children]
-tower_rhel_nodes
+bastion_rhel_nodes
 rhel_nodes
 win_nodes

@@ -89,3 +89,4 @@ system_user:                      "ec2-user"    # AWS
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
 workshop:                         "rhel8"
 workshop_name:                    "{{ workshop }}"
+workshop_abbrev:                  "r8" # the 2-letter abbreviation for the type of workshop being run

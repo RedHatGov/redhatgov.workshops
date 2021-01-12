@@ -10,7 +10,7 @@
     msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ regions[region][win_ver].ami }}"
 
 - debug:
-    var: tower_instance_type
+    var: bastion_instance_type
 
 - debug:
     var: rhel_instance_type
@@ -27,7 +27,7 @@
     subnet_id: ""
     vpc_id: ""
     admin_rhel_instance_ids: []
-    tower_rhel_instance_ids: []
+    bastion_rhel_instance_ids: []
     rhel_instance_ids: []
     rhel_group_id: ""
     win_instance_ids: []
@@ -47,18 +47,18 @@
       tag:rhel: "cs-{{ workshop_prefix }}"
   register: ec2_rhel
 
-- name: lookup running RHEL Tower instances
+- name: lookup running RHEL bastion instances
   ec2_instance_info:
     region: "{{ region }}"
     filters:
-      tag:tower_rhel: "cs-{{ workshop_prefix }}"
-  register: ec2_tower_rhel
+      tag:bastion_rhel: "cs-{{ workshop_prefix }}"
+  register: ec2_bastion_rhel
 
 - debug:
     var: ec2_rhel
 
 - debug:
-    var: ec2_tower_rhel
+    var: ec2_bastion_rhel
 
 - name: Append RHEL admin instances to list
   set_fact:
@@ -70,10 +70,10 @@
     rhel_instance_ids: "{{ rhel_instance_ids }} + [ '{{ item.instance_id }}' ]"
   with_items: "{{ ec2_rhel.instances }}"
 
-- name: Append RHEL Tower instances to list
+- name: Append RHEL bastion instances to list
   set_fact:
-    tower_rhel_instance_ids: "{{ tower_rhel_instance_ids }} + [ '{{ item.instance_id }}' ]"
-  with_items: "{{ ec2_tower_rhel.instances }}"
+    bastion_rhel_instance_ids: "{{ bastion_rhel_instance_ids }} + [ '{{ item.instance_id }}' ]"
+  with_items: "{{ ec2_bastion_rhel.instances }}"
 
 - name: lookup running Windows instances
   ec2_instance_info:
@@ -186,14 +186,14 @@
     index_var: dns_idx
   ignore_errors: true
 
-- name: Lookup existing RHEL Tower DNS records
+- name: Lookup existing RHEL bastion DNS records
   route53:
     state: get
     zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.tower.{{ dns_idx }}.{{ domain_name }}"
+    record: "{{ workshop_prefix }}.bastion.{{ dns_idx }}.{{ domain_name }}"
     type: CNAME
-  register: tower_rhel_rec
-  loop: "{{ tower_rhel_instance_ids }}"
+  register: bastion_rhel_rec
+  loop: "{{ bastion_rhel_instance_ids }}"
   loop_control:
     index_var: dns_idx
   ignore_errors: true
@@ -258,20 +258,20 @@
     type: "{{ item.set.type }}"
     value: "{{ item.set.value }}"
   when: item.set.record is defined
-  with_items: "{{ tower_rhel_rec.results }}"
+  with_items: "{{ bastion_rhel_rec.results }}"
 
 - name: Remove RHEL Tower instances
   ec2:
     key_name: "cs-{{ workshop_prefix }}-key"
     group: "cs-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
-    instance_type: "{{ tower_instance_type }}"
+    instance_type: "{{ bastion_instance_type }}"
     image: "{{ regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
-    instance_ids: "{{ tower_rhel_instance_ids }}"
+    instance_ids: "{{ bastion_rhel_instance_ids }}"
     state: absent
-  when: tower_rhel_instance_ids|length > 0
+  when: bastion_rhel_instance_ids|length > 0
     #  when: false
 
 - name: Remove RHEL admin instances
