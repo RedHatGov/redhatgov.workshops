@@ -1,0 +1,13 @@
+[Unit]
+Description=Ansible Workshop Example
+After=network.target
+
+[Service]
+Environment=NODE_PORT=8080
+Type=simple
+User=ec2-user
+ExecStart=/usr/bin/node /home/ec2-user/hello.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

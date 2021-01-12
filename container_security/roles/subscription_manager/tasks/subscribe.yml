@@ -1,0 +1,155 @@
+---
+#---------------------------------------------------
+# DNS Setup
+#---------------------------------------------------
+#- name: Add DNS entries for subscription
+#  blockinfile:
+#    path: /etc/hosts
+#    block: |
+#      209.132.183.44   xmlrpc.rhn.redhat.com
+#      23.204.148.218   content-xmlrpc.rhn.redhat.com
+#      209.132.183.49   subscription.rhn.redhat.com
+#      209.132.183.108  subscription.rhsm.redhat.com
+#      209.132.182.63   registry.access.redhat.com
+#      #209.132.182.33   repository.jboss.org
+#    marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+#    insertafter: EOF
+#  when: not cloud_access
+#  tags:
+#    - rhel
+
+#---------------------------------------------------
+# Key Installation
+#---------------------------------------------------
+- name: Import keys (rhel 6)
+#  shell: rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  rpm_key:
+    state: present
+    key: "{{ item }}"
+  with_items:
+    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+  tags:
+    - rhel
+
+- name: Import keys (rhel 7+)
+  shell: rpmkeys --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+# DISABLED BECAUSE IT IS SLOW, ACROSS MANY NODES
+#  rpm_key:
+#    state: present
+#    key: "{{ item }}"
+#  with_items:
+#    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+#    - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version > '6'
+  tags:
+    - rhel
+#---------------------------------------------------
+# Subscribe to RHN
+#---------------------------------------------------
+- name: Check RHN subscription status
+  command: subscription-manager status
+  register: sm_result
+  ignore_errors: True
+  when: not cloud_access
+  tags:
+    - rhel
+
+- debug:
+    var: cloud_access
+
+- debug:
+    var: rhsm_activationkey
+
+- debug:
+    var: rhsm_org_id
+
+- debug:
+    var: username
+
+- debug:
+    var: password
+
+- debug:
+    var: pool_id
+
+- debug:
+    var: cloud_access
+
+- debug:
+    var: sm_result
+
+- name: Remove RHUI client (RHEL 6)
+  package:
+    name: rh-amazon-rhui-client
+    state: absent
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+
+
+- name: Remove RHUI client (RHEL 8)
+  package:
+    name: rh-amazon-rhui-client
+    state: absent
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+- name: Subscribe to RHSM via activation key / org id
+  block:
+    - redhat_subscription:
+        activationkey: "{{ rhsm_activationkey }}"
+        org_id: "{{ rhsm_org_id }}"
+        force_register: true
+        state: present
+      register: actkey_result
+  rescue:
+    - name: Retrying subscription
+      redhat_subscription:
+        activationkey: "{{ rhsm_activationkey }}"
+        org_id: "{{ rhsm_org_id }}"
+        force_register: true
+        state: present
+      register: actkey_result
+  when: not cloud_access and sm_result.failed and not username
+  tags:
+    - rhel
+
+- name: Subscribe to RHSM via username/password/pool_id
+  block:
+    - redhat_subscription:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        pool: "{{ pool_id }}"
+        force_register: true
+        state: present
+  rescue:
+    - name: Retrying subscription
+      redhat_subscription:
+        username: "{{ username }}"
+        password: "{{ password }}"
+        pool: "{{ pool_id }}"
+        force_register: true
+        state: present
+  when: not cloud_access and sm_result.failed and not rhsm_activationkey
+  tags:
+    - rhel
+
+#---------------------------------------------------
+# Add Required Repositories
+#---------------------------------------------------
+- name: RHEL 8 tasks
+  import_tasks: repos-rhel8.yml
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and beta|default(False)==False
+
+- name: RHEL 8 beta tasks
+  import_tasks: repos-rhel8beta.yml
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and beta|default(False)==True
+
+- name: RHEL 7 tasks
+  import_tasks: repos-rhel7.yml
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- name: RHEL 6 tasks
+  import_tasks: repos-rhel6.yml
+  when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+
+...

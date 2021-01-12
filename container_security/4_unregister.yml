@@ -1,0 +1,33 @@
+# file: 3_unregister.yml
+---
+
+# Do not use with Cloud Access
+- name: Unregister Nodes 
+  become: yes
+  gather_facts: false
+  ignore_errors: true
+  hosts:
+    - tower_rhel_nodes
+    - rhel_nodes
+    - admin_rhel_node
+  remote_user: ec2-user
+  roles:
+    - role: unregister
+      when: NOSSH is undefined
+
+- name: Remove infrastructure
+  hosts: localhost
+  connection: local
+  roles:
+  - { role: aws.remove, tags: ["delete"] }
+  tasks:
+  - name: remove known_hosts entries
+    known_hosts:
+      name: "{{ item }}"
+      state: absent
+    with_flattened:
+      - "{{ groups['tower_rhel_nodes'] }}"
+      - "{{ groups['rhel_nodes'] }}"
+      - "{{ groups['admin_rhel_node'] }}"
+
+...
