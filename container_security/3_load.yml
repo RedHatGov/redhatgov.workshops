@@ -32,20 +32,6 @@
   roles:
     - role: epel
 
-- name: Remove Red Hat EAP packages
-  become: yes
-  remote_user: ec2-user
-  hosts:
-    - bastion_rhel_nodes
-    - rhel_nodes
-  gather_facts: no
-  tasks:
-    - package:
-        name: eap7-*
-        state: absent
-      when: jboss|bool
-      ignore_errors: yes
-
 - name: Configure repositories on nodes
   become: yes
   remote_user: ec2-user
@@ -75,12 +61,6 @@
     - role: ansible.tower
     - role: system-user
     - role: powerline
-    - role: vscode
-      when: graphical|bool
-    - role: graphical
-      when: graphical|bool
-    - role: code-server
-      code_pass: "{{ workshop_password }}"
   tasks:
     - name: push out student templates
       copy:
@@ -108,15 +88,6 @@
   roles:
     - role: cockpit
       when: rhel_ver == 'rhel8'
-
-- name: Stage Maven POMs
-  become: yes
-  remote_user: ec2-user
-  hosts: rhel_nodes
-  gather_facts: yes
-  roles:
-    - role: poms
-      when: jboss|bool
 
 - name: Upgrade packages
   become: yes
