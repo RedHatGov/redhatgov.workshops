@@ -6,10 +6,18 @@
     src: "{{ role_path }}/files/web-terminal-operator.yml"
     dest: "{{ openshift_build_path }}/web-terminal-operator.yml"
 
+- name: template web cli idle timeout configmap
+  template:
+    src: "cli-timeout.yaml.j2"
+    dest: "{{ openshift_build_path }}/cli-timeout.yaml"
+
 - name: login to cluster
   k8s_auth:
     state: present
   register: k8s_auth_results
+
+- name: apply modified web cli idle timeout configmap
+  shell: "{{ openshift_build_path }}/oc apply -f {{ openshift_build_path }}/cli-timeout.yaml"
 
 - name: install operators required for web terminal
   k8s:

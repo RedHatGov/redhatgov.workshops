@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  devworkspace.idle_timeout: {{ openshift_webcli_idle_timeout }}
+  devworkspace.routing.cluster_host_suffix: {{ openshift_cluster_fqdn }}
+kind: ConfigMap
+metadata:
+  name: devworkspace-controller
+  namespace: openshift-operators
