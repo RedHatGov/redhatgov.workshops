@@ -1,15 +1,5 @@
 ---
-- hosts: localhost
-
-  tasks:
-  - debug:
-      msg:
-        - "execute the following command to teardown the openshift cluster"
-        - "---------------------"
-        - "{{ openshift_build_path }}/openshift-install destroy cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
-    when: openshift_installer_type != "automation"
-
-# Below tasks run only in "automated" install type
+# Tasks when openshift_installer_type = "automated"
 - hosts: localhost
 
   tasks:
@@ -108,3 +98,14 @@
           object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}"
           mode: delobj
     when: openshift_installer_type == "automation"
+
+# tasks executed when the openshift_installer_type != "automation" - (i.e. installer_type "local")
+- hosts: localhost
+
+  tasks:
+  - debug:
+      msg:
+        - "execute the following command to teardown the openshift cluster"
+        - "---------------------"
+        - "{{ openshift_build_path }}/openshift-install destroy cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
+    when: openshift_installer_type != "automation"
