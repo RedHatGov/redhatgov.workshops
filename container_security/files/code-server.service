@@ -1,0 +1,14 @@
+[Unit]
+Description=code-server
+
+[Service]
+Restart=always
+User=ec2-user
+Group=ec2-user
+ExecStartPre=/usr/bin/podman pod rm code-server-deployment-pod-0 -f -i
+ExecStart=/usr/bin/podman play kube /home/ec2-user/build/code-server.yml
+ExecStop=/usr/bin/podman pod rm code-server-deployment-pod-0 -f -i
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

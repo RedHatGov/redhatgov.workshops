@@ -25,10 +25,11 @@
   - set_fact: 
       ansible_repo: "{{ result.stdout }}"
 
-  - name: Enable Ansible repo
-    rhsm_repository:
-      name: "{{ ansible_repo }}"
-    when: not beta|default(False)
+  # ansible has migrated to epel
+#  - name: Enable Ansible repo
+#    rhsm_repository:
+#      name: "{{ ansible_repo }}"
+#    when: not beta|default(False)
 
   - name: Install base packages
     become: yes

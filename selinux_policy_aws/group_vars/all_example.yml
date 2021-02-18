@@ -7,9 +7,12 @@
 ################################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
-workshop_prefix:                  "selinux"
+workshop_prefix:                  "selinux" # Workshop name - NO underscores!
+workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
+workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
-graphical:                        "false" # when true, install a graphical desktop on the tower nodes
+beta:                             true  # when true, use beta respoitories
+graphical:                        false # when true, install a graphical desktop on the tower nodes
 
 ################################################################################
 # ANSIBLE ROLE KEY         |      VALUE
@@ -20,32 +23,22 @@ deploy_working_dir:               "{{ lookup('env','PWD') }}/.redhatgov"
 domain_name:                      ""
 zone_id:                          ""
 # aws                      |      AWS Node Counts
+tower_rhel_count:                 "0"            # RHEL Ansible Tower node(s)
 rhel_count:                       "2"            # RHEL node(s)
 win_count:                        "0"            # Windows node(s)
-region:                           "us-east-2"    # AWS Region, configures ec2.ini too
+#------------------------------------------------------------------------------
+# AWS Region, configures ec2.ini too.  Supported are: us-east-[1,2],us-west-1,eu-central-1
+#region:                           "us-east-1"
+region:                           "us-east-2"
+#region:                           "us-west-1"
+#region:                           "eu-central-1"
+#------------------------------------------------------------------------------
+# AMI details
+#rhel_ver:                         "rhel7"
+rhel_ver:                         "rhel8"
+win_ver:                          "win2016"
 ebs_root_block_size:              50
-# aws.infra                |      AWS AMI IDs
-#===============================================================================
-# us-east-1
-# rhel_ami_id:                "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-# rhel_ami_id:                "ami-0240b09539b9692a0" # RHEL-7.6_HVM_GA-20190128-x86_64-0-Access2-GP2
-# rhel_ami_id:                "ami-0729967d6d95d8317" # RHEL-8.0.0_HVM-20190426-x86_64-1-Access2-GP2
-# win_ami_id:                 "ami-08bf5f54919fada4a" # Windows_Server-2016-English-Full-Base-2020.03.11
-#-------------------------------------------------------------------------------
-# us-east-2
-# rhel_ami_id:                "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-# rhel_ami_id:                "ami-0ee3b6d31319e5fde" # RHEL-7.6_HVM_GA-20190128-x86_64-0-Access2-GP2
-# rhel_ami_id:                "ami-0bc2bdfd487d3ae8d" # RHEL-8.0.0_HVM-20190426-x86_64-1-Access2-GP2
-# rhel_ami_id:                "ami-0e4deb8e4a0859d29" # RHEL-8.0.0_HVM-20190520-x86_64-1-Hourly2-GP2
-# win_ami_id:                 "ami-0148f346905f051c8" # Windows_Server-2016-English-Full-Base-2020.03.11
-#-------------------------------------------------------------------------------
-# eu-central-1
-# rhel_ami_id:                "ami-07d3f0705bebac978" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-# rhel_ami_id:                "ami-0af1378dc29c40afb" # RHEL-7.6_HVM_GA-20190128-x86_64-0-Access2-GP2
-rhel_ami_id:                "ami-08093a8d716390c86" # RHEL-8.0.0_HVM-20190426-x86_64-1-Access2-GP2
-# rhel_ami_id:                "ami-00c2eba4743a92ce9" # RHEL-8.0.0_HVM-20190520-x86_64-1-Hourly2-GP2
-win_ami_id:                 "ami-0a3c6a5f1f89db2f8" # Windows_Server-2016-English-Full-Base-2020.03.11
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3.large"
 tower_instance_type:              "t3.large"
@@ -65,11 +58,34 @@ rhsm_org_id:                      ""
 letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
 #-------------------------------------------------------------------------------
-# wetty                    |      password
+# console                  |      password
 workshop_password:                "" # Note that Windows 2016 requires 3 character classes and 10 characters
-#-------------------------------------------------------------------------------
-
-################################################################################
+#------------------------------------------------------------------------------
+# ports to open            |      Add any ports that you may need to this dict
+ports:
+  tcp:
+    22:
+    - "ssh"
+    80:
+    - "http"
+    443:
+    - "https"
+    3389:
+    - "rdp"
+    5986:
+    - "winrm https"
+    8080:
+    - "jboss"
+    8443:
+    - "vscode"
+    8888:
+    - "wetty"
+    9090:
+    - "cockpit"
+  udp:
+#    53:
+#    - "dns"
+###############################################################################
 # ANSIBLE config           |      VALUE
 ################################################################################
 # Dynamic Inventory 
@@ -83,5 +99,6 @@ vpc_subnet_path:                  "{{ deploy_working_dir }}/{{ workshop_prefix }
 vpc_rhel_ids_path:                "{{ deploy_working_dir }}/{{ workshop_prefix }}-vpc_rhel_ids"
 ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
 system_user:                      "ec2-user"    # AWS
-local_user:                       "{{ ansible_env.USERNAME }}" # on RHEL/Fedora
-# local_user:                       "{{ ansible_env.USER }}" # on Mac OS X
+local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
+workshop_name:                    "selinux" # the type of workshop being run
+workshop_abbrev:                  "se" # the 2-letter abbreviation for the type of workshop being run

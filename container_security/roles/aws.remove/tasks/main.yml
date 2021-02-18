@@ -1,0 +1,349 @@
+---
+# tasks file for roles/aws.remove
+
+- name: RHEL AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ regions[region][rhel_ver].ami }}"
+
+- name: Windows AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ regions[region][win_ver].ami }}"
+
+- debug:
+    var: bastion_instance_type
+
+- debug:
+    var: rhel_instance_type
+
+- debug:
+    var: win_instance_type
+
+#===============================================================================
+#  Search and record IDs
+#===============================================================================
+- name: Initialize an empty list for our strings
+  set_fact:
+    route_id: ""
+    subnet_id: ""
+    vpc_id: ""
+    admin_rhel_instance_ids: []
+    bastion_rhel_instance_ids: []
+    rhel_instance_ids: []
+    rhel_group_id: ""
+    win_instance_ids: []
+    win_group_id: ""
+
+- name: lookup running RHEL admin instances
+  ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      tag:rhel_admin: "cs-{{ workshop_prefix }}"
+  register: ec2_rhel_admin
+
+- name: lookup running RHEL instances
+  ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      tag:rhel: "cs-{{ workshop_prefix }}"
+  register: ec2_rhel
+
+- name: lookup running RHEL bastion instances
+  ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      tag:bastion_rhel: "cs-{{ workshop_prefix }}"
+  register: ec2_bastion_rhel
+
+- debug:
+    var: ec2_rhel
+
+- debug:
+    var: ec2_bastion_rhel
+
+- name: Append RHEL admin instances to list
+  set_fact:
+    admin_rhel_instance_ids: "{{ admin_rhel_instance_ids }} + [ '{{ item.instance_id }}' ]"
+  with_items: "{{ ec2_rhel_admin.instances }}"
+
+- name: Append RHEL instances to list
+  set_fact:
+    rhel_instance_ids: "{{ rhel_instance_ids }} + [ '{{ item.instance_id }}' ]"
+  with_items: "{{ ec2_rhel.instances }}"
+
+- name: Append RHEL bastion instances to list
+  set_fact:
+    bastion_rhel_instance_ids: "{{ bastion_rhel_instance_ids }} + [ '{{ item.instance_id }}' ]"
+  with_items: "{{ ec2_bastion_rhel.instances }}"
+
+- name: lookup running Windows instances
+  ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      tag:win: "cs-{{ workshop_prefix }}"
+  register: ec2_win
+
+- name: Append Windows instances to list`
+  set_fact:
+    win_instance_ids: "{{ win_instance_ids }} + [ '{{ item.instance_id }}' ]"
+  with_items: "{{ ec2_win.instances }}"
+
+- name: lookup running windows security groups
+  ec2_group_info:
+    region: "{{ region }}"
+    filters:
+      tag:win: "cs-{{ workshop_prefix }}"
+  register: ec2_win_grp
+
+- name: Record Windows security group ID
+  set_fact:
+    win_group_id: "{{ ec2_win_grp.security_groups[0].group_id }}"
+  when: ec2_win_grp.security_groups|length > 0
+
+- name: lookup running rhel security groups
+  ec2_group_info:
+    region: "{{ region }}"
+    filters:
+      tag:rhel: "cs-{{ workshop_prefix }}"
+  register: ec2_rhel_grp
+
+- name: Record RHEL security group ID
+  set_fact:
+    rhel_group_id: "{{ ec2_rhel_grp.security_groups[0].group_id }}"
+  when: ec2_rhel_grp.security_groups|length > 0
+
+- name: lookup running subnets
+  ec2_vpc_subnet_info:
+    region: "{{ region }}"
+    filters:
+      tag:workshop: "{{ workshop_name }}"
+      tag:workshop_prefix: "{{ workshop_prefix }}"
+  register: ec2_subnet
+
+- name: Record subnet ID
+  set_fact:
+    subnet_id: "{{ ec2_subnet.subnets[0].subnet_id }}"
+  when: ec2_subnet.subnets|length > 0
+
+- name: lookup running vpc route tables
+  ec2_vpc_route_table_info:
+    region: "{{ region }}"
+    filters:
+      tag:workshop: "{{ workshop_name }}"
+      tag:workshop_prefix: "{{ workshop_prefix }}"
+  register: ec2_route
+
+- name: Record route table ID 
+  set_fact:
+    route_id: "{{ ec2_route.route_tables[0].id }}"
+  when: ec2_route.route_tables|length > 0
+
+- name: lookup running vpcs
+  ec2_vpc_net_info:
+    region: "{{ region }}"
+    filters:
+      tag:workshop: "{{ workshop_name }}"
+      tag:workshop_prefix: "{{ workshop_prefix }}"
+  register: ec2_vpc
+
+- name: Record VPC ID
+  set_fact:
+    vpc_id: "{{ ec2_vpc.vpcs[0].id }}"
+  when: ec2_vpc.vpcs|length > 0
+
+- name: Lookup existing Windows DNS records
+  route53:
+    state: get
+    zone: "{{ domain_name }}"
+    record: "{{ workshop_prefix }}.win2016.{{ dns_idx }}.{{ domain_name }}"
+    type: CNAME
+  register: win_rec
+  loop: "{{ win_instance_ids }}"
+  loop_control:
+    index_var: dns_idx
+  ignore_errors: true
+
+- name: Lookup existing RHEL admin DNS records
+  route53:
+    state: get
+    zone: "{{ domain_name }}"
+    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
+    type: CNAME
+  register: admin_rhel_rec
+  loop: "{{ admin_rhel_instance_ids }}"
+  loop_control:
+    index_var: dns_idx
+  ignore_errors: true
+
+- name: Lookup existing RHEL DNS records
+  route53:
+    state: get
+    zone: "{{ domain_name }}"
+    record: "{{ workshop_prefix }}.node.{{ dns_idx }}.{{ domain_name }}"
+    type: CNAME
+  register: rhel_rec
+  loop: "{{ rhel_instance_ids }}"
+  loop_control:
+    index_var: dns_idx
+  ignore_errors: true
+
+- name: Lookup existing RHEL bastion DNS records
+  route53:
+    state: get
+    zone: "{{ domain_name }}"
+    record: "{{ workshop_prefix }}.bastion.{{ dns_idx }}.{{ domain_name }}"
+    type: CNAME
+  register: bastion_rhel_rec
+  loop: "{{ bastion_rhel_instance_ids }}"
+  loop_control:
+    index_var: dns_idx
+  ignore_errors: true
+
+
+#===============================================================================
+#  Deprovisioning
+#===============================================================================
+
+- name: Remove existing Windows DNS records
+  route53:
+    state: absent
+    zone: "{{ domain_name }}"
+    record: "{{ item.set.record }}"
+    ttl: "{{ item.set.ttl }}"
+    type: "{{ item.set.type }}"
+    value: "{{ item.set.value }}"
+  when: item.set.record is defined
+  with_items: "{{ win_rec.results }}"
+
+- name: Remove Windows instances
+  ec2:
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-win-sg"
+    region: "{{ region }}"
+    instance_type: "{{ win_instance_type }}"
+    image: "{{ regions[region][win_ver].ami }}"
+    vpc_subnet_id: "{{ subnet_id }}"
+    wait: true
+    instance_ids: "{{ win_instance_ids }}"
+    state: absent
+  when: win_instance_ids|length > 0
+
+- name: Remove existing RHEL admin DNS records
+  route53:
+    state: absent
+    zone: "{{ domain_name }}"
+    record: "{{ item.set.record }}"
+    ttl: "{{ item.set.ttl }}"
+    type: "{{ item.set.type }}"
+    value: "{{ item.set.value }}"
+  when: item.set.record is defined
+  with_items: "{{ admin_rhel_rec.results }}"
+
+- name: Remove existing RHEL DNS records
+  route53:
+    state: absent
+    zone: "{{ domain_name }}"
+    record: "{{ item.set.record }}"
+    ttl: "{{ item.set.ttl }}"
+    type: "{{ item.set.type }}"
+    value: "{{ item.set.value }}"
+  when: item.set.record is defined
+  with_items: "{{ rhel_rec.results }}"
+
+- name: Remove existing RHEL Tower DNS records
+  route53:
+    state: absent
+    zone: "{{ domain_name }}"
+    record: "{{ item.set.record }}"
+    ttl: "{{ item.set.ttl }}"
+    type: "{{ item.set.type }}"
+    value: "{{ item.set.value }}"
+  when: item.set.record is defined
+  with_items: "{{ bastion_rhel_rec.results }}"
+
+- name: Remove RHEL Tower instances
+  ec2:
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ bastion_instance_type }}"
+    image: "{{ regions[region][rhel_ver].ami }}"
+    vpc_subnet_id: "{{ subnet_id }}"
+    wait: true
+    instance_ids: "{{ bastion_rhel_instance_ids }}"
+    state: absent
+  when: bastion_rhel_instance_ids|length > 0
+    #  when: false
+
+- name: Remove RHEL admin instances
+  ec2:
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ rhel_instance_type }}"
+    image: "{{ regions[region][rhel_ver].ami }}"
+    vpc_subnet_id: "{{ subnet_id }}"
+    wait: true
+    instance_ids: "{{ admin_rhel_instance_ids }}"
+    state: absent
+  when: admin_rhel_instance_ids|length > 0
+
+- name: Remove RHEL instances
+  ec2:
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ rhel_instance_type }}"
+    image: "{{ regions[region][rhel_ver].ami }}"
+    vpc_subnet_id: "{{ subnet_id }}"
+    wait: true
+    instance_ids: "{{ rhel_instance_ids }}"
+    state: absent
+  when: rhel_instance_ids|length > 0
+
+- name: Delete VPC route table
+  ec2_vpc_route_table:
+    region: "{{ region }}"
+    vpc_id: "{{ vpc_id }}"
+    lookup: id
+    route_table_id: "{{ route_id }}"
+    state: absent
+
+- name: Delete public subnet
+  ec2_vpc_subnet:
+    region: "{{ region }}"
+    cidr: "10.0.2.0/24"
+    vpc_id: "{{ vpc_id }}"
+    state: absent
+
+- name: Delete Windows security group
+  ec2_group:
+    name: "cs-{{ workshop_prefix }}-win-sg"
+    region: "{{ region }}"
+    state: absent
+
+- name: Delete RHEL security group
+  ec2_group:
+    name: "cs-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    state: absent
+
+- name: Delete VPC internet gateway
+  ec2_vpc_igw:
+    region: "{{ region }}"
+    vpc_id: "{{ vpc_id }}"
+    state: absent
+
+- name: Delete VPC
+  ec2_vpc_net:
+    name: "cs-{{ workshop_prefix }}-vpc"
+    region: "{{ region }}"
+    cidr_block: "10.0.0.0/16"
+    state: absent
+
+- name: Delete key
+  ec2_key:
+    name: "cs-{{ workshop_prefix }}-key"
+    region: "{{ region }}"
+    state: absent
+
+...

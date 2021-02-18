@@ -1,0 +1,196 @@
+# file: 2_load.yml
+---
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.rhel_nodes }}"
+        - "{{ groups.bastion_rhel_nodes }}"
+
+- name: Configure repositories on all RHEL nodes
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - bastion_rhel_nodes
+    - rhel_nodes
+  gather_facts: yes
+  roles:
+    - role: subscription_manager 
+    - role: firewalld
+
+- name: Configure epel on tower nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: bastion_rhel_nodes
+  roles:
+    - role: epel
+
+- name: Configure repositories on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: le_node
+  gather_facts: no
+  roles:
+    - role: LetsEncrypt
+    
+- name: Ensure python3-pip installed for powerline (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: bastion_rhel_nodes
+  gather_facts: no
+  tasks:
+    - package:
+        name: python3-pip
+        state: latest
+      when: rhel_ver == 'rhel8'    
+
+- name: Configure software on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: bastion_rhel_nodes
+  gather_facts: no
+  roles:
+    - role: nodejs
+    - role: ansible.tower
+    - role: system-user
+    - role: powerline
+  tasks:
+    - name: push out student templates
+      copy:
+        src: "{{ item }}"
+        dest: "~{{ system_user }}/{{ item }}"
+        mode: 0644
+      with_items:
+      - "hello.js"
+      - "hello.service"
+
+- name: Configure web console (RHEL 7)
+  become: yes
+  remote_user: ec2-user
+  hosts: bastion_rhel_nodes
+  gather_facts: no
+  roles:
+    - role: wetty
+      when: rhel_ver == 'rhel7'
+
+- name: Configure web console (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: bastion_rhel_nodes
+  gather_facts: no
+  roles:
+    - role: cockpit
+      when: rhel_ver == 'rhel8'
+
+- name: Upgrade packages
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - bastion_rhel_nodes
+    - rhel_nodes
+  roles:
+    - role: upgrade
+
+- name: Re-enable SCL repo when upgrade disables it
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - bastion_rhel_nodes
+    - rhel_nodes
+  gather_facts: yes
+  roles:
+    - role: subscription_manager 
+
+- name: Open ports 80,443 on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+    - name: open firewalld services
+      firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+      with_items:
+      - 'http'
+      - 'https'
+    - name: restart service
+      service:
+        name: firewalld
+        state: reloaded
+
+- name: Changes for container security
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - bastion_rhel_nodes
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+    # note: add mapping of 2 nodes -> 1 tower with nodes in /etc/hosts
+    - name: copy ssh key for root
+      copy:
+        src: "{{ ssh_key_path }}"
+        dest: "~root/.ssh/id_rsa"
+        mode: 0600
+    - name: copy ssh key for user
+      copy:
+        src: "{{ ssh_key_path }}"
+        dest: "~{{ system_user }}/.ssh/id_rsa"
+        mode: 0600
+      become: no
+    - name: install required software
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+      - unzip
+      - bash-completion
+      - tmux
+      - wget
+      - git
+      - vim-enhanced
+      - at
+      - podman
+      - buildah
+      - skopeo
+      - httpd-tools
+      - bind-utils
+      - nano
+      - kernel-headers
+      - setroubleshoot
+      - tree
+      - bc
+      - curl
+    - name: copy files
+      copy:
+        src: files
+        dest: ~ec2-user
+      become: no
+    - name: copy templates
+      template:
+        src: ssl_cert_cnf_template.j2
+        dest: ~ec2-user/files/nodes/registry-files/gen-certs/myserver.cnf
+      become: no
+    - name: open firewalld ports
+      firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        state: enabled
+      with_items:
+      - '5000/tcp'
+    - name: restart service
+      service:
+        name: firewalld
+        state: reloaded
+
+...

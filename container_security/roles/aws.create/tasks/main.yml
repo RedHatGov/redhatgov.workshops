@@ -1,0 +1,482 @@
+---
+# tasks file for roles/aws.create
+#===============================================================================
+#  Provisioning
+#===============================================================================
+
+- name: set RHEL AMI to use
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].ami }}"
+  when: not beta|bool
+
+- name: set RHEL AMI to use (beta)
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
+  when: beta|bool
+
+- name: RHEL AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami }}"
+
+- name: Windows AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ regions[region][win_ver].ami }}"
+
+- name: create DNS name list
+  shell: "files/dns-list-create.sh {{ student_nodes_count }} {{ student_count }} {{ domain_name }} {{ workshop_prefix }}"
+  register: dns_name_list
+
+- debug:
+    var: dns_name_list
+
+#---------------------------------------------------
+#  Deployment directory creation
+#---------------------------------------------------
+- name: Make temporary location to run deployment
+  file:
+    path: "{{ deploy_working_dir }}"
+    state: directory
+
+#---------------------------------------------------
+#  WinRM templating
+#---------------------------------------------------
+- name: Template Windows WinRM configuration
+  template:
+    dest: "{{ winrm_path }}"
+    src: "winrm.txt.j2"
+
+#---------------------------------------------------
+#  EC2 INI Creation
+#---------------------------------------------------
+- name: Template EC2 INI File
+  template: dest="{{ inventory_working_dir }}/ec2.ini"  src=ec2.ini.j2
+  when: execution is defined
+
+#---------------------------------------------------
+#  SSH Key
+#---------------------------------------------------
+- name: Create EC2 keypair
+  ec2_key:
+    name: "cs-{{ workshop_prefix }}-key"
+    region: "{{ region }}"
+    state: present
+  register: ec2_key
+
+- debug:
+    var: ec2_key
+
+- name: Create ssh keypair
+  copy:
+    content: "{{ ec2_key.key.private_key }}\n"
+    dest: "{{ ssh_key_path }}"
+    mode: 0400
+  when: ec2_key.changed
+
+#---------------------------------------------------
+#  Create AWS objects
+#---------------------------------------------------
+- name: Create VPC
+  ec2_vpc_net:
+    name: "cs-{{ workshop_prefix }}-vpc"
+    region: "{{ region }}"
+    cidr_block: "10.0.0.0/16"
+    dns_hostnames: yes
+    dns_support: yes
+    tags:
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    state: present
+  register: ec2_vpc
+
+- debug:
+    var: ec2_vpc
+
+- name: Create VPC internet gateway
+  ec2_vpc_igw:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    state: present
+    tags:
+      Name: "cs-{{ workshop_prefix }}-igw"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+  register: ec2_igw
+
+- debug:
+    var: ec2_igw
+
+
+- set_fact:
+    ports_list_of_dicts: |
+        {% set res = [] -%}
+        {% if ports.tcp != None %}
+        {% for key in ports.tcp.keys() -%}
+           {% for value in ports.tcp[key] -%}
+            {% set ignored = res.extend([{ 'proto': 'tcp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+           {%- endfor %}
+        {%- endfor %}
+        {%- endif %}
+        {% if ports.udp != None %}
+        {% for key in ports.udp.keys() -%}
+           {% for value in ports.udp[key] -%}
+            {% set ignored = res.extend([{ 'proto': 'udp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+           {%- endfor %}
+        {%- endfor %}
+        {%- endif %}
+        {{ res }}
+
+- debug:
+    var: ports_list_of_dicts
+
+- name: Create RHEL security group
+  ec2_group:
+    name: "cs-{{ workshop_prefix }}-rhel-sg"
+    description: "SG for RHEL hosts"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    rules: "{{ ports_list_of_dicts }}"
+    tags:
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      rhel: "cs-{{ workshop_prefix }}"
+    state: present
+  register: result
+
+- debug:
+    var: result
+
+- name: Create Windows security group
+  ec2_group:
+    name: "cs-{{ workshop_prefix }}-win-sg"
+    description: "SG for Windows hosts"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    rules: "{{ ports_list_of_dicts }}"
+    tags:
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      win: "cs-{{ workshop_prefix }}"
+    state: present
+
+- name: Create public subnet
+  ec2_vpc_subnet:
+    cidr: "10.0.2.0/24"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    tags:
+      Name: "cs-{{ workshop_prefix }}-subnet"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    wait: yes
+  register: ec2_subnet
+
+- debug:
+    var: ec2_subnet
+
+- name: Create VPC route table
+  ec2_vpc_route_table:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    subnets:
+      - "{{ ec2_subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ ec2_igw.gateway_id }}"
+    lookup: tag
+    tags:
+      Name: "cs-{{ workshop_prefix }}-route"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    state: present
+  register: ec2_route
+
+- debug:
+    var: ec2_route
+
+- name: Create RHEL admin host
+  ec2:
+    assign_public_ip: yes
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ rhel_instance_type }}"
+    image: "{{ rhel_ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    wait: true
+    instance_tags:
+      Name: "cs-{{ workshop_prefix }}-admin"
+      username: "{{ local_user }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      rhel_admin: "cs-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
+    exact_count: 1
+    count_tag: rhel_admin
+  register: ec2_rhel_admin
+
+- name: Create RHEL instances
+  ec2:
+    assign_public_ip: yes
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ rhel_instance_type }}"
+    image: "{{ rhel_ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    wait: true
+    instance_tags:
+      Name: "cs-{{ workshop_prefix }}-rhel"
+      username: "{{ local_user }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      rhel: "cs-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
+    exact_count: "{{ student_count|int*student_nodes_count|int }}"
+    count_tag: rhel
+  register: ec2_rhel
+
+- name: Create RHEL Bastion instances
+  ec2:
+    assign_public_ip: yes
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ bastion_instance_type }}"
+    image: "{{ rhel_ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    wait: true
+    instance_tags:
+      Name: "cs-{{ workshop_prefix }}-bastion_rhel"
+      username: "{{ local_user }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      bastion_rhel: "cs-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
+    exact_count: "{{ student_count }}"
+    count_tag: bastion_rhel
+  register: ec2_bastion_rhel
+
+- debug:
+    var: ec2_rhel_admin
+
+- debug:
+    var: ec2_rhel
+
+- debug:
+    var: ec2_bastion_rhel
+
+- name: Create Windows instances
+  ec2:
+    assign_public_ip: yes
+    key_name: "cs-{{ workshop_prefix }}-key"
+    group: "cs-{{ workshop_prefix }}-win-sg"
+    region: "{{ region }}"
+    instance_type: "{{ win_instance_type }}"
+    image: "{{ regions[region][win_ver].ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    user_data: "{{ lookup('file', '{{ winrm_path }}') }}"
+    wait: true
+    instance_tags:
+      Name: "cs-{{ workshop_prefix }}-win"
+      username: "{{ local_user }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      win: "cs-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
+    exact_count: "{{ win_count }}"
+    count_tag: win
+  register: ec2_win
+
+- debug:
+    var: ec2_win
+
+#===============================================================================
+#  Verify hosts online
+#===============================================================================
+
+#---------------------------------------------------
+#  RHEL
+#---------------------------------------------------
+
+- name: wait for SSH to answer on all hosts
+  wait_for:
+    port: 22
+    host: "{{ item.public_ip }}"
+    timeout: 300
+  with_items:
+  - "{{ ec2_rhel_admin.instances }}"
+  - "{{ ec2_rhel.tagged_instances }}"
+  - "{{ ec2_bastion_rhel.tagged_instances }}"
+
+#---------------------------------------------------
+#  Ansible Hosts Creation
+#---------------------------------------------------
+
+- name: add RHEL hosts to groups
+  add_host:
+    name: cs-{{ workshop_prefix}}-rhel-{{ item.id }}
+    ansible_ssh_host: "{{ item.public_ip }}"
+    groups: rhel_nodes
+  with_items:
+  - "{{ ec2_rhel_admin.instances }}"
+  - "{{ ec2_rhel.tagged_instances }}"
+  - "{{ ec2_bastion_rhel.tagged_instances }}"
+
+- name: create inventory list (admin host)
+  lineinfile:
+    create: true
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ ec2_rhel_admin.instances.0.public_ip }} {{ workshop_prefix }}.admin.{{ domain_name }} admin"
+    regexp: ".*{{ workshop_prefix }}.admin.{{ domain_name }}"
+
+- name: create inventory list (bastion hosts)
+  lineinfile:
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ item.public_ip }} {{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }} bastion.{{ item.ami_launch_index }}"
+    regexp: ".*{{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }}.*"
+  with_items:
+  - "{{ ec2_bastion_rhel.tagged_instances }}"
+
+- name: create inventory list (node hosts)
+  lineinfile:
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ item.public_ip }} {{ dns_name_list['stdout_lines'][ansible_loop.index0] }}"
+    regexp: ".*{{ item.public_ip }} {{ dns_name_list['stdout_lines'][ansible_loop.index0] }}.*"
+  loop: "{{ ec2_rhel.tagged_instances }}"
+  loop_control:
+    extended: yes
+
+- name: create inventory list (win2016 hosts)
+  lineinfile:
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ item.public_ip }} {{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }} win2016.{{ item.ami_launch_index }}"
+    regexp: ".*{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}.*"
+  with_items:
+  - "{{ ec2_win.tagged_instances }}"
+
+- name: Template Ansible Hosts File
+  template:
+    dest: "{{ inventory_working_dir }}/hosts"
+    src: "hosts.j2"
+  when: execution is defined
+
+- name: Add bastion hosts to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    insertafter: '^\[bastion_rhel_nodes\]$'
+    regexp: "^{{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }}"
+    line: "{{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }} ansible_ssh_host={{ item.public_ip }} ansible_hosts={{ item.dns_name }} # {{ item.id }}"
+  loop: "{{ ec2_bastion_rhel.tagged_instances }}"
+
+- name: Add node hosts to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    insertafter: '^\[rhel_nodes\]$'
+    line: "{{ dns_name_list['stdout_lines'][ansible_loop.index0] }} ansible_ssh_host={{ item.public_ip }} ansible_host={{ item.dns_name }} # {{ item.id }}"
+    regexp: "^{{ dns_name_list['stdout_lines'][ansible_loop.index0] }}"
+  loop: "{{ ec2_rhel.tagged_instances }}"
+  loop_control:
+    extended: yes
+
+- name: Add windows hosts to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    insertafter: '^\[win_nodes\]$'
+    regexp: "^{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
+    line: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }} ansible_ssh_host={{ item.public_ip }} ansible_host={{ item.dns_name }} # {{ item.id }}"
+  loop: "{{ ec2_win.tagged_instances }}"
+
+#---------------------------------------------------
+#  DNS
+#---------------------------------------------------
+
+- name: Create DNS records for RHEL admin
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
+    value: "{{ item.dns_name }}"
+    wait: yes
+    state: present
+  loop: "{{ ec2_rhel_admin.instances }}"
+#  ignore_errors: true
+
+- name: Create DNS records for RHEL
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ dns_name_list['stdout_lines'][ansible_loop.index0] }}"
+    value: "{{ item.dns_name }}"
+#    wait: yes
+    state: present
+  loop: "{{ ec2_rhel.instances }}"
+  loop_control:
+    extended: yes
+#  ignore_errors: true
+
+- name: Create DNS records for RHEL bastions
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }}"
+    value: "{{ item.dns_name }}"
+#    wait: yes
+    state: present
+  loop: "{{ ec2_bastion_rhel.instances }}"
+
+#---------------------------------------------------
+#  Windows
+#---------------------------------------------------
+
+- name: wait for WinRM to answer on all hosts
+  wait_for:
+    port: 5986
+    host: "{{ item.public_ip }}"
+    timeout: 300
+  with_items: "{{ ec2_win.tagged_instances }}"
+
+- name: add Windows hosts to groups
+  add_host:
+    name: cs-{{ workshop_prefix}}-win-{{ item.id }}
+    ansible_ssh_host: "{{ item.public_ip }}"
+    groups: win_nodes
+  with_items: "{{ ec2_win.tagged_instances }}"
+
+- name: Create DNS records for Windows
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
+    value: "{{ item.dns_name }}"
+#    wait: yes
+    state: present
+  loop: "{{ ec2_win.instances }}"
+#  ignore_errors: true
+
+...

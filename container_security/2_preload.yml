@@ -1,0 +1,40 @@
+# file: 2_preload.yml
+---
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.admin_rhel_node }}"
+
+- name: Prep files for admin server
+  hosts: localhost
+  gather_facts: yes
+  become: no
+  roles:
+    - role: admin_server_prep
+
+- name: Configure admin server
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - admin_rhel_node
+  gather_facts: yes
+  roles:
+    - role: firewalld 
+    - role: subscription_manager 
+    - role: epel 
+    - role: cockpit 
+    - role: admin_server_config 
+  tasks:
+  - name: explain how to login
+    debug:
+      msg: "Please run './admin.sh' to login to the admin server. Then, you may proceed to install the other nodes with 'cd src/container_security && source ./env.sh && ansible-playbook 3_load.yml'."
+
+...

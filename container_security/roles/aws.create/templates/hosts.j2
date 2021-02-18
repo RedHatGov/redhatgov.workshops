@@ -1,0 +1,38 @@
+
+[local_target]
+{% if ( ansible_distribution == 'Fedora' ) and ( ansible_distribution_major_version >= '30' ) %}
+localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/python3'
+{% else %}
+localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
+{% endif %}
+
+[admin_rhel_node]
+{{ workshop_prefix }}.admin.{{ domain_name }} ansible_ssh_host={{ ec2_rhel_admin.instances[0].public_ip }}
+
+[bastion_rhel_nodes]
+
+[bastion_rhel_nodes:vars]
+ansible_ssh_private_key_file={{ ssh_key_path }}
+
+[rhel_nodes]
+
+[rhel_nodes:vars]
+ansible_ssh_private_key_file={{ ssh_key_path }}
+
+[win_nodes]
+{% for n in range( win_count|int ) %}
+{{ workshop_prefix }}.win2016.{{ n }}.{{ domain_name }}
+{% endfor %}
+
+[win_nodes:vars]
+ansible_user=Administrator
+ansible_password="{{ workshop_password }}"
+ansible_connection=winrm
+ansible_winrm_transport=basic
+ansible_port=5986
+ansible_winrm_server_cert_validation=ignore
+
+[all_nodes:children]
+bastion_rhel_nodes
+rhel_nodes
+win_nodes

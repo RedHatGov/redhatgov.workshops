@@ -60,10 +60,7 @@
   roles:
     - role: ansible
     - role: cockpit
-    - role: graphical
     - role: powerline
-    - role: vscode
-#    - role: wetty
     - role: upgrade
   tags: software
 
@@ -72,6 +69,13 @@
   remote_user: ec2-user
   hosts: rhel_nodes
   tasks:
+    - name: Install required packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      loop:
+      - ansible
+      - git
     - name: Install a test SELinux log
       copy:
         src: testaudit

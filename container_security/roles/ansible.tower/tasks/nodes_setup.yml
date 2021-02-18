@@ -1,0 +1,79 @@
+#--------------------------------------------------
+# Install Ansible
+#--------------------------------------------------
+
+- name: Install base packages
+  become: yes
+  yum:
+    name:
+      - vim
+      - git
+      - ansible
+      - nano
+    state: latest
+    enablerepo: epel-testing
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- block:
+  - name: Determine newest Ansible repo
+    shell: "subscription-manager repos --list | egrep '^Repo ID:' | egrep 'ansible.*64-rpms' | sort -V -k3 | sed 's/.* //' | tail -1 "
+    register: result
+
+  - debug:
+      msg: "{{ result.stdout_lines }}"
+
+  - set_fact: 
+      ansible_repo: "{{ result.stdout }}"
+
+  - name: Enable Ansible repo
+    rhsm_repository:
+      name: "{{ ansible_repo }}"
+    when: not beta|default(False)
+
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and not cloud_access
+
+- name: Install base packages
+  become: yes
+  yum:
+    name:
+      - vim
+      - git
+      - ansible
+      - nano
+    state: latest
+
+- name: Fake, if missing, the dbus-1 directory
+  file:
+    path: /usr/lib64/dbus-1
+    state: directory
+
+- name: Fake, if missing, the dbus dbus-daemon-launch-helper file
+  file:
+    path: /usr/lib64/dbus-1/dbus-daemon-launch-helper
+    state: touch
+
+- name: Install vimrc in home directory
+  copy:
+    src: "{{ item.src }}"
+    dest: "/home/{{ system_user }}/{{ item.dest }}"
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0644
+  with_items:
+    - { src: "vimrc", dest: ".vimrc" }
+
+- name: Copy over SSH Key to {{ system_user }} home
+  copy: 
+    src: "{{ ssh_key_path }}"
+    dest: "/home/{{ system_user }}/.ssh/{{ workshop_prefix }}-tower" 
+    mode: 0400 
+    group: "{{ system_user }}"
+    owner: "{{ system_user }}"
+
+- name: Template over ansible.cfg
+  template:
+    dest: "/home/{{ system_user }}/.ansible.cfg"
+    src: "ansible.cfg.j2"
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    mode: 0644
