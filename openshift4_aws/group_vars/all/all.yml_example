@@ -33,6 +33,7 @@ openshift_installer_log_level:          debug          # recommended log level o
 
 # web terminal operator variables
 deploy_web_terminal:                    True
+openshift_webcli_idle_timeout:          24h
 
 # service mesh operator variables
 deploy_service_mesh:                    false
