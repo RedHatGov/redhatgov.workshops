@@ -1,0 +1,41 @@
+# file: roles/admin_server_prep/tasks/main.yml
+---
+
+#---------------------------------------------------
+# create encrypted credential store
+#---------------------------------------------------
+- name: copy template to working directory
+  template:
+    src: aws_credentials_vault.yml.j2
+    dest: "{{ deploy_working_dir }}/aws_credentials_vault.yml.pre"
+    mode: 0600
+
+- name: copy password file to working directory
+  template:
+    src: workshop-password.j2
+    dest: "{{ deploy_working_dir }}/workshop-password"
+    mode: 0600
+
+- name: create encrypted credentials valult
+  shell: "ansible-vault encrypt --vault-password-file {{ deploy_working_dir }}/workshop-password --output {{ deploy_working_dir }}/aws_credentials_vault.yml {{ deploy_working_dir }}/aws_credentials_vault.yml.pre"
+  args:
+    creates: "{{ deploy_working_dir }}/aws_credentials_vault.yml"
+
+- name: remove password file
+  file:
+    path: "{{ deploy_working_dir }}/workshop-password"
+    state: absent
+
+- name: stage group_vars/all.yml for remote host
+  copy:
+    src: "group_vars/all.yml"
+    dest: "{{ deploy_working_dir }}/all.yml"
+    mode: 0644
+
+- name: remove AWS keys from staged file
+  lineinfile:
+    path: "{{ deploy_working_dir }}/all.yml"
+    regexp: "^aws_.*_key:"
+    state: absent
+
+...

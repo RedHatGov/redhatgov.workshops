@@ -1,0 +1,92 @@
+# file: roles/admin_server_config/tasks/main.yml
+---
+
+#---------------------------------------------------
+# deliver configuration to admin server
+#---------------------------------------------------
+- name: install required packages
+  package:
+    name:
+    - bash-completion
+    - mosh
+    - python3-pip
+    - rsync
+    - vim
+    state: present
+
+- name: install required Python packages
+  pip:
+    name:
+    - ansible
+    - boto
+    - boto3
+
+- name: set system python version
+  alternatives:
+    name: python
+    path: /usr/bin/python3
+
+- name: create src directory
+  file:
+    path: "/home/{{ system_user }}/src/"
+    state: directory
+  become: no
+
+- name: sync content to admin host
+  synchronize:
+    src: "{{ item }}"
+    dest: "/home/{{ system_user }}/src/"
+    rsync_opts:
+    - "--exclude=group_vars/all.yml"
+    - "--exclude=group_vars/.all.yml.swp"
+  with_items:
+  - "{{ lookup('env','PWD') }}/../roles"
+  - "{{ lookup('env','PWD') }}"
+  become: no
+
+- name: set permissions on sync'ed files
+  file:
+    path: "/home/{{ system_user }}/src"
+    owner: "{{ system_user }}"
+    group: "{{ system_user }}"
+    follow: no
+    recurse: yes
+
+- name: template files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items:
+  - { src: bashrc.j2, dest: "/home/{{ system_user }}/.bashrc", mode: '0755' }
+  - { src: env.sh.j2, dest: "/home/{{ system_user }}/src/{{ playbook_dir | regex_replace('^.*\/','') }}/env.sh", mode: '0755' }
+  become: no
+
+- name: copy credentials to admin host
+  copy:
+    src: "{{ deploy_working_dir }}/aws_credentials_vault.yml"
+    dest: "/home/{{ system_user }}/src/{{ playbook_dir | regex_replace('^.*\/','') }}/aws_credentials_vault.yml"
+    mode: '0644'
+    decrypt: no
+  become: no
+
+- name: copy group_vars/all.yml to remote host
+  copy:
+    src: "{{ deploy_working_dir }}/all.yml"
+    dest: "/home/{{ system_user }}/src/{{ playbook_dir | regex_replace('^.*\/','') }}/group_vars/all.yml"
+    mode: '0644'
+  become: no
+
+- name: append hosts to host file
+  blockinfile:
+    path: "/etc/hosts"
+    block: "{{ lookup('file', deploy_working_dir + '/hostlist') }}"
+
+- name: install ssh key
+  copy:
+    src: "{{ ssh_key_path }}"
+    dest: "~/.ssh/id_rsa"
+    mode: 0400
+  become: no
+
+...

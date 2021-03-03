@@ -1,0 +1,144 @@
+# file: 2_preload.yml
+---
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.admin_rhel_node }}"
+
+- name: Prep files for admin server
+  hosts: localhost
+  gather_facts: yes
+  become: no
+  roles:
+    - role: admin_server_prep
+
+- name: Configure admin server
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - admin_rhel_node
+  gather_facts: yes
+  roles:
+    - role: firewalld 
+    - role: subscription_manager 
+    - role: epel 
+    - role: cockpit 
+    - role: admin_server_config 
+  tasks:
+  - name: add codeready-builder repo
+    community.general.rhsm_repository:
+      name: codeready-builder-for-rhel-8-x86_64-rpms
+    when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+  - name: add codeready-builder rhui repo
+    command: dnf config-manager --set-enabled codeready-builder-for-rhel-8-rhui-rpms
+    when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+  - name: install required development tools
+    dnf:
+      name:
+        - "@development"
+        - "git"
+        - "rpmdevtools"
+        - "rpm-build"
+      state: latest
+
+  - name: create build partition
+    community.general.parted:
+      device: /dev/nvme1n1
+      number: 1
+      fs_type: ext4
+      state: present
+
+  - name: create build filesystem
+    community.general.filesystem:
+      dev: /dev/nvme1n1p1
+      fstype: ext4
+
+  - name: create mountpoint
+    file:
+      path: /build
+      state: directory
+      mode: '0755'
+
+  - name: mount build filesystem
+    ansible.posix.mount:
+      path: /build
+      src: /dev/nvme1n1p1
+      state: mounted
+      fstype: ext4
+
+  - name: create build dirs
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: '0755'
+      owner: ec2-user
+    loop:
+      - "/build/src"
+      - "/build/rpmbuild"
+    become: yes
+
+  - name: create rpmbuild symlink
+    file:
+      path: "~ec2-user/rpmbuild"
+      src: "/build/rpmbuild"
+      state: "link"
+    become: no
+
+  - name: pull rpm spec file
+    git:
+      repo: https://github.com/ajacocks/qemu.git
+      dest: "/build/src/qemu"
+      force: yes
+    become: no
+
+  - name: create rpmbuild tree
+    command: rpmdev-setuptree
+    become: no
+
+  - name: pull dependencies for build
+    command: dnf builddep /build/src/qemu/qemu5.spec -y
+    async: 10800
+    poll: 0
+    register: package_dep_status
+
+  - name: 'Check on package dependencies ...'
+    async_status: jid={{ package_dep_status.ansible_job_id }}
+    register: job_result
+    until: job_result.finished
+    delay: 30
+    retries: 180
+
+  - name: pull sources for build
+    command: spectool -g -R /build/src/qemu/qemu5.spec
+    become: no
+
+  - name: execute build
+    shell: rpmbuild -bb /build/src/qemu/qemu5.spec > ~ec2-user/rpmbuild.log 2>&1
+    async: 10800
+    poll: 0
+    register: package_build_status
+    become: no
+
+  - name: 'Check on package build ...'
+    async_status: jid={{ package_build_status.ansible_job_id }}
+    register: job_result
+    until: job_result.finished
+    delay: 30
+    retries: 180
+    become: no
+      
+  - name: explain how to login
+    debug:
+      msg: "Please run './admin.sh' to login to the admin server. Then, you may proceed to install the other nodes with 'cd src/rhel_edge_aws && ansible-playbook 3_load.yml'."
+
+...

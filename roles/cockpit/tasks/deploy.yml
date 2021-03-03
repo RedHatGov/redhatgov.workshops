@@ -41,13 +41,13 @@
   block:
 
   - name: open cockpit port in firewalld (permanent)
-    firewalld:
+    ansible.posix.firewalld:
       service: "cockpit"
       state: enabled
       permanent: yes
 
   - name: open cockpit port in firewalld (immediate)
-    firewalld:
+    ansible.posix.firewalld:
       service: "cockpit"
       state: enabled
       immediate: yes

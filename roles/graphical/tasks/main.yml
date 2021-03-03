@@ -209,13 +209,13 @@
   block:
 
   - name: open XRDP port in firewalld (permanent)
-    firewalld:
+    ansible.posix.firewalld:
       port: "3389/tcp"
       state: enabled
       permanent: yes
 
   - name: open XRDP port in firewalld (immediate)
-    firewalld:
+    ansible.posix.firewalld:
       port: "3389/tcp"
       state: enabled
       immediate: yes
