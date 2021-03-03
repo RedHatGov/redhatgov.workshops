@@ -163,4 +163,16 @@
         insertafter: EOF
         line: "export MANPATH={{ path.stdout }}/share/man:$MANPATH"
 
+- name: clone workshop repo
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+    - name: checkout code
+      git:
+        repo: https://github.com/rlucente-se-jboss/demo-rfe.git
+        dest: ~ec2-user/edge-workshop
+
 ...
