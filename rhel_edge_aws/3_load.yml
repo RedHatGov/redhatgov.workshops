@@ -129,7 +129,7 @@
         src: "{{ item }}"
         dest: "~ec2-user/"
       with_fileglob:
-        - "/build/rpmbuild/RPMS/x86_64/qemu52*rpm"
+        - "/build/rpmbuild/RPMS/x86_64/qemu-full*rpm"
 
     - name: find package
       find:
@@ -146,7 +146,7 @@
       loop: "{{ packages.files }}"
 
     - name: look up bin directory
-      shell: rpm -ql qemu52 | grep bin | head -1 | sed 's]/bin.*]]'
+      shell: rpm -ql qemu-full | grep bin | head -1 | sed 's]/bin.*]]'
       register: path
 
     - name: update bashrc with path

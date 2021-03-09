@@ -106,7 +106,7 @@
     become: no
 
   - name: pull dependencies for build
-    command: dnf builddep /build/src/qemu/qemu5.spec -y
+    command: dnf builddep /build/src/qemu/qemu-full.spec -y
     async: 10800
     poll: 0
     register: package_dep_status
@@ -119,11 +119,11 @@
     retries: 180
 
   - name: pull sources for build
-    command: spectool -g -R /build/src/qemu/qemu5.spec
+    command: spectool -g -R /build/src/qemu/qemu-full.spec
     become: no
 
   - name: execute build
-    shell: rpmbuild -bb /build/src/qemu/qemu5.spec > ~ec2-user/rpmbuild.log 2>&1
+    shell: rpmbuild -bb /build/src/qemu/qemu-full.spec > ~ec2-user/rpmbuild.log 2>&1
     async: 10800
     poll: 0
     register: package_build_status
