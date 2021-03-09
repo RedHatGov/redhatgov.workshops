@@ -60,7 +60,9 @@
   roles:
     - role: ansible.tower
     - role: vscode
+      when: graphical|bool
     - role: graphical
+      when: graphical|bool
     - role: system-user
   tasks:
     - name: install container management tools
