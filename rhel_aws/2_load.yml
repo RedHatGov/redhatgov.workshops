@@ -58,6 +58,8 @@
       when: graphical|bool
     - role: graphical
       when: graphical|bool
+    - role: firewalld
+      when: not graphical|bool
     - role: system-user
   tasks:
     - name: install container management tools
