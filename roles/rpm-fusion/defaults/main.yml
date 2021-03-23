@@ -1,0 +1,16 @@
+---
+
+fusion_6:
+  - key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-free-el-6
+    nf_key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-nonfree-el-6
+    url: https://dl.fedoraproject.org/pub/fusion/fusion-release-latest-6.noarch.rpm
+fusion_7:
+  - key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-free-el-7
+    nf_key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-nonfree-el-7
+    url: https://dl.fedoraproject.org/pub/fusion/fusion-release-latest-7.noarch.rpm
+fusion_8:
+  - key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-free-el-8
+    nf_key: https://rpmfusion.org/keys?action=AttachFile&do=view&target=RPM-GPG-KEY-rpmfusion-nonfree-el-8
+    url: https://dl.fedoraproject.org/pub/fusion/fusion-release-latest-8.noarch.rpm
+
+...

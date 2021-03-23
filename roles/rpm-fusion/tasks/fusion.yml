@@ -1,0 +1,52 @@
+---
+
+- name: RHEL 6 RPM Fusion setup
+  block:
+
+  - name: get RPM Fusion release keys
+    get_url:
+      url: "{{ item }}"
+      dest: "/tmp/{{ item | regex_replace ('^.*=','') }}"
+      mode: '0644'
+    loop:
+      - "{{ fusion_6.key }}"
+      - "{{ fusion_6.nf_key }}"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+
+- name: RHEL 7 RPM Fusion setup
+  block:
+
+  - name: get RPM Fusion release keys
+    get_url:
+      url: "{{ item }}"
+      dest: "/tmp/{{ item | regex_replace ('^.*=','') }}"
+      mode: '0644'
+    loop:
+      - "{{ fusion_7.key }}"
+      - "{{ fusion_7.nf_key }}"
+
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- name: RHEL 8 RPM Fusion setup
+  block:
+
+  - name: get RPM Fusion release keys
+    get_url:
+      url: "{{ item }}"
+      dest: "/tmp/{{ item | regex_replace ('^.*=','') }}"
+      mode: '0644'
+    loop:
+      - "{{ fusion_8.key }}"
+      - "{{ fusion_8.nf_key }}"
+
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+- name: Import keys
+#  shell: rpmkeys --import "/tmp/fusion.key"
+  rpm_key:
+    state: present
+    key: "{{ item }}"
+  with_fileglob:
+    - "/tmp/RPM-GPG-KEY-rpmfusion*"
+
+...

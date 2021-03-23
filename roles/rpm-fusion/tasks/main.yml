@@ -1,0 +1,4 @@
+---
+
+- include_tasks: fusion.yml
+  when: ansible_os_family == "RedHat"
