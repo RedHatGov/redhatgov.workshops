@@ -14,4 +14,5 @@ galaxy_info:
   - epiloque
   - epel
 
-dependencies: []
+dependencies:
+- role: epel
