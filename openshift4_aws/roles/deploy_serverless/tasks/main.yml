@@ -1,0 +1,51 @@
+---
+# tasks file for serverless
+
+- name: template values for serverless operators
+  copy:
+    src: "{{ role_path }}/files/serverless-operator.yml"
+    dest: "{{ openshift_build_path }}/serverless-operator.yml"
+
+- name: install operators required for serverless
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/serverless-operator.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    namespace: "openshift-operators"
+
+- name: template values for KnativeServing
+  copy:
+    src: "{{ role_path }}/files/knative-serving.yml"
+    dest: "{{ openshift_build_path }}/knative-serving.yml"
+
+- name: Verify KnativeServing Operator is present
+  k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: openshift-operators
+    field_selectors:
+      - status.phase=Running
+    label_selectors:
+      - "name = knative-openshift"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  register: kn_pod
+  until: kn_pod.resources|length > 0
+  retries: 10
+  delay: 30
+
+- name: install knative-serving
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/knative-serving.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    namespace: "openshift-operators"
+
+- name: Wait till the autoscaler is online
+  k8s_info:
+    kind: Pod
+    wait: yes
+    name: autoscaler
+    namespace: knative-serving
+    wait_sleep: 60
+    wait_timeout: 360
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"

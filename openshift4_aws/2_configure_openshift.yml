@@ -16,12 +16,14 @@
       include_role:
         name: create_openshift_users
       when: create_openshift_users == true
-
     - name: deploy web terminal
       include_role:
         name: deploy_web_terminal
       when: deploy_web_terminal == true
-
+    - name: serverless
+      include_role:
+        name: deploy_serverless
+      when: deploy_serverless == true
     - name: deploy openshift service mesh
       include_role:
         name: deploy_service_mesh
@@ -31,3 +33,5 @@
       include_role:
         name: deploy_service_mesh_workshop
       when: deploy_service_mesh_workshop == true
+
+
