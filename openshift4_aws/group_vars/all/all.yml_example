@@ -35,6 +35,9 @@ openshift_installer_log_level:          debug          # recommended log level o
 deploy_web_terminal:                    True
 openshift_webcli_idle_timeout:          24h
 
+# serverless operator
+deploy_serverless:                      True
+
 # service mesh operator variables
 deploy_service_mesh:                    false
 deploy_service_mesh_workshop:           false
