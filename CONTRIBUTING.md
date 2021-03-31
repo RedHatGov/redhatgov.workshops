@@ -19,7 +19,7 @@ Right now, you have a fork of the `redhatgov.workshops` repo, but you don't have
 
 ```sh
 git clone git@github.com:your-username/redhatgov.workshops.git
-cd redhatgov.github.io
+cd redhatgov.workshops
 
 # Configure git to sync your fork with the original repo
 git remote add upstream https://github.com/RedHatGov/redhatgov.workshops
