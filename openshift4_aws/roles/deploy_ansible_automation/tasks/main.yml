@@ -83,6 +83,14 @@
     regexp: '^openshift_pg_emptydir=.*'
     line: "openshift_pg_emptydir={{ ansible_openshift_pg_emptydir }}"
 
+#### Create namespace for Ansible Automation
+- name: Create tower namespace
+  k8s:
+    name: tower
+    kind: Namespace
+    state: present
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
 #### Run installer
 - name: Run Ansible on OpenShift installation (runtime ~15 minutes)
   shell: ./setup_openshift.sh -i {{ ansible_installer_inventory }} 2>&1 | tee -a {{ download_dir_ansible.path }}/ansible-openshift/ansible-tower-install.log && touch {{ download_dir_ansible.path }}/ansible-openshift/.ansible-openshift-complete
