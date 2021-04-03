@@ -61,9 +61,33 @@
     scm_update_on_launch: yes
   with_sequence: count="{{ ansible_user_count }}"
 
-- name: Add users to their project
+- name: Add user inventories
+  tower_inventory:
+    name: "user{{ item }}-inventory"
+    description: "Edge Servers"
+    organization: workshop_org
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: Add user hosts user inventories
+  tower_host:
+    name: "{{ openshift_cluster_name }}.node.{{ item }}.{{ openshift_cluster_base_domain }}"
+    inventory: "user{{ item }}-inventory"
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: Add users to their project and inventory
   tower_role:
     user: "user{{ item }}"
+    inventory: "user{{ item }}-inventory"
     project: "user{{ item }}-playbooks"
     role: admin
     state: present
