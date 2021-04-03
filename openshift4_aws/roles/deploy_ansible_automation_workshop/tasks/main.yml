@@ -1,0 +1,75 @@
+---
+# tasks file for deploy_ansible_automation_workshop
+# Create Tower Organization
+- name: Create tower organization
+  tower_organization:
+    name: workshop_org
+    description: "workshop org"
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+
+- name: Create tower team
+  tower_team:
+    name: workshop_team
+    description: "workshop team"
+    organization: workshop_org
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+
+# Add Users to Tower
+- name: Add tower workshop users
+  tower_user:
+    username: "user{{ item }}"
+    password: "{{ ansible_user_password }}"
+    email: "user{{ item }}@example.org"
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: Add tower workshop users to the workshop team
+  tower_role:
+    user: "user{{ item }}"
+    target_team: workshop_team
+    role: member
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: Add tower projects for the workshop users
+  tower_project:
+    name: "user{{ item }}-playbooks"
+    organization: workshop_org
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+    scm_type: git
+    scm_url: https://github.com/ansible/ansible-tower-samples
+    scm_update_on_launch: yes
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: Add users to their project
+  tower_role:
+    user: "user{{ item }}"
+    project: "user{{ item }}-playbooks"
+    role: admin
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+  with_sequence: count="{{ ansible_user_count }}"
+

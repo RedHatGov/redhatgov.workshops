@@ -40,6 +40,7 @@ deploy_serverless:                      True
 
 # ansible automation
 deploy_ansible_automation:		False
+deploy_ansible_automation_workshop:     False
 
 # service mesh operator variables
 deploy_service_mesh:                    false
