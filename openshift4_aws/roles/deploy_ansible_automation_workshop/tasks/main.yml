@@ -1,5 +1,26 @@
 ---
 # tasks file for deploy_ansible_automation_workshop
+
+- name: Determine if Ansible Tower pod is online
+  k8s_info:
+    kind: Pod
+    wait: yes
+    wait_sleep: 10
+    wait_timeout: 360
+    namespace: tower
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    label_selectors:
+      - "app = ansible-tower"
+    field_selectors:
+      - status.phase=Running
+
+# Wait for Ansible Tower to become active
+- wait_for:
+    host: "{{ ansible_openshift_tower_host }}"
+    port: 443
+    delay: 30
+    timeout: 300
+
 # Create Tower Organization
 - name: Create tower organization
   tower_organization:
@@ -61,6 +82,10 @@
     scm_update_on_launch: yes
   with_sequence: count="{{ ansible_user_count }}"
 
+- name: Ansible Tower Requires a subscription
+  pause:
+    prompt: "Please login into {{ ansible_openshift_tower_url }} and enter subscription; then, hit enter to continue"
+
 - name: Add user inventories
   tower_inventory:
     name: "user{{ item }}-inventory"
@@ -73,10 +98,24 @@
     validate_certs: no
   with_sequence: count="{{ ansible_user_count }}"
 
-- name: Add user hosts user inventories
+- name: Add user hosts to user inventories
   tower_host:
     name: "{{ openshift_cluster_name }}.node.{{ item }}.{{ openshift_cluster_base_domain }}"
     inventory: "user{{ item }}-inventory"
+    state: present
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    validate_certs: no
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: Add tower group
+  tower_group:
+    name: edge
+    description: "Edge System"
+    inventory: "user{{ item }}-inventory"
+    hosts:
+      - "{{ openshift_cluster_name }}.node.{{ item }}.{{ openshift_cluster_base_domain }}"
     state: present
     tower_host: "{{ ansible_openshift_tower_url }}"
     tower_username: "{{ ansible_admin_user }}"
