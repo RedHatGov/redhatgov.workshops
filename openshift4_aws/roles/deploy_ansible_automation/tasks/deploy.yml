@@ -92,7 +92,7 @@
 
 #### Run installer
 - name: Run Ansible on OpenShift installation (runtime ~15 minutes)
-  shell: ./setup_openshift.sh -i {{ ansible_installer_inventory }} 2>&1 | tee -a {{ download_dir_ansible.path }}/ansible-openshift/ansible-tower-install.log && touch {{ download_dir_ansible.path }}/ansible-openshift/.ansible-openshift-complete
+  shell: "{{ openshift_build_path }}/$PATH ./setup_openshift.sh -i {{ ansible_installer_inventory }} 2>&1 | tee {{ openshift_build_path }}/ansible-tower-install.log && touch {{ download_dir_ansible.path }}/ansible-openshift/.ansible-openshift-complete"
   args:
     chdir: "{{ download_dir_ansible.path }}/ansible-openshift/"
     creates: "{{ download_dir_ansible.path }}/ansible-openshift/.ansible-openshift-complete"
