@@ -233,6 +233,11 @@
     instance_type: "{{ rhel_instance_type }}"
     image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    volumes:
+      - device_name: /dev/sdf
+        volume_type: gp3
+        volume_size: 25
+        delete_on_termination: true
     wait: true
     instance_tags:
       Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel"

@@ -35,11 +35,17 @@
   tasks:
   - name: add codeready-builder repo
     community.general.rhsm_repository:
-      name: codeready-builder-for-rhel-8-x86_64-rpms
+      name: "{{ item }}"
+    loop:
+      - codeready-builder-for-rhel-8-x86_64-rpms
+      - rhel-8-for-x86_64-appstream-rpms
     when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
   - name: add codeready-builder rhui repo
-    command: dnf config-manager --set-enabled codeready-builder-for-rhel-8-rhui-rpms
+    command: "dnf config-manager --set-enabled {{ item }}"
+    loop:
+      - codeready-builder-for-rhel-8-rhui-rpms
+      - rhel-8-appstream-rhui-rpms
     when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
   - name: install required development tools

@@ -24,6 +24,21 @@
     - role: subscription_manager 
     - role: firewalld
     - role: epel
+  tasks:
+    - name: add codeready-builder repo
+      community.general.rhsm_repository:
+        name: "{{ item }}"
+      loop:
+        - codeready-builder-for-rhel-8-x86_64-rpms
+        - rhel-8-for-x86_64-appstream-rpms
+      when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+    - name: add codeready-builder rhui repo
+      command: "dnf config-manager --set-enabled {{ item }}"
+      loop:
+        - codeready-builder-for-rhel-8-rhui-rpms
+        - rhel-8-appstream-rhui-rpms
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
 - name: Configure repositories on nodes
   become: yes
@@ -32,6 +47,29 @@
   gather_facts: no
   roles:
     - role: LetsEncrypt
+
+- name: Configure nodes for workshop
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  tasks:
+    - name: rename system eth0 interface
+      command: "nmcli con mod 'System eth0' connection.id eth0"
+
+    - name: install lorax composer required packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - composer-cli
+        - lorax-composer
+
+    - name: add system user to weldr group
+      user:
+        name: ec2-user
+        groups:
+          - "weldr"
     
 - name: Ensure python3-pip installed for powerline (RHEL 8)
   become: yes
@@ -47,8 +85,13 @@
 - name: Configure software on nodes
   become: yes
   remote_user: ec2-user
-  hosts: tower_rhel_nodes
+  hosts: rhel_nodes
   gather_facts: no
+  tasks:
+    - name: install git
+      package:
+        name: git
+        state: latest
   roles:
     - role: system-user
     - role: powerline
@@ -124,6 +167,11 @@
       command: dnf config-manager --set-enabled codeready-builder-for-rhel-8-rhui-rpms
       when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
+    - name: checkout code
+      git:
+        repo: https://github.com/ajacocks/qemu.git
+        dest: ~ec2-user/edge-workshop
+
     - name: copy package
       copy:
         src: "{{ item }}"
@@ -170,9 +218,56 @@
     - rhel_nodes
   gather_facts: yes
   tasks:
+
+    - name: create build partition
+      community.general.parted:
+        device: /dev/nvme1n1
+        number: 1
+        fs_type: ext4
+        state: present
+
+    - name: create build filesystem
+      community.general.filesystem:
+        dev: /dev/nvme1n1p1
+        fstype: ext4
+
+    - name: create mountpoint
+      file:
+        path: /work
+        state: directory
+        mode: '0755'
+
+    - name: mount build filesystem
+      ansible.posix.mount:
+        path: /work
+        src: /dev/nvme1n1p1
+        state: mounted
+        fstype: ext4
+
+    - name: create workshop directory
+      file:
+        path: /work/workshop
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+
     - name: checkout code
       git:
         repo: https://github.com/rlucente-se-jboss/demo-rfe.git
-        dest: ~ec2-user/edge-workshop
+        dest: /work/workshop/src/edge-workshop
+      become: no
+
+    - name: link workshop dir to home directory
+      file:
+        src: /work/workshop
+        dest: ~ec2-user/workshop
+        state: link
+      become: no
+
+    - name: stage rhel 8.3 boot ISO
+      get_url:
+        url: https://archive.org/download/rhel-8.3-x86_64-resources/rhel-8.3-x86_64-boot.iso
+        dest: /work/workshop/
+      become: no
 
 ...
