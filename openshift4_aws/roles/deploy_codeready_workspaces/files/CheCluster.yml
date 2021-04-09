@@ -5,6 +5,7 @@ metadata:
   namespace: codeready-workspaces
 spec:
   auth:
+    openShiftoAuth: false
     identityProviderURL: ''
     identityProviderRealm: ''
     oAuthSecret: ''

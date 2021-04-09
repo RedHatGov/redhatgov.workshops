@@ -28,14 +28,14 @@
       include_role:
         name: deploy_ansible_automation
       when: deploy_ansible_automation == true
-    - name: deploy ansible automation workshop
-      include_role:
-        name: deploy_ansible_automation_workshop
-      when: deploy_ansible_automation_workshop == true
     - name: deploy codeready workspaces
       include_role:
         name: deploy_codeready_workspaces
       when: deploy_codeready_workspaces == true
+    - name: deploy ansible automation workshop
+      include_role:
+        name: deploy_ansible_automation_workshop
+      when: deploy_ansible_automation_workshop == true
     - name: deploy openshift service mesh
       include_role:
         name: deploy_service_mesh
