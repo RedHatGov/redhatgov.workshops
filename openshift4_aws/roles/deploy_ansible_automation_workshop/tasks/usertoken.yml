@@ -16,6 +16,10 @@
     status_code: 200
   register: user_token
 
+- name: Pause for 1 second between connections
+  pause:
+    seconds: 1
+
 - name: Create workspace from devfile
   uri:
     url: "https://codeready-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/api/workspace/devfile?start-after-create=true&namespace=user{{ item }}"
