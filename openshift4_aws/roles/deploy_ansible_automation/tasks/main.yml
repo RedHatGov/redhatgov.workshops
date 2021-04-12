@@ -1,0 +1,19 @@
+---
+# tasks file for deploy_ansible_automation
+- name: Determine if Ansible Tower has already been deployed
+  k8s_info:
+    kind: Pod
+    wait: no
+    namespace: tower
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    label_selectors:
+      - "app = ansible-tower"
+  register: ansible_tower_pod
+
+- name: Review results
+  set_fact:
+    ansible_tower_pod_result: "{{ ansible_tower_pod | json_query('resources[*]') | first | default('') }}"
+
+- name: Deploy Ansible Tower
+  include: deploy.yml
+  when: ansible_tower_pod_result == ''

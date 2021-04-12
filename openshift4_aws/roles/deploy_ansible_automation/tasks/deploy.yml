@@ -1,0 +1,114 @@
+---
+# tasks file for deploy_ansible_automation
+### Download and stage Ansible archive
+- name: create temporary build directory
+  tempfile:
+    state: directory
+    suffix: ansible-archive
+  register: download_dir_ansible
+- name: Echo download directory
+  debug:
+    msg: "{{ download_dir_ansible.path }}"
+- name: Download Ansible Archive
+  get_url: 
+    url: "{{ ansible_archive_url_base }}/{{ ansible_archive_filename }}"
+    dest: "{{ download_dir_ansible.path }}/{{ ansible_archive_filename }}"
+- name: Unzip Ansible archive
+  unarchive:
+    src: "{{ download_dir_ansible.path }}/{{ ansible_archive_filename }}"
+    dest: "{{ download_dir_ansible.path }}"
+    extra_opts:
+    - -P
+    - --transform
+    - s/^a.*-[0-9]\//ansible-openshift\//
+
+### Update Ansible Inventory file with installation settings
+- name: Setting Ansible Automation installer location fact
+  set_fact:
+    ansible_installer_inventory: "{{ download_dir_ansible.path }}/ansible-openshift/inventory"
+- name: Update Ansible Tower installation inventory file (set openshift_host)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^openshift_host=.*'
+    line: "openshift_host={{ ansible_openshift_host }}"
+- name: Update Ansible Tower installation inventory file (set skip_tls_verify)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^openshift_skip_tls_verify=.*'
+    line: "openshift_skip_tls_verify={{ ansible_openshift_skip_tls_verify }}"
+- name: Update Ansible Tower installation inventory file (set openshift_project)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^openshift_project=.*'
+    line: "openshift_project={{ ansible_openshift_project }}"
+- name: Update Ansible Tower installation inventory file (set openshift_user)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^openshift_user=.*'
+    line: "openshift_user={{ ansible_openshift_user }}"
+- name: Update Ansible Tower installation inventory file (set openshift_password)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^openshift_password=.*'
+    line: "openshift_password={{ ansible_openshift_password }}"
+- name: Update Ansible Tower installation inventory file (set secret_key)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^secret_key=.*'
+    line: "secret_key={{ ansible_secret_key }}"
+- name: Update Ansible Tower installation inventory file (set admin_user)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^admin_user=.*'
+    line: "admin_user={{ ansible_openshift_user }}"
+- name: Update Ansible Tower installation inventory file (set admin_password)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^admin_password=.*'
+    line: "admin_password={{ ansible_openshift_password }}"
+- name: Update Ansible Tower installation inventory file (set pg_username)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^pg_username=.*'
+    line: "pg_username={{ ansible_pg_username }}"
+- name: Update Ansible Tower installation inventory file (set pg_password)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^pg_password=.*'
+    line: "pg_password={{ ansible_pg_password }}"
+- name: Update Ansible Tower installation inventory file (set openshift_pg_emptydir)
+  lineinfile:
+    dest: "{{ ansible_installer_inventory }}"
+    regexp: '^openshift_pg_emptydir=.*'
+    line: "openshift_pg_emptydir={{ ansible_openshift_pg_emptydir }}"
+
+#### Create namespace for Ansible Automation
+- name: Create tower namespace
+  k8s:
+    name: tower
+    kind: Namespace
+    state: present
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+#### Run installer
+- name: Run Ansible on OpenShift installation (runtime ~15 minutes)
+  shell: "PATH={{ openshift_build_path }}:$PATH ./setup_openshift.sh -i {{ ansible_installer_inventory }} 2>&1 | tee {{ openshift_build_path }}/ansible-tower-install.log && touch {{ download_dir_ansible.path }}/ansible-openshift/.ansible-openshift-complete"
+  args:
+    chdir: "{{ download_dir_ansible.path }}/ansible-openshift/"
+    creates: "{{ download_dir_ansible.path }}/ansible-openshift/.ansible-openshift-complete"
+  async: 10800
+  poll: 0
+  register: ansible_install_status
+- name: 'Check on Ansible Tower on OpenShift install ...'
+  async_status: jid={{ ansible_install_status.ansible_job_id }}
+  register: job_result
+  until: job_result.finished
+  delay: 30
+  retries: 46
+
+#### Clean up
+- name: Remove ansible download directory
+  file:
+    path: "{{ download_dir_ansible.path }}"
+    state: absent
+  when: download_dir_ansible.path is defined

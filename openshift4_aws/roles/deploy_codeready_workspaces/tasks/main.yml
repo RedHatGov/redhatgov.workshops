@@ -1,0 +1,77 @@
+---
+# tasks file for deploy_codeready_workspaces
+
+- name: template values for codeready operators group
+  copy:
+    src: "{{ role_path }}/files/codeready_operatorgroup.yml"
+    dest: "{{ openshift_build_path }}/codeready_operatorgroup.yml"
+
+- name: template values for codeready-workspaces operators
+  copy:
+    src: "{{ role_path }}/files/codeready-workspaces-operator.yml"
+    dest: "{{ openshift_build_path }}/codeready-workspaces-operator.yml"
+
+- name: Create codeready-workspaces namespace
+  k8s:
+    name: codeready-workspaces
+    kind: Namespace
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    state: present
+
+- name: install operatorgroup required for codeready-workspaces
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/codeready_operatorgroup.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    namespace: "codeready-workspaces"
+
+- name: install operators required for codeready-workspaces
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/codeready-workspaces-operator.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    namespace: "codeready-workspaces"
+
+- name: Verify CodeReady Workspaces Operator is present
+  k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: codeready-workspaces
+    field_selectors:
+      - status.phase=Running
+    label_selectors:
+      - "app = codeready-operator"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  register: crw_pod
+  until: crw_pod.resources|length > 0
+  retries: 10
+  delay: 30
+
+- name: template values for CheCluster
+  copy:
+    src: "{{ role_path }}/files/CheCluster.yml"
+    dest: "{{ openshift_build_path }}/CheCluster.yml"
+
+- name: install CheCluster
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/CheCluster.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    namespace: "codeready-workspaces"
+
+- name: Verify CodeReady Pod is present
+  k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: codeready-workspaces
+    field_selectors:
+      - status.phase=Running
+    label_selectors:
+      - "app = codeready"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  register: crw_pod
+  until: crw_pod.resources|length > 0
+  retries: 20
+  delay: 30
+
+

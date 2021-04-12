@@ -1,0 +1,9 @@
+---
+# vars file for deploy_ansible_automation_workshop
+ansible_openshift_tower_host: "ansible-tower-web-svc-tower.apps.{{ openshift_cluster_fqdn }}"
+ansible_openshift_tower_url: "https://{{ ansible_openshift_tower_host }}"
+ansible_admin_user: "{{ openshift_cluster_admin_username }}"
+ansible_admin_password: "{{ openshift_cluster_admin_password }}"
+ansible_user_password: "{{ openshift_user_password }}"
+ansible_user_count: "{{ openshift_user_count }}"
+ansible_openshift_hostname: "api.{{ openshift_cluster_fqdn }}"
