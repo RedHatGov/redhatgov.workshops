@@ -1,0 +1,15 @@
+---
+# vars file for deploy_ansible_automation
+ansible_archive_url_base: https://releases.ansible.com/ansible-tower/setup_openshift
+ansible_archive_filename: ansible-tower-openshift-setup-latest.tar.gz 
+ansible_openshift_host: "https://api.{{ openshift_cluster_fqdn }}:6443"
+ansible_openshift_skip_tls_verify: "true"
+ansible_openshift_project: tower
+ansible_openshift_user: "{{ openshift_cluster_admin_username }}"
+ansible_openshift_password: "{{ openshift_cluster_admin_password }}"
+ansible_admin_user: "{{ ansible_openshift_user }}"
+ansible_admin_password: "{{ ansible_openshift_password }}"
+ansible_secret_key: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=64') }}"
+ansible_pg_username: "{{ ansible_admin_user }}"
+ansible_pg_password: "{{ ansible_admin_password }}"
+ansible_openshift_pg_emptydir: "true"

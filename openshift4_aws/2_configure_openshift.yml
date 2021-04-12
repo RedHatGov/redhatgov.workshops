@@ -16,12 +16,26 @@
       include_role:
         name: create_openshift_users
       when: create_openshift_users == true
-
     - name: deploy web terminal
       include_role:
         name: deploy_web_terminal
       when: deploy_web_terminal == true
-
+    - name: deploy serverless
+      include_role:
+        name: deploy_serverless
+      when: deploy_serverless == true
+    - name: deploy ansible automation
+      include_role:
+        name: deploy_ansible_automation
+      when: deploy_ansible_automation == true
+    - name: deploy codeready workspaces
+      include_role:
+        name: deploy_codeready_workspaces
+      when: deploy_codeready_workspaces == true
+    - name: deploy ansible automation workshop
+      include_role:
+        name: deploy_ansible_automation_workshop
+      when: deploy_ansible_automation_workshop == true
     - name: deploy openshift service mesh
       include_role:
         name: deploy_service_mesh
@@ -31,3 +45,5 @@
       include_role:
         name: deploy_service_mesh_workshop
       when: deploy_service_mesh_workshop == true
+
+

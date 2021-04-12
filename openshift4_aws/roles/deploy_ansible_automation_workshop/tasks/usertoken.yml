@@ -1,0 +1,34 @@
+---
+- debug:
+    msg: "Configure CodeReady Workspaces for Ansible for user{{ item }}"
+
+- name: "Request token via URI"
+  uri:
+    url: "https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/realms/codeready/protocol/openid-connect/token"
+    validate_certs: false
+    method: POST
+    body:
+      username: "user{{ item }}"
+      password: "{{ openshift_user_password }}"
+      grant_type: "password"
+      client_id: "admin-cli"
+    body_format: form-urlencoded
+    status_code: 200
+  register: user_token
+
+- name: Pause for 1 second between connections
+  pause:
+    seconds: 1
+
+- name: Create workspace from devfile
+  uri:
+    url: "https://codeready-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/api/workspace/devfile?start-after-create=true&namespace=user{{ item }}"
+    validate_certs: false
+    method: POST
+    headers:
+      Content-Type: application/json
+      Authorization: "Bearer {{ user_token.json.access_token }}"
+    body: "{{ lookup('url', 'https://raw.githubusercontent.com/matmille/che-ansible/main/devfile.json', split_lines=False) }}"
+    body_format: json
+    status_code: 201,409
+  register: workspace_def
