@@ -2,9 +2,9 @@
    Some notes - Requires SPN of Azure to be setup on Deployment system.
    
 # ansible-ocp4-install-azure/Azure
-ansible-ocp4-install-aws/Azure is an ansible OpenShift 4 installer helper using the full stack AWS/Azure installation.  The playbooks allow for installation customization for cluster size, instance types, regions, along with other deployment options.
+ansible-ocp4-install-azure/Azure is an ansible OpenShift 4 installer helper using the full stack Azure installation.  The playbooks allow for installation customization for cluster size, instance types, regions, along with other deployment options.
 
-The ansible-ocp4-install-aws playbooks were developed to enable simple and rapid OpenShift 4 cluster deployments generally, and specifically to deliver OpenShift training workshop lab environments.  This is especially true for the Service Mesh deployment, as the `deploy_service_mesh_workshop` Ansible role is designed to deliver a Red Hat Service Mesh workshop environment.  The lab guide for this workshop is available [here](http://redhatgov.io/workshops/openshift_service_mesh/).
+The ansible-ocp4-install-azure playbooks were developed to enable simple and rapid OpenShift 4 cluster deployments generally, and specifically to deliver OpenShift training workshop lab environments.  This is especially true for the Service Mesh deployment, as the `deploy_service_mesh_workshop` Ansible role is designed to deliver a Red Hat Service Mesh workshop environment.  The lab guide for this workshop is available [here](http://redhatgov.io/workshops/openshift_service_mesh/).
 
 ---
 ## Dependencies
@@ -12,12 +12,12 @@ The ansible-ocp4-install-aws playbooks were developed to enable simple and rapid
 ### OpenShift Pull Secret
 Before starting the cluster install, you must obtain your OpenShift pull-secret file from cloud.redhat.com.  A Red Hat user account is required to log in.  The link below takes you directly to the pull-secret download page:
 
-[OpenShift AWS Full Stack Installer](https://cloud.redhat.com/openshift/install/aws/installer-provisioned)
+[OpenShift Azure Full Stack Installer](https://cloud.redhat.com/openshift/install/azure/installer-provisioned)
 
 ### Privileged Azure account
 A privileged Azure account will be needed to install OpenShift 4 using the full stack installer.  The full stack installer attempts to simplify the OpenShift deployment process by fully orchestrating the creation and setup of all resources for the target environment.
 
-The full stack deployer requires privileged permissions in Azure as it needs the ability to create and delete Azure users along with reading and writing IAM permissions.  This capability is often reserved for administrative users.  The specific permissions needed by the installer to deploy OpenShift 4.4 are provided in JSON format in the serviceAccount folder.  This JSON file can be imported into AWS to apply the necessary permissions to a user or service account.  Refer to the official OpenShift AWS installation documentation for additional information. [Configuring AWS User Permissions for OpenShift installation](https://docs.openshift.com/container-platform/latest/installing/installing_aws/installing-aws-account.html)
+The full stack deployer requires privileged permissions in Azure as it needs the ability to create and delete Azure users along with reading and writing IAM permissions.  This capability is often reserved for administrative users.  The specific permissions needed by the installer to deploy OpenShift 4.4 are provided in JSON format in the serviceAccount folder.  This JSON file can be imported into Azure to apply the necessary permissions to a user or service account.  Refer to the official OpenShift Azure installation documentation for additional information. [Configuring Azure User Permissions for OpenShift installation](https://docs.openshift.com/container-platform/4.7/installing/installing_azure/installing-azure-account.html)
 
 ## Ansible playbook variables setup
 All variables are contained in a single global variables file `./group_vars/all/all.yml`.  This file is named `all.yml_example` in the repo and must be renamed to `all.yml` before running the deployment playbooks.
