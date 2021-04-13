@@ -82,6 +82,11 @@
       state: mounted
       fstype: ext4
 
+  - name: stage rhel 8.3 boot ISO
+    get_url:
+      url: https://archive.org/download/rhel-8.3-x86_64-resources/rhel-8.3-x86_64-boot.iso
+      dest: /build
+
   - name: create build dirs
     file:
       path: "{{ item }}"

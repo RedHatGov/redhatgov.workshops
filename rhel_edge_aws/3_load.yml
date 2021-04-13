@@ -265,8 +265,8 @@
       become: no
 
     - name: stage rhel 8.3 boot ISO
-      get_url:
-        url: https://archive.org/download/rhel-8.3-x86_64-resources/rhel-8.3-x86_64-boot.iso
+      copy:
+        src: /build/rhel-8.3-x86_64-boot.iso
         dest: /work/workshop/
       become: no
 
