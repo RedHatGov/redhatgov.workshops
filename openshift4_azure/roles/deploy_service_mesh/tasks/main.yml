@@ -1,0 +1,44 @@
+---
+# tasks file for service-mesh
+
+- name: create namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'servicemesh-namespace.yml') }}"
+
+- name: template values in operators
+  template:
+    src: "{{ item }}.yml.j2"
+    dest: "{{ openshift_build_path }}/{{ item }}.yml"
+  loop: "{{ servicemesh_operators }}"
+
+- name: install operators required for openshift service mesh
+  k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/{{ item }}.yml') }}"
+    namespace: "openshift-operators"
+  loop: "{{ servicemesh_operators }}"
+
+# TODO: add output on each retry; if practical
+- name: make sure the operators are all installed
+  command: "{{ openshift_build_path }}/oc get clusterserviceversions -n openshift-operators -o custom-columns='PHASE:status.phase' --no-headers"
+  register: servicemesh_operator_status
+  changed_when: false
+  vars:
+    operator_count: "{{ servicemesh_operator_status.stdout_lines | length }}"
+    succeeded_count: "{{ servicemesh_operator_status.stdout | regex_findall('Succeeded') | length }}"
+  until:
+    - servicemesh_operator_status.stdout_lines
+    - operator_count == succeeded_count
+  delay: 15
+  retries: 20
+  # wait for 10 minutes for the operators to be installed
+  # On initial checks servicemesh_operator_status.stdout_lines is empty
+  # so operator_count == succeeded_count will be true because both are 0
+  # which is why we have an additional check to make sure that
+  # servicemesh_operator_status.stdout_lines is not empty.
+
+- name: install istio service mesh control plane
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'istio-installation.yml') }}"

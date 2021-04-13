@@ -1,0 +1,10 @@
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  members:
+{% for i in range(1, openshift_user_count|int + 1) %}
+    - user{{ i }}
+{% endfor %}

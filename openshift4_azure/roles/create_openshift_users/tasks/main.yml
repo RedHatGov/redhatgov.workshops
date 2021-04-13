@@ -1,0 +1,63 @@
+---
+- name: Set default variables for automated build (facts)
+  set_fact:
+    kubeadmin_password: "{{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
+  when: openshift_installer_type == "automation"
+
+- name: generate users.htpasswd file - create admin account entry
+  htpasswd:
+    create: yes
+    path: "{{ openshift_build_path }}/users.htpasswd"
+    name: "{{ openshift_cluster_admin_username }}"
+    password: "{{ openshift_cluster_admin_password }}"
+    state: present
+
+- name: generate users.htpasswd file - create workshop user entries
+  htpasswd:
+    path: "{{ openshift_build_path }}/users.htpasswd"
+    name: "user{{ item }}"
+    password: "{{ openshift_user_password }}"
+  with_sequence: count="{{ openshift_user_count }}"
+
+- name: push users.htpasswd file to openshift control plane
+  shell: |
+    {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username=kubeadmin --password={{ kubeadmin_password }} --insecure-skip-tls-verify
+    {{ openshift_build_path }}/oc create secret generic htpass-secret --from-file=htpasswd={{ openshift_build_path }}/users.htpasswd -n openshift-config
+  ignore_errors: yes
+
+- name: template htpasswd custom resource config file
+  template:
+    src: "htpasswd-cr.yaml.j2"
+    dest: "{{ openshift_build_path }}/htpasswd-cr.yaml"
+
+- name: apply htpasswd custom resource identity provider
+  shell: |
+    {{ openshift_build_path }}/oc apply -f {{ openshift_build_path }}/htpasswd-cr.yaml
+  ignore_errors: yes
+
+- name: create default project settings template
+  template:
+    src: "defaultProject.yaml.j2"
+    dest: "{{ openshift_build_path }}/defaultProject.yaml"
+
+- name: apply default project settings
+  shell: "{{ openshift_build_path }}/oc apply -f {{ openshift_build_path }}/defaultProject.yaml"
+
+- name: add default project settings to openshift config
+  shell: >
+    {{ openshift_build_path }}/oc get project.config.openshift.io/cluster -o yaml
+    | sed 's/spec: {}/spec: {"projectRequestTemplate":{"name": "project-request"}}/g'
+    | {{ openshift_build_path }}/oc apply -f -
+
+- name: pausing 120 seconds to allow htpasswd authentication provider to start
+  pause:
+    seconds: 120
+
+- name: add cluster role to new admin account
+  shell: |
+    {{ openshift_build_path }}/oc adm policy add-cluster-role-to-user cluster-admin {{ openshift_cluster_admin_username }}
+
+- name: delete kubeadmin
+  shell: |
+    {{ openshift_build_path }}/oc login https://api.{{ openshift_cluster_fqdn }}:6443 --username={{ openshift_cluster_admin_username }} --password={{ openshift_cluster_admin_password }} --insecure-skip-tls-verify
+    {{ openshift_build_path }}/oc delete secrets kubeadmin -n kube-system

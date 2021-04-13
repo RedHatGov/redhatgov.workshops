@@ -1,0 +1,12 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: keycloak-operator
+  namespace: user{{ item }}
+spec:
+  channel: alpha
+  installPlanApproval: Manual
+  name: keycloak-operator
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: keycloak-operator.{{ keycloak_operator_version }}

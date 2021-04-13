@@ -1,0 +1,68 @@
+---
+
+- name: create workshop group
+  command: "{{ openshift_build_path }}/oc adm groups new workshop"
+  ignore_errors: True
+
+- name: configure istio service mesh rbac
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'istio-rbac.yaml.j2') }}"
+
+- name: add users to workshop group
+  command: "{{ openshift_build_path }}/oc adm groups add-users workshop user{{ item }}"
+  with_sequence: start=1 end="{{ openshift_user_count }}"
+
+- name: create user projects
+  command: "{{ openshift_build_path }}/oc new-project user{{ item }} --as=user{{ item }} --as-group=system:authenticated --as-group=system:authenticated:oauth"
+  with_sequence: start=1 end="{{ openshift_user_count }}"
+  ignore_errors: True
+
+- name: create user ingress gateways
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'ingress-loadbalancer.yaml.j2') }}"
+  with_sequence: start=1 end="{{ openshift_user_count }}"
+
+- name: install istio servicemesh member roll
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'istio-memberroll.yaml.j2') }}"
+
+- name: pausing 150 seconds to allow the service mesh to start
+  pause:
+    seconds: 150
+
+- name: remove deploymentConfig exclusion from kiali configmap
+  shell: "{{ openshift_build_path }}/oc get cm/kiali --namespace istio-system --output yaml | grep --invert-match DeploymentConfig | oc apply -f -"
+
+- name: make sure the operators are all installed
+  command: "{{ openshift_build_path }}/oc rollout restart deployment kiali --namespace istio-system"
+
+- name: create istio user operatorgroups
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'istio_create_user_operatorgroup.yaml.j2') }}"
+  with_sequence: start=1 end="{{ openshift_user_count }}"
+
+- name: install keycloak operator into each user's project
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'keycloak_user_install.yaml.j2') }}"
+  with_sequence: start=1 end="{{ openshift_user_count }}"
+
+- name: pausing {{ 120 + ( openshift_user_count * 3 )}} seconds to allow user keycloak operator instances to start
+  pause:
+    seconds: "{{ 120 + ( openshift_user_count * 3 )}}"
+
+- name: retrieve keycloak operator installPlan name and register result
+  shell: >
+    {{ openshift_build_path }}/oc get installplans -n user{{ item }} -o json
+    | jq -r .items[0].metadata.name
+  register: "keycloak_installplans"
+  with_sequence: start=1 end="{{ openshift_user_count }}"
+
+- name: approve keycloak operator install and retain desired version
+  shell: |
+    sleep 2s && {{ openshift_build_path }}/oc patch installplan -n user{{ item.item }} {{ item.stdout }} --type merge -p '{"spec":{"approved":true}}'
+  with_items: "{{ keycloak_installplans.results }}"
