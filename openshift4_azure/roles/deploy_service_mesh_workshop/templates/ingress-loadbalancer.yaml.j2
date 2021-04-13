@@ -1,0 +1,305 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: user{{ item }}
+  name: istio-demogateway-user{{ item }}
+spec:
+  podSelector:
+    matchLabels:
+      istio: demogateway-user{{ item }}
+  policyTypes:
+  - Ingress
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: user{{ item }}
+  name: demogateway-user{{ item }}-service-account
+  labels:
+    app: istio-demogateway-user{{ item }}
+    istio: demogateway-user{{ item }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: user{{ item }}
+  annotations:
+    maistra.io/mesh-generation: 1.0.7-1.el8-1
+  labels:
+    app: istio-demogateway-user{{ item }}
+    app.kubernetes.io/component: gateways
+    app.kubernetes.io/instance: istio-system
+    app.kubernetes.io/managed-by: maistra-istio-operator
+    app.kubernetes.io/name: gateways
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.0.7-1.el8-1
+    chart: gateways
+    heritage: Tiller
+    istio: demogateway-user{{ item }}
+    maistra-version: 1.0.7
+    maistra.io/owner: istio-system
+    release: istio
+  name: istio-demogateway-user{{ item }}
+spec:
+  ports:
+  - name: status-port
+    port: 15020
+    protocol: TCP
+    targetPort: 15020
+  - name: http2
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  - name: tls
+    port: 15443
+    protocol: TCP
+    targetPort: 15443
+  selector:
+    app: istio-demogateway-user{{ item }}
+    istio: demogateway-user{{ item }}
+    release: istio
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: user{{ item }}
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    maistra.io/mesh-generation: 1.0.7-1.el8-1
+  generation: 1
+  labels:
+    app: istio-demogateway-user{{ item }}
+    app.kubernetes.io/component: gateways
+    app.kubernetes.io/instance: istio-system
+    app.kubernetes.io/managed-by: maistra-istio-operator
+    app.kubernetes.io/name: gateways
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.0.7-1.el8-1
+    chart: gateways
+    heritage: Tiller
+    istio: demogateway-user{{ item }}
+    maistra-version: 1.0.7
+    maistra.io/owner: istio-system
+    release: istio
+  name: istio-demogateway-user{{ item }}
+spec:
+  progressDeadlineSeconds: 2147483647
+  replicas: 1
+  revisionHistoryLimit: 2147483647
+  selector:
+    matchLabels:
+      app: istio-demogateway-user{{ item }}
+      istio: demogateway-user{{ item }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      creationTimestamp: null
+      labels:
+        app: istio-demogateway-user{{ item }}
+        chart: gateways
+        heritage: Tiller
+        istio: demogateway-user{{ item }}
+        maistra-control-plane: istio-system
+        release: istio
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecuion:
+          - preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+            weight: 2
+          - preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - ppc64le
+            weight: 2
+          - preference:
+              matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - s390x
+            weight: 2
+          requiredDuringSchedulingIgnoredDuringExecuton:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - ppc64le
+                - s390x
+      containers:
+      - args:
+        - proxy
+        - router
+        - --domain
+        - user{{ item }}.svc.cluster.local
+        - --log_output_level=default:info
+        - --drainDuration
+        - 45s
+        - --parentShutdownDuration
+        - 1m0s
+        - --connectTimeout
+        - 10s
+        - --serviceCluster
+        - ingress-user{{ item }}
+        - --zipkinAddress
+        - zipkin.istio-system:9411
+        - --proxyAdminPort
+        - "15000"
+        - --statusPort
+        - "15020"
+        - --controlPlaneAuthPolicy
+        - NONE
+        - --discoveryAddress
+        - istio-pilot.istio-system:15010
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: ISTIO_META_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: ISTIO_META_CONFIG_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: ISTIO_META_ROUTER_MODE
+          value: sni-dnat
+        image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8:1.0.7
+        imagePullPolicy: IfNotPresent
+        name: istio-proxy
+        ports:
+        - containerPort: 15020
+          name: status-port
+          protocol: TCP
+        - containerPort: 8080
+          name: http2
+          protocol: TCP
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 15443
+          name: tls
+          protocol: TCP
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz/ready
+            port: 15020
+            scheme: HTTP
+          initialDelaySeconds: 1
+          periodSeconds: 2
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/certs
+          name: istio-certs
+          readOnly: true
+        - mountPath: /etc/istio/ingressgateway-certs
+          name: ingressgateway-certs
+          readOnly: true
+        - mountPath: /etc/istio/ingressgateway-ca-erts
+          name: ingressgateway-ca-certs
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccount: demogateway-user{{ item }}-service-account
+      serviceAccountName: demogateway-user{{ item }}-service-account
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: istio-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio.demogateway-user{{ item }}-service-account
+      - name: ingressgateway-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio-ingressgateway-certs
+      - name: ingressgateway-ca-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio-ingressgateway-ca-certs
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  namespace: user{{ item }}
+  annotations:
+    openshift.io/host.generated: "true"
+  labels:
+    app: istio-demogateway-user{{ item }}
+    app.kubernetes.io/component: gateways
+    app.kubernetes.io/instance: istio-system
+    app.kubernetes.io/managed-by: maistra-istio-operator
+    app.kubernetes.io/name: gateways
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.0.7-1.el8-1
+    chart: gateways
+    heritage: Tiller
+    istio: demogateway-user{{ item }}
+    maistra-version: 1.0.7
+    maistra.io/owner: istio-system
+    release: istio
+  name: istio-demogateway-user{{ item }}
+spec:
+  port:
+    targetPort: 8080
+  subdomain: ""
+  to:
+    kind: Service
+    name: istio-demogateway-user{{ item }}
+    weight: 100
+  wildcardPolicy: None

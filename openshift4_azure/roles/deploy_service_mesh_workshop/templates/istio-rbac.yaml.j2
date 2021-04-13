@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-reader
+rules:
+- apiGroups: ["authentication.istio.io", "networking.istio.io"]
+  resources: ["policies", "virtualservices", "destinationrules", "serviceentries", "gateway"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: istio-reader
+  namespace: istio-system
+subjects:
+- kind: Group
+  name: workshop
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: istio-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: istio-viewer
+  namespace: istio-system
+subjects:
+- kind: Group
+  name: workshop
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
