@@ -233,20 +233,20 @@
 
     - name: create mountpoint
       file:
-        path: /work
+        path: "/work"
         state: directory
         mode: '0755'
 
     - name: mount build filesystem
       ansible.posix.mount:
-        path: /work
-        src: /dev/nvme1n1p1
+        path: "/work"
+        src: "/dev/nvme1n1p1"
         state: mounted
         fstype: ext4
 
     - name: create workshop directory
       file:
-        path: /work/workshop
+        path: "/work/workshop"
         state: directory
         owner: ec2-user
         group: ec2-user
@@ -254,20 +254,55 @@
     - name: checkout code
       git:
         repo: https://github.com/rlucente-se-jboss/demo-rfe.git
-        dest: /work/workshop/src/edge-workshop
+        dest: "/work/workshop/src/edge-workshop"
       become: no
 
     - name: link workshop dir to home directory
       file:
-        src: /work/workshop
-        dest: ~ec2-user/workshop
+        src: "/work/workshop"
+        dest: "~ec2-user/workshop"
         state: link
       become: no
 
     - name: stage rhel 8.3 boot ISO
       copy:
-        src: /build/rhel-8.3-x86_64-boot.iso
-        dest: /work/workshop/
+        src: "/build/rhel-8.3-x86_64-boot.iso"
+        dest: "/work/workshop/"
       become: no
+   
+    - name: create osbuild-composer work directory
+      file:
+        state: directory
+        path: "/work/workshop/osbuild-composer"
+        owner: _osbuild-composer
+        group: _osbuild-composer
+
+    - name: apply proper context to directory
+      community.general.sefcontext:
+        target: '/work/workshop/osbuild-composer(/.*)?'
+        setype: var_lib_t
+        state: present
+
+    - name: Apply new SELinux file context to filesystem
+      ansible.builtin.command: restorecon -irv /work/workshop
+   
+    - name: create osbuild-composer work directory
+      file:
+        state: directory
+        path: "/etc/systemd/system/osbuild-composer.service.d"
+
+    - name: change osbuild composer cache and state directories
+      file:
+        src: "osbuild-override.conf"
+        dest: "/etc/systemd/system/osbuild-composer.service.d/override.conf"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: osbuild-composer.socket
 
 ...
