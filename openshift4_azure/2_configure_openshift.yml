@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+
+  vars:
+    kubeadmin_password: "{{ lookup('file', '{{ openshift_build_path }}/auth/kubeadmin-password') }}"
+
+
+  tasks:
+    - name: create cluster admin and user accounts
+      include_role:
+        name: create_openshift_users
+      when: create_openshift_users == true
+
+    - name: deploy openshift service mesh
+      include_role:
+        name: deploy_service_mesh
+      when: deploy_service_mesh == true
+
+    - name: deploy and configure openshift workshop resources
+      include_role:
+        name: deploy_service_mesh_workshop
+      when: deploy_service_mesh_workshop == true
