@@ -54,8 +54,14 @@
   hosts: rhel_nodes
   gather_facts: no
   tasks:
+    - name: check to see if there is a 'System eth0' connection
+      command: "nmcli con show 'System eth0'"
+      register: eth0_result
+      ignore_errors: yes
+
     - name: rename system eth0 interface
       command: "nmcli con mod 'System eth0' connection.id eth0"
+      when: eth0_result.rc == 1
 
     - name: install lorax composer required packages
       package:
@@ -202,7 +208,7 @@
         path: "~ec2-user/.bashrc"
         regex: "^export PATH=.*"
         insertafter: EOF
-        line: "export PATH={{ path.stdout }}/bin:$PATH"
+        line: "export PATH={{ path.stdout }}/bin:~{{ system_user }}/.local/bin:$PATH"
 
     - name: update bashrc with manpath
       lineinfile:
@@ -292,7 +298,7 @@
         path: "/etc/systemd/system/osbuild-composer.service.d"
 
     - name: change osbuild composer cache and state directories
-      file:
+      copy:
         src: "osbuild-override.conf"
         dest: "/etc/systemd/system/osbuild-composer.service.d/override.conf"
         owner: root
