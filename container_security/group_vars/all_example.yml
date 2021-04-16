@@ -13,7 +13,7 @@ workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
 jboss:                            false # when true, configure JBoss/Maven
 graphical:                        false # when true, install a graphical desktop on the tower nodes
-beta:                             true  # when true, use beta respoitories
+beta:                             false # when true, use beta respoitories
 
 ###############################################################################
 # ANSIBLE ROLE KEY         |      VALUE
