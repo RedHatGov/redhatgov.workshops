@@ -1,0 +1,314 @@
+# file: 2_load.yml
+---
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.rhel_nodes }}"
+        - "{{ groups.tower_rhel_nodes }}"
+
+- name: Configure repositories on all RHEL nodes
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  roles:
+    - role: subscription_manager 
+    - role: firewalld
+    - role: epel
+  tasks:
+    - name: add codeready-builder repo
+      community.general.rhsm_repository:
+        name: "{{ item }}"
+      loop:
+        - codeready-builder-for-rhel-8-x86_64-rpms
+        - rhel-8-for-x86_64-appstream-rpms
+      when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+    - name: add codeready-builder rhui repo
+      command: "dnf config-manager --set-enabled {{ item }}"
+      loop:
+        - codeready-builder-for-rhel-8-rhui-rpms
+        - rhel-8-appstream-rhui-rpms
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+- name: Configure repositories on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: le_node
+  gather_facts: no
+  roles:
+    - role: LetsEncrypt
+
+- name: Configure nodes for workshop
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  tasks:
+    - name: check to see if there is a 'System eth0' connection
+      command: "nmcli con show 'System eth0'"
+      register: eth0_result
+      ignore_errors: yes
+
+    - name: rename system eth0 interface
+      command: "nmcli con mod 'System eth0' connection.id eth0"
+      when: eth0_result.rc == 1
+
+    - name: install lorax composer required packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - composer-cli
+        - lorax-composer
+
+    - name: add system user to weldr group
+      user:
+        name: ec2-user
+        groups:
+          - "weldr"
+    
+- name: Ensure python3-pip installed for powerline (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  tasks:
+    - package:
+        name: python3-pip
+        state: latest
+      when: rhel_ver == 'rhel8'    
+
+- name: Configure software on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  tasks:
+    - name: install git
+      package:
+        name: git
+        state: latest
+  roles:
+    - role: system-user
+    - role: powerline
+
+- name: Configure web console (RHEL 7)
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  roles:
+    - role: wetty
+      when: rhel_ver == 'rhel7'
+
+- name: Configure web console (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  roles:
+    - role: cockpit
+      when: rhel_ver == 'rhel8'
+
+- name: Upgrade packages
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  roles:
+    - role: upgrade
+
+- name: Re-enable SCL repo when upgrade disables it
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  roles:
+    - role: subscription_manager 
+
+- name: Open ports 80,443 on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+    - name: open firewalld ports
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+      with_items:
+      - 'http'
+      - 'https'
+    - name: restart service
+      service:
+        name: firewalld
+        state: reloaded
+
+- name: copy and install qemu
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+    - name: add codeready-builder repo
+      community.general.rhsm_repository:
+        name: codeready-builder-for-rhel-8-x86_64-rpms
+      when: not cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+    - name: add codeready-builder rhui repo
+      command: dnf config-manager --set-enabled codeready-builder-for-rhel-8-rhui-rpms
+      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+    - name: checkout code
+      git:
+        repo: https://github.com/ajacocks/qemu.git
+        dest: ~ec2-user/edge-workshop
+
+    - name: copy package
+      copy:
+        src: "{{ item }}"
+        dest: "~ec2-user/"
+      with_fileglob:
+        - "/build/rpmbuild/RPMS/x86_64/qemu-full*rpm"
+
+    - name: find package
+      find:
+        paths: "~ec2-user"
+        file_type: file
+        patterns: "*.rpm"
+      register: packages
+
+    - name: install package
+      dnf:
+        name: "{{ item.path }}"
+        disable_gpg_check: yes
+        state: present
+      loop: "{{ packages.files }}"
+
+    - name: look up bin directory
+      shell: rpm -ql qemu-full | grep bin | head -1 | sed 's]/bin.*]]'
+      register: path
+
+    - name: update bashrc with path
+      lineinfile:
+        path: "~ec2-user/.bashrc"
+        regex: "^export PATH=.*"
+        insertafter: EOF
+        line: "export PATH={{ path.stdout }}/bin:~{{ system_user }}/.local/bin:$PATH"
+
+    - name: update bashrc with manpath
+      lineinfile:
+        path: "~ec2-user/.bashrc"
+        regex: "^export MANPATH=.*"
+        insertafter: EOF
+        line: "export MANPATH={{ path.stdout }}/share/man:$MANPATH"
+
+- name: clone workshop repo
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+
+    - name: create build partition
+      community.general.parted:
+        device: /dev/nvme1n1
+        number: 1
+        fs_type: ext4
+        state: present
+
+    - name: create build filesystem
+      community.general.filesystem:
+        dev: /dev/nvme1n1p1
+        fstype: ext4
+
+    - name: create mountpoint
+      file:
+        path: "/work"
+        state: directory
+        mode: '0755'
+
+    - name: mount build filesystem
+      ansible.posix.mount:
+        path: "/work"
+        src: "/dev/nvme1n1p1"
+        state: mounted
+        fstype: ext4
+
+    - name: create workshop directory
+      file:
+        path: "/work/workshop"
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+
+    - name: checkout code
+      git:
+        repo: https://github.com/rlucente-se-jboss/demo-rfe.git
+        dest: "/work/workshop/src/edge-workshop"
+      become: no
+
+    - name: link workshop dir to home directory
+      file:
+        src: "/work/workshop"
+        dest: "~ec2-user/workshop"
+        state: link
+      become: no
+
+    - name: stage rhel 8.3 boot ISO
+      copy:
+        src: "/build/rhel-8.3-x86_64-boot.iso"
+        dest: "/work/workshop/"
+      become: no
+   
+    - name: create osbuild-composer work directory
+      file:
+        state: directory
+        path: "/work/workshop/osbuild-composer"
+        owner: _osbuild-composer
+        group: _osbuild-composer
+
+    - name: apply proper context to directory
+      community.general.sefcontext:
+        target: '/work/workshop/osbuild-composer(/.*)?'
+        setype: var_lib_t
+        state: present
+
+    - name: Apply new SELinux file context to filesystem
+      ansible.builtin.command: restorecon -irv /work/workshop
+   
+    - name: create osbuild-composer work directory
+      file:
+        state: directory
+        path: "/etc/systemd/system/osbuild-composer.service.d"
+
+    - name: change osbuild composer cache and state directories
+      copy:
+        src: "osbuild-override.conf"
+        dest: "/etc/systemd/system/osbuild-composer.service.d/override.conf"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: osbuild-composer.socket
+
+...

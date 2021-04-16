@@ -24,13 +24,13 @@
   block:
 
   - name: open code-server port in firewalld (permanent)
-    firewalld:
+    ansible.posix.firewalld:
       port: "{{ code_port }}/tcp"
       state: enabled
       permanent: yes
 
   - name: open code-server port in firewalld (immediate)
-    firewalld:
+    ansible.posix.firewalld:
       port: "{{ code_port }}/tcp"
       state: enabled
       immediate: yes

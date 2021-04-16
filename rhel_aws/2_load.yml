@@ -32,11 +32,6 @@
   hosts: rhel_nodes
   tags:
     - epel
-  tasks:
-    - name: RHEL 8 on AWS via Cloud Access has no available repositories
-      fail:
-        msg: "Please use RHSM via user ID/password or org ID/activation key."
-      when: cloud_access and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
   roles:
     - role: epel
 
@@ -60,7 +55,11 @@
   roles:
     - role: ansible.tower
     - role: vscode
+      when: graphical|bool
     - role: graphical
+      when: graphical|bool
+    - role: firewalld
+      when: not graphical|bool
     - role: system-user
   tasks:
     - name: install container management tools

@@ -1,0 +1,56 @@
+---
+
+- name: set vars for RHEL 6
+  set_fact:
+    key: "{{ fusion_6.key }}"
+    nf_key: "{{ fusion_6.nf_key }}"
+    url: "{{ fusion_6.url }}"
+    nf_url: "{{ fusion_6.nf_url }}"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '6'
+
+- name: set vars for RHEL 7
+  set_fact:
+    key: "{{ fusion_7.key }}"
+    nf_key: "{{ fusion_7.nf_key }}"
+    url: "{{ fusion_7.url }}"
+    nf_url: "{{ fusion_7.nf_url }}"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- name: set vars for RHEL 8
+  set_fact:
+    key: "{{ fusion_8.key }}"
+    nf_key: "{{ fusion_8.nf_key }}"
+    url: "{{ fusion_8.url }}"
+    nf_url: "{{ fusion_8.nf_url }}"
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+- name: install keys package
+  package:
+    name: distribution-gpg-keys
+    state: latest
+
+#- name: get RPM Fusion release keys
+#  get_url:
+#    url: "{{ item }}"
+#    dest: "/tmp/{{ item | regex_replace ('^.*=','') }}"
+#    mode: '0644'
+#  loop:
+#    - "{{ key }}"
+#    - "{{ nf_key }}"
+
+- name: Import keys
+#  shell: rpmkeys --import "/tmp/fusion.key"
+  rpm_key:
+    state: present
+    key: "{{ item }}"
+  loop:
+    - "{{ key }}"
+    - "{{ nf_key }}"
+
+- name: install RPM Fusion Repositories
+  action: "{{ ansible_pkg_mgr }} name={{ item }} state=present"
+  loop:
+    - "{{ url }}"
+    - "{{ nf_url }}"
+  
+...

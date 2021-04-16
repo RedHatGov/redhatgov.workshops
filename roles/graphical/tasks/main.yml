@@ -53,7 +53,7 @@
   block:
 
   - name: Install GUI components and Xrdp build reqs on RHEL 8
-    command: yum -y install @graphical-server-environment tigervnc-server 'xorg-*' coreutils wget --skip-broken
+    command: yum -y install @graphical-server-environment tigervnc-server 'xorg-*' coreutils wget --skip-broken --disablerepo='rpmfusion-*'
     # currently, the group is not properly resolved, against RHUI, with yum
 #      yum:
 #        name:
@@ -209,13 +209,13 @@
   block:
 
   - name: open XRDP port in firewalld (permanent)
-    firewalld:
+    ansible.posix.firewalld:
       port: "3389/tcp"
       state: enabled
       permanent: yes
 
   - name: open XRDP port in firewalld (immediate)
-    firewalld:
+    ansible.posix.firewalld:
       port: "3389/tcp"
       state: enabled
       immediate: yes

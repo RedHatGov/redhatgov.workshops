@@ -1,0 +1,19 @@
+---
+
+fusion_6:
+  key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-el-6
+  nf_key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-nonfree-el-6
+  url: https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-6.noarch.rpm
+  nf_url: https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-6.noarch.rpm
+fusion_7:
+  key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-el-7
+  nf_key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-nonfree-el-7
+  url: https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
+  nf_url: https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-7.noarch.rpm
+fusion_8:
+  key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-el-8
+  nf_key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-nonfree-el-8
+  url: https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
+  nf_url: https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-8.noarch.rpm
+
+...

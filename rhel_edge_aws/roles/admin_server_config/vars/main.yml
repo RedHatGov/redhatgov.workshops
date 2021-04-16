@@ -1,0 +1,4 @@
+# file: roles/admin_server_config/vars/main.yml
+---
+#
+# foo: bar
