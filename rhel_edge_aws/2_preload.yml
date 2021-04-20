@@ -87,6 +87,16 @@
       url: https://archive.org/download/rhel-8.3-x86_64-resources/rhel-8.3-x86_64-boot.iso
       dest: /build
 
+#  - name: stage rhel 8.3 boot ISO
+#    amazon.aws.aws_s3:
+#      bucket: rhel-edge
+#      object: rhel-8.3-x86_64-boot.iso
+#      profile: "{{ aws_profile }}"
+#      aws_access_key: "{{ aws_access_key_id }}"
+#      aws_secret_key: "{{ aws_secret_access_key }}"
+#      dest: /build/rhel-8.3-x86_64-boot.iso
+#      mode: get
+
   - name: create build dirs
     file:
       path: "{{ item }}"
