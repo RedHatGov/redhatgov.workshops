@@ -298,6 +298,12 @@
     - set_fact:
         hostip: "{{ vmnet.stdout | regex_replace('.*=','') | regex_replace('\\.[0-9]{1,3}/[0-9]{1,2}$','.2') }}"
 
+    - name: add ip address to eth0
+      command: "sudo nmcli con mod 'System eth0' +ipv4.addresses {{ hostip }}/24"
+
+    - name: apply changed ip
+      command: "sudo nmcli con up 'System eth0'"
+
     - name: create container registry
       file:
         path: "/var/lib/registry"
