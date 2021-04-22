@@ -68,6 +68,7 @@
         name: "{{ item }}"
         state: latest
       loop:
+        - bash-completion
         - composer-cli
         - cowsay
         - figlet
@@ -193,16 +194,16 @@
         repo: https://github.com/ajacocks/qemu.git
         dest: ~ec2-user/edge-workshop
 
-#    - name: copy package
-#      copy:
-#        src: "{{ item }}"
-#        dest: "~ec2-user/"
-#      with_fileglob:
-#        - "/build/rpmbuild/RPMS/x86_64/qemu-full*rpm"
+    - name: copy package
+      copy:
+        src: "{{ item }}"
+        dest: "/work/"
+      with_fileglob:
+        - "/build/rpmbuild/RPMS/x86_64/qemu-full*rpm"
 
     - name: find package
       find:
-        paths: "/build/rpmbuild/RPMS/x86_64"
+        paths: "/work"
         file_type: file
         patterns: "*.rpm"
       register: packages
