@@ -1,0 +1,35 @@
+---
+# defaults file for roles/aws
+#region: "us-east-2"
+#nodes:
+#  rhel:
+#    ami_id: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+#    instance_type: "t2.small"
+#  win:
+#    ami_id: "ami-0ca3e3965ada31684" # Windows_Server-2016-English-Full-Base-2018.09.15
+#    instance_type: "t2.large"
+
+regions:
+  us-east-1:
+    rhel6:
+      ami: "ami-059897226432ec347" # RHEL-6.10_HVM-20190524-x86_64-0-Hourly2-GP2
+    rhel7:
+#      ami: "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-6408521b" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+    rhel8:
+      ami: "ami-02dadfb74f3ef24c7" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+    win2016:
+      ami: "ami-0bf148826ef491d16" # Windows_Server-2016-English-Full-Base-2019.02.13
+  us-east-2:
+    rhel6:
+      ami: "ami-0fcbf553f091053d7" # RHEL-6.10_HVM-20190524-x86_64-0-Hourly2-GP2
+    rhel7:
+#      ami: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+    rhel8:
+#      ami: "ami-0b2821bf4a7dba483" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+      ami: "ami-0a54aef4ef3b5f881" # RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2
+    win2016:
+      ami: "ami-08b4a0f6e106c1dba" # Windows_Server-2016-English-Full-Base-2019.02.13
+
+...
