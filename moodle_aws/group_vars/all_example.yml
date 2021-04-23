@@ -7,9 +7,9 @@
 ###############################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
-workshop_prefix:                  "rhel" # Workshop name - NO underscores!
+workshop_prefix:                  "moodle" # Workshop name - NO underscores!
 execution:                        "local" # when not running from Tower, define this variable
-graphical:                        "true" # when true, install a graphical desktop on the tower nodes
+graphical:                        "false" # when true, install a graphical desktop on the tower nodes
 
 ###############################################################################
 # ANSIBLE ROLE KEY         |      VALUE
@@ -32,11 +32,11 @@ ebs_root_block_size:              50
 #------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3.large"
-rhel_instance_type:               "t3.small"
+rhel_instance_type:               "t3a.large"
 tower_instance_type:              "t3.small"
 #------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
-cloud_access:                     false
+cloud_access:                     true
 # subscription_manager     |      Red Hat Subscription via username & password
 username:                         ""
 password:                         ""
@@ -87,6 +87,6 @@ vpc_rhel_ids_path:                "{{ deploy_working_dir }}/{{ workshop_prefix }
 ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
 system_user:                      "ec2-user"    # AWS
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
-workshop:                         "rhel8"
+workshop:                         "moodle"
 workshop_name:                    "{{ workshop }}"
-workshop_abbrev:                  "r8" # the 2-letter abbreviation for the type of workshop being run
+workshop_abbrev:                  "md" # the 2-letter abbreviation for the type of workshop being run
