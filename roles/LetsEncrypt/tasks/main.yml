@@ -1,20 +1,15 @@
 # file: roles/LetsEncrypt/tasks/main.yml
 ---
 
-- name: "Install required packages for LetsEncrypt"
-  package:
-    name:
-      - python3-botocore
-      - python3-boto3
-    state: latest
+- name: "HTTP-01 Challenge Not Completely Implemented"
+  fail:
+  when: acme_challenge_type == 'http-01'
 
-- name: "Create required directories in /etc/letsencrypt"
+- name: "Create required directories in {{ letsencrypt_dir }}"
   file:
-    path: "/etc/letsencrypt/{{ item }}"
+    path: "{{ letsencrypt_dir }}/{{ item }}"
     state: directory
-    owner: root
-    group: root
-    mode: u=rwx,g=x,o=x
+    mode: "0700"
   with_items:
   - account
   - certs
@@ -27,25 +22,19 @@
     creates: "{{ letsencrypt_account_key }}"
 
 - name: "Generate Let's Encrypt private key"
-  shell: "openssl genrsa 4096 | tee /etc/letsencrypt/keys/{{ domain_name }}.key"
+  shell: "openssl genrsa 4096 | tee {{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
   args:
-    creates: "/etc/letsencrypt/keys/{{ domain_name }}.key"
+    creates: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
 
 - name: "Generate Let's Encrypt CSR"
   community.crypto.openssl_csr:
-    privatekey_path: "/etc/letsencrypt/keys/{{ domain_name }}.key"
+    privatekey_path: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
     common_name: "{{ workshop_prefix }}.node.0.{{ domain_name }}"
-#    subject_alt_name: "DNS:{{ domain_name }},DNS:www.{{ domain_name }}"
     subject_alt_name: "{{ groups['rhel_nodes'] | map('regex_replace', '^', 'DNS:') }}"
-    path: "/etc/letsencrypt/csrs/{{ domain_name }}.csr"
+    path: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
 
-#- name: "Generate Let's Encrypt CSR"
-#  shell: "openssl req -new -sha256 -key /etc/letsencrypt/keys/{{ domain_name }}.key -subj \"/CN={{ domain_name }}\" -reqexts SAN -config <(cat /etc/ssl/openssl.cnf <(printf \"\n[SAN]\nsubjectAltName=DNS:{{ domain_name }},DNS:www.{{ domain_name }}\")) | tee /etc/letsencrypt/csrs/{{ domain_name }}.csr"
-#  args:
-#    executable: /bin/bash
-#    creates: "/etc/letsencrypt/csrs/{{ domain_name }}.csr"
-
-- debug:
+- name: "CSR data"
+  debug:
     msg:
     - "account_key_src: {{ letsencrypt_account_key }}"
     - "account_email: {{ acme_email }}"
@@ -56,7 +45,7 @@
     - "csr: {{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
     - "dest: {{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
     - "fullchain_dest: {{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}.crt"
-    - "remaining_days: 91"
+    - "remaining_days: {{ letsencrypt_days }}"
 
 - name: "Begin Let's Encrypt challenges"
   community.crypto.acme_certificate:
@@ -72,7 +61,8 @@
     remaining_days: 91
   register: acme_challenge_your_domain
 
-- debug:
+- name: "Challenge data"
+  debug:
     var: acme_challenge_your_domain
 
 - name: "Create .well-known/acme-challenge directory"
@@ -82,42 +72,33 @@
     owner: root
     group: root
     mode: "0755"
+  when: acme_challenge_type == 'http-01'
 
-#- name: "Implement http-01 challenge files"
-#  copy:
-#    content: "{{ acme_challenge_your_domain['challenge_data'][item]['http-01']['resource_value'] }}"
-#    dest: "/var/www/html/{{ acme_challenge_your_domain['challenge_data'][item]['http-01']['resource'] }}"
-#    owner: root
-#    group: root
-#    mode: "0644"
-#  with_items:
-#  - "{{ domain_name }}"
-#  - "www.{{ domain_name }}"
-
-- name: Challenge data
-  debug:
-#    msg: "User {{ item.key }} is {{ item.value['dns-01']record }} ({{ item.value['dns-01']resource_value }})"
-    msg: "{{ item.key }} is {{ item.value }}"
-  loop: "{{ acme_challenge_your_domain['challenge_data'] | dict2items }}"
-
-- name: Challenge data
-  debug:
-    msg:
-    - "{{ item.value['dns-01']['record'] }}"
-    - "{{ item.value['dns-01']['resource_value'] }}"
-  loop: "{{ acme_challenge_your_domain['challenge_data'] | dict2items }}"
+- name: "Implement http-01 challenge files"
+  copy:
+    content: "{{ acme_challenge_your_domain['challenge_data'][item]['http-01']['resource_value'] }}"
+    dest: "/var/www/html/{{ acme_challenge_your_domain['challenge_data'][item]['http-01']['resource'] }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+  - "{{ domain_name }}"
+  - "www.{{ domain_name }}"
+  when: acme_challenge_type == 'http-01'
 
 - name: Create DNS records for LE Challenge
   route53:
     zone: "{{ domain_name }}"
     type: "TXT"
     ttl: "300"
+    overwrite: yes
     record: "{{ item.value['dns-01']['record'] }}"
-    value: "{{ item.value['dns-01']['resource_value'] }}"
-#    wait: yes
+    value: "\"{{ item.value['dns-01']['resource_value'] }}\""
+    wait: yes
     state: present
   loop: "{{ acme_challenge_your_domain['challenge_data'] | dict2items }}"
   become: false
+  when: acme_challenge_type == 'dns-01'
 
 - name: "Complete Let's Encrypt challenges"
   community.crypto.acme_certificate:
