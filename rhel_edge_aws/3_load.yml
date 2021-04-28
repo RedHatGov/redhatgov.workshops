@@ -63,20 +63,27 @@
       command: "nmcli con mod 'System eth0' connection.id eth0"
       when: eth0_result.rc == 1
 
-    - name: install lorax composer required packages
+    - name: install required packages
       package:
         name: "{{ item }}"
         state: latest
       loop:
+        - bash-completion
         - composer-cli
+        - cowsay
+        - figlet
+        - golang
         - lorax-composer
+
+    - name: install containers-tools
+      command: "dnf -y module install container-tools"
 
     - name: add system user to weldr group
       user:
         name: ec2-user
         groups:
           - "weldr"
-    
+ 
 - name: Ensure python3-pip installed for powerline (RHEL 8)
   become: yes
   remote_user: ec2-user
@@ -137,14 +144,22 @@
   roles:
     - role: subscription_manager 
 
-- name: Open ports 80,443 on nodes
+- name: Open firewalld ports on nodes
   become: yes
   remote_user: ec2-user
   hosts:
     - rhel_nodes
   gather_facts: yes
   tasks:
-    - name: open firewalld ports
+#    - name: open firewalld ports
+#      ansible.posix.firewalld:
+#        port: "{{ item }}"
+#        permanent: yes
+#        state: enabled
+#      with_items:
+#      - '8000/tcp'
+
+    - name: open firewalld services
       ansible.posix.firewalld:
         service: "{{ item }}"
         permanent: yes
@@ -152,7 +167,8 @@
       with_items:
       - 'http'
       - 'https'
-    - name: restart service
+
+    - name: restart firewalld service
       service:
         name: firewalld
         state: reloaded
@@ -181,13 +197,13 @@
     - name: copy package
       copy:
         src: "{{ item }}"
-        dest: "~ec2-user/"
+        dest: "/work/"
       with_fileglob:
         - "/build/rpmbuild/RPMS/x86_64/qemu-full*rpm"
 
     - name: find package
       find:
-        paths: "~ec2-user"
+        paths: "/work"
         file_type: file
         patterns: "*.rpm"
       register: packages
@@ -265,42 +281,135 @@
 
     - name: link workshop dir to home directory
       file:
-        src: "/work/workshop"
+        src: "/work/workshop/src/edge-workshop"
         dest: "~ec2-user/workshop"
         state: link
       become: no
 
+    - name: regenerate edge.ks
+      shell:
+        cmd: ". ./demo.conf && envsubst < edge.ks.orig > edge.ks"
+        chdir: "~ec2-user/workshop"
+      become: no
+
+    - name: get VM_NET
+      command: egrep ^VM_NET ~ec2-user/workshop/demo.conf
+      register: vmnet
+
+    - set_fact:
+        hostip: "{{ vmnet.stdout | regex_replace('.*=','') | regex_replace('\\.[0-9]{1,3}/[0-9]{1,2}$','.2') }}"
+
+    - name: add ip address to eth0
+      command: "sudo nmcli con mod 'System eth0' +ipv4.addresses {{ hostip }}/24"
+
+    - name: apply changed ip
+      command: "sudo nmcli con up 'System eth0'"
+
+    - name: create container registry
+      file:
+        path: "/var/lib/registry"
+        state: directory
+
+    - name: update registries.conf with dummy entry
+      command: sed -i.bak '/\[registries.insecure\]/!b;n;cdummy'  /etc/containers/registries.conf
+
+    - name: update dummy entry with hostip
+      command: sed -i "s/dummy/registries = ['{{ hostip }}:5000']/g" /etc/containers/registries.conf
+
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+
+    - debug:
+        var: ansible_facts.services
+
+    - name: create and start registry service
+      block:
+
+      - name: get registry name for podman service
+        command: >
+          podman run --privileged -d --name registry \
+          -p 5000:5000  -v /var/lib/registry:/var/lib/registry:Z \
+          --restart=always docker.io/library/registry:2
+        register: ctrid
+
+      - name: generate systemd unit file for podman
+        command: "podman generate systemd --new --files --name {{ ctrid.stdout }}"
+        args:
+          creates: container-registry.service
+
+      - name: stop podman
+        command: podman stop --all
+
+      - name: remove all podman content
+        command: podman rm -f --all
+
+      - name: install container registry service
+        copy:
+          src: container-registry.service
+          dest: /etc/systemd/system/
+          remote_src: yes
+
+      - name: apply systemd info
+        command: restorecon -vFr /etc/systemd/system
+
+      - name: start and enable container registry service
+        systemd:
+          name: container-registry.service
+          enabled: yes
+          state: started
+          daemon_reload: yes
+      when: ansible_facts.services['container-registry.service'] is not defined
+
     - name: stage rhel 8.3 boot ISO
       copy:
         src: "/build/rhel-8.3-x86_64-boot.iso"
-        dest: "/work/workshop/"
+        dest: "~ec2-user/workshop/"
       become: no
    
-    - name: create osbuild-composer work directory
+    - name: create osbuild work directories
       file:
         state: directory
-        path: "/work/workshop/osbuild-composer"
+        path: "{{ item }}"
         owner: _osbuild-composer
         group: _osbuild-composer
+      loop:
+        - "/work/workshop/cache/osbuild-composer"
+        - "/work/workshop/cache/osbuild-worker"
+        - "/work/workshop/lib/osbuild-composer"
 
     - name: apply proper context to directory
       community.general.sefcontext:
-        target: '/work/workshop/osbuild-composer(/.*)?'
+        target: "{{ item }}(/.*)?"
         setype: var_lib_t
         state: present
+      loop:
+        - "/work/workshop/cache/osbuild-composer"
+        - "/work/workshop/cache/osbuild-worker"
+        - "/work/workshop/lib/osbuild-composer"
 
     - name: Apply new SELinux file context to filesystem
       ansible.builtin.command: restorecon -irv /work/workshop
    
-    - name: create osbuild-composer work directory
+    - name: create osbuild-composer work directories
       file:
         state: directory
-        path: "/etc/systemd/system/osbuild-composer.service.d"
+        path: "{{ item }}"
+      loop:
+        - "/etc/systemd/system/osbuild-composer.service.d"
+        - "/etc/systemd/system/osbuild-worker@.service.d"
 
     - name: change osbuild composer cache and state directories
       copy:
         src: "osbuild-override.conf"
         dest: "/etc/systemd/system/osbuild-composer.service.d/override.conf"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: change osbuild composer cache and state directories
+      copy:
+        src: "osbuild-worker-override.conf"
+        dest: "/etc/systemd/system/osbuild-worker@.service.d/override.conf"
         owner: root
         group: root
         mode: "0644"

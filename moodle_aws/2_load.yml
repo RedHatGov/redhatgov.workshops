@@ -1,0 +1,204 @@
+# file: 2_load.yml
+---
+
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tags:
+    - wait
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.rhel_nodes }}"
+
+#- name: Subscribe system
+#  become: yes
+#  remote_user: ec2-user
+#  hosts:
+#    - rhel_nodes
+#  tags:
+#    - rhsm
+#  gather_facts: yes
+#  roles:
+#    - role: subscription_manager 
+#
+#- name: Configure epel on nodes
+#  become: yes
+#  remote_user: ec2-user
+#  hosts: rhel_nodes
+#  tags:
+#    - epel
+#  roles:
+#    - role: epel
+#
+#- name: Configure software on nodes
+#  become: yes
+#  remote_user: ec2-user
+#  hosts: rhel_nodes
+#  gather_facts: no
+#  tags:
+#    - software
+#  roles:
+#    - role: ansible.tower
+#    - role: firewalld
+#    - role: system-user
+#  tasks:
+#    - name: enable nginx module
+#      ini_file:
+#        path: /etc/dnf/modules.d/nginx.module
+#        section: "{{ item.section }}"
+#        option: "{{ item.option }}"
+#        value: "{{ item.value }}"
+#        no_extra_spaces: yes
+#      with_items:
+#        - { section: "nginx", option: "name", value: "nginx" }
+#        - { section: "nginx", option: "stream", value: "1.14" }
+#        - { section: "nginx", option: "profiles", value: "" }
+#        - { section: "nginx", option: "state", value: "enabled" }
+#
+#    - name: enable php module
+#      ini_file:
+#        path: /etc/dnf/modules.d/php.module
+#        section: "{{ item.section }}"
+#        option: "{{ item.option }}"
+#        value: "{{ item.value }}"
+#        no_extra_spaces: yes
+#      with_items:
+#        - { section: "php", option: "name", value: "php" }
+#        - { section: "php", option: "stream", value: "7.4" }
+#        - { section: "php", option: "profiles", value: "" }
+#        - { section: "php", option: "state", value: "enabled" }
+#
+#    - name: install LEMP stack
+#      package:
+#        name:
+#        - mariadb
+#        - mariadb-server
+#        - nginx
+#        - php
+#        - php-opcache
+#        - php-gd
+#        - php-curl
+#        - php-mysqlnd
+#        state: latest
+#
+#    - name: change php fam user and group
+#      ini_file:
+#        path: /etc/php-fpm.d/www.conf
+#        section: "{{ item.section }}"
+#        option: "{{ item.option }}"
+#        value: "{{ item.value }}"
+#        no_extra_spaces: no
+#      with_items:
+#        - { section: "www", option: "user", value: "nginx" }
+#        - { section: "www", option: "group", value: "nginx" }
+#
+#    - name: link nginx document root to nginx
+#      file:
+#        src: /usr/share/nginx/html
+#        dest: /var/www/html
+#        state: link
+#        force: yes
+#
+#    - name: install test page
+#      copy:
+#        src: info.php
+#        dest: /usr/share/nginx/html/info.php
+#
+#    - name: start and enable nginx and php-fpm
+#      systemd:
+#        name: "{{ item }}"
+#        state: started
+#        enabled: yes
+#      with_items:
+#        - nginx
+#        - php-fpm
+#
+#    - name: open http firewalld port
+#      firewalld:
+#        service: http
+#        state: enabled
+#        immediate: yes
+#        permanent: yes
+
+- name: Configure letsencrypt
+  become: yes
+  remote_user: ec2-user
+  hosts: le_node
+  gather_facts: no
+  tags:
+    - letsencrypt
+  roles:
+    - role: LetsEncrypt
+
+- name: Configure web console (RHEL 7)
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  tags:
+    - wetty
+  roles:
+    - role: wetty
+      when: rhel_ver == 'rhel7'
+
+- name: Configure web console (RHEL 8)
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  tags:
+    - webconsole
+  roles:
+    - role: cockpit
+      when: rhel_ver == 'rhel8'
+
+- name: Upgrade packages
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  tags:
+    - upgrade
+  roles:
+    - role: upgrade
+
+- name: Re-enable SCL repo when upgrade disables it
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tags:
+    - upgrade
+  roles:
+    - role: subscription_manager 
+
+#- name: Custom installations
+#  become: yes
+#  remote_user: ec2-user
+#  hosts:
+#    - rhel_nodes
+#  gather_facts: yes
+#  tags:
+#    - custom
+#  tasks:
+
+- name: Check to make sure that the web console is listening
+  become: no
+  hosts:
+    - rhel_nodes
+  gather_facts: no
+  tasks:
+    - uri:
+        url: "https://{{ inventory_hostname }}:9090/system"
+        url_username: "{{ system_user }}"
+        url_password: "{{ workshop_password }}"
+        validate_certs: no
+      delegate_to: localhost
+
+...
