@@ -1,0 +1,256 @@
+---
+#===============================================================================
+#  Gather facts from AWS to use for deletion
+#===============================================================================
+- amazon.aws.ec2_vpc_net_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-vpc"
+  register: ec2_vpc
+
+- name: debug subnets object
+  debug:
+    msg: "{{ ec2_vpc }}"
+
+- amazon.aws.ec2_vpc_subnet_info:
+    region: "{{ region }}"
+    filters:
+      vpc-id: "{{ ec2_vpc.vpcs.0.id }}"
+  register: ec2_subnet
+
+- name: debug subnets object
+  debug:
+    msg: "{{ ec2_subnet }}"
+
+- name: get rhel admin hosts
+  community.aws.ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
+  register: ec2_rhel_admin
+
+- name: debug rhel admin hosts object
+  debug:
+    msg: "{{ ec2_rhel_admin }}"
+
+- name: get rhel instance hosts
+  community.aws.ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel"
+  register: ec2_rhel
+
+- name: get tower instance hosts
+  community.aws.ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-tower_rhel"
+  register: ec2_tower_rhel
+
+- name: get win instance hosts
+  community.aws.ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-win"
+  register: ec2_win
+
+#===============================================================================
+#  De-Provisioning
+#===============================================================================
+
+- name: set RHEL AMI to use
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].ami }}"
+  when: not beta|bool
+
+- name: set RHEL AMI to use (beta)
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
+  when: beta|bool
+
+- name: RHEL AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami }}"
+
+- name: Windows AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ regions[region][win_ver].ami }}"
+
+- name: Delete DNS records for RHEL admin
+  route53:
+    zone: "{{ openshift_cluster_base_domain }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
+    value: "{{ item.public_dns_name }}"
+    state: "{{ aws_state }}"
+  loop: "{{ ec2_rhel_admin.instances }}"
+  ignore_errors: true
+
+- name: Delete DNS records for RHEL
+  route53:
+    zone: "{{ openshift_cluster_base_domain }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }}"
+    value: "{{ item.public_dns_name }}"
+    state: "{{ aws_state }}"
+  loop: "{{ ec2_rhel.instances }}"
+  ignore_errors: true
+
+- name: Delete DNS records for RHEL Towers
+  route53:
+    zone: "{{ openshift_cluster_base_domain }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.tower.{{ item.ami_launch_index }}.{{ domain_name }}"
+    value: "{{ item.public_dns_name }}"
+    state: "{{ aws_state }}"
+  loop: "{{ ec2_tower_rhel.instances }}"
+  ignore_errors: true
+
+- name: Delete DNS records for Windows
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
+    value: "{{ item.public_dns_name }}"
+    state: "{{ aws_state }}"
+  loop: "{{ ec2_win.instances }}"
+  ignore_errors: true
+
+- name: Delete RHEL admin host
+  ec2:
+    region: "{{ region }}"
+    image: "{{ rhel_ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnets.0.subnet_id }}"
+    wait: true
+    exact_count: 0
+  register: ec2_rhel_admin
+
+- name: Delete RHEL instances
+  ec2:
+    assign_public_ip: yes
+    image: "{{ rhel_ami }}"
+    region: "{{ region }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnets.0.subnet_id }}"
+    wait: true
+    exact_count: 0
+    count_tag: rhel
+  register: ec2_rhel
+
+- name: Delete RHEL Tower instances
+  ec2:
+    region: "{{ region }}"
+    image: "{{ rhel_ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnets.0.subnet_id }}"
+    wait: true
+    exact_count: 0
+    count_tag: tower_rhel
+  register: ec2_tower_rhel
+
+- debug:
+    var: ec2_rhel_admin
+
+- debug:
+    var: ec2_rhel
+
+- debug:
+    var: ec2_tower_rhel
+
+- name: Delete Windows instances
+  ec2:
+    region: "{{ region }}"
+    image: "{{ regions[region][win_ver].ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnets.0.subnet_id }}"
+    wait: true
+    exact_count: 0
+    count_tag: win
+  register: ec2_win
+
+- debug:
+    var: ec2_win
+
+- name: Delete RHEL security group
+  ec2_group:
+    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
+    description: "SG for RHEL hosts"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    state: "{{ aws_state }}"
+  register: result
+
+- debug:
+    var: result
+
+- name: Delete Windows security group
+  ec2_group:
+    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-win-sg"
+    description: "SG for Windows hosts"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    state: "{{ aws_state }}"
+
+- name: Delete VPC internet gateway
+  ec2_vpc_igw:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    state: "{{ aws_state }}"
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-igw"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+  register: ec2_igw
+
+- debug:
+    var: result
+
+- name: Delete VPC route table
+  ec2_vpc_route_table:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    subnets: "{{ ec2_subnet.subnets }}"
+    lookup: tag
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-route"
+    state: "{{ aws_state }}"
+  register: ec2_route
+
+- debug:
+    var: ec2_route
+
+- name: Delete public subnet
+  ec2_vpc_subnet:
+    cidr: "10.0.2.0/24"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-subnet"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    wait: yes
+    state: "{{ aws_state }}"
+  register: ec2_subnet
+  ignore_errors: yes
+
+- debug:
+    var: ec2_subnet
+
+- name: Delete VPC
+  ec2_vpc_net:
+    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-vpc"
+    region: "{{ region }}"
+    cidr_block: "10.0.0.0/16"
+    state: "{{ aws_state }}"
+  register: temp_ec2_vpc
+
+- name: Delete EC2 keypair
+  ec2_key:
+    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    region: "{{ region }}"
+    state: "{{ aws_state }}"
+  register: ec2_key
+...
