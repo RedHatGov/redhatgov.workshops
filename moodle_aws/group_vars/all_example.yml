@@ -48,6 +48,21 @@ rhsm_org_id:                      ""
 # LetsEncrypt              |      email
 letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
+acme_challenge_type:              "dns-01"
+#acme_challenge_type:              "http-01"
+# production directory
+#acme_directory:                   "https://acme-v02.api.letsencrypt.org/directory"
+# staging directory
+acme_directory:                   "https://acme-staging-v02.api.letsencrypt.org/directory"
+acme_version:                     2
+acme_email:                       ""
+letsencrypt_days:                 "91"
+letsencrypt_dir:                  "{{ deploy_working_dir }}/letsencrypt"
+letsencrypt_keys_dir:             "{{ letsencrypt_dir }}/keys"
+letsencrypt_csrs_dir:             "{{ letsencrypt_dir }}/csrs"
+letsencrypt_certs_dir:            "{{ letsencrypt_dir }}/certs"
+letsencrypt_account_key:          "{{ letsencrypt_dir }}/account/account.key"
+letsencrypt_wildcard:             false
 #------------------------------------------------------------------------------
 # wetty                    |      password
 workshop_password:                "" # Note that Windows 2016 requires 3 character classes and 10 characters
