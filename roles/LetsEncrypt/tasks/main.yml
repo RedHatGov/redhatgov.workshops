@@ -29,9 +29,18 @@
 - name: "Generate Let's Encrypt CSR"
   community.crypto.openssl_csr:
     privatekey_path: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
-    common_name: "{{ workshop_prefix }}.node.0.{{ domain_name }}"
+#    common_name: "{{ workshop_prefix }}.node.0.{{ domain_name }}"
+    common_name: "node-0.{{ workshop_prefix }}.{{ domain_name }}"
     subject_alt_name: "{{ groups['rhel_nodes'] | map('regex_replace', '^', 'DNS:') }}"
-    path: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
+    path: "{{ letsencrypt_csrs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.csr"
+  when: not letsencrypt_wildcard | bool
+
+- name: "Generate Let's Encrypt CSR (wildcard)"
+  community.crypto.openssl_csr:
+    privatekey_path: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
+    common_name: "*.{{ workshop_prefix }}.{{ domain_name }}"
+    path: "{{ letsencrypt_csrs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.csr"
+  when: letsencrypt_wildcard | bool
 
 - name: "CSR data"
   debug:
@@ -42,9 +51,9 @@
     - "acme_version: {{ acme_version }}"
     - "terms_agreed: yes"
     - "challenge: {{ acme_challenge_type }}"
-    - "csr: {{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
-    - "dest: {{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
-    - "fullchain_dest: {{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}.crt"
+    - "csr: {{ letsencrypt_csrs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.csr"
+    - "dest: {{ letsencrypt_certs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.crt"
+    - "fullchain_dest: {{ letsencrypt_certs_dir }}/fullchain_{{ workshop_prefix }}.{{ domain_name }}.crt"
     - "remaining_days: {{ letsencrypt_days }}"
 
 - name: "Begin Let's Encrypt challenges"
@@ -55,9 +64,9 @@
     acme_version: "{{ acme_version }}"
     terms_agreed: "yes"
     challenge: "{{ acme_challenge_type }}"
-    csr: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
-    dest: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
-    fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}.crt"
+    csr: "{{ letsencrypt_csrs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.csr"
+    dest: "{{ letsencrypt_certs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.crt"
+    fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ workshop_prefix }}.{{ domain_name }}.crt"
     remaining_days: 91
   register: acme_challenge_your_domain
 
@@ -107,10 +116,10 @@
     account_key_src: "{{ letsencrypt_account_key }}"
     account_email: "{{ acme_email }}"
     challenge: "{{ acme_challenge_type }}"
-    csr: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
-    dest: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
-    chain_dest: "{{ letsencrypt_certs_dir }}/chain_{{ domain_name }}.crt"
-    fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}"
+    csr: "{{ letsencrypt_csrs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.csr"
+    dest: "{{ letsencrypt_certs_dir }}/{{ workshop_prefix }}.{{ domain_name }}.crt"
+    chain_dest: "{{ letsencrypt_certs_dir }}/chain_{{ workshop_prefix }}.{{ domain_name }}.crt"
+    fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ workshop_prefix }}.{{ domain_name }}"
     data: "{{ acme_challenge_your_domain }}"
 
 ...

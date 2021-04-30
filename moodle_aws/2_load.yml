@@ -15,125 +15,164 @@
       with_items:
         - "{{ groups.rhel_nodes }}"
 
-#- name: Subscribe system
-#  become: yes
-#  remote_user: ec2-user
-#  hosts:
-#    - rhel_nodes
-#  tags:
-#    - rhsm
-#  gather_facts: yes
-#  roles:
-#    - role: subscription_manager 
-#
-#- name: Configure epel on nodes
-#  become: yes
-#  remote_user: ec2-user
-#  hosts: rhel_nodes
-#  tags:
-#    - epel
-#  roles:
-#    - role: epel
-#
-#- name: Configure software on nodes
-#  become: yes
-#  remote_user: ec2-user
-#  hosts: rhel_nodes
-#  gather_facts: no
-#  tags:
-#    - software
-#  roles:
-#    - role: ansible.tower
-#    - role: firewalld
-#    - role: system-user
-#  tasks:
-#    - name: enable nginx module
-#      ini_file:
-#        path: /etc/dnf/modules.d/nginx.module
-#        section: "{{ item.section }}"
-#        option: "{{ item.option }}"
-#        value: "{{ item.value }}"
-#        no_extra_spaces: yes
-#      with_items:
-#        - { section: "nginx", option: "name", value: "nginx" }
-#        - { section: "nginx", option: "stream", value: "1.14" }
-#        - { section: "nginx", option: "profiles", value: "" }
-#        - { section: "nginx", option: "state", value: "enabled" }
-#
-#    - name: enable php module
-#      ini_file:
-#        path: /etc/dnf/modules.d/php.module
-#        section: "{{ item.section }}"
-#        option: "{{ item.option }}"
-#        value: "{{ item.value }}"
-#        no_extra_spaces: yes
-#      with_items:
-#        - { section: "php", option: "name", value: "php" }
-#        - { section: "php", option: "stream", value: "7.4" }
-#        - { section: "php", option: "profiles", value: "" }
-#        - { section: "php", option: "state", value: "enabled" }
-#
-#    - name: install LEMP stack
-#      package:
-#        name:
-#        - mariadb
-#        - mariadb-server
-#        - nginx
-#        - php
-#        - php-opcache
-#        - php-gd
-#        - php-curl
-#        - php-mysqlnd
-#        state: latest
-#
-#    - name: change php fam user and group
-#      ini_file:
-#        path: /etc/php-fpm.d/www.conf
-#        section: "{{ item.section }}"
-#        option: "{{ item.option }}"
-#        value: "{{ item.value }}"
-#        no_extra_spaces: no
-#      with_items:
-#        - { section: "www", option: "user", value: "nginx" }
-#        - { section: "www", option: "group", value: "nginx" }
-#
-#    - name: link nginx document root to nginx
-#      file:
-#        src: /usr/share/nginx/html
-#        dest: /var/www/html
-#        state: link
-#        force: yes
-#
-#    - name: install test page
-#      copy:
-#        src: info.php
-#        dest: /usr/share/nginx/html/info.php
-#
-#    - name: start and enable nginx and php-fpm
-#      systemd:
-#        name: "{{ item }}"
-#        state: started
-#        enabled: yes
-#      with_items:
-#        - nginx
-#        - php-fpm
-#
-#    - name: open http firewalld port
-#      firewalld:
-#        service: http
-#        state: enabled
-#        immediate: yes
-#        permanent: yes
-
 - name: Configure letsencrypt
-  become: yes
-  remote_user: ec2-user
-  hosts: le_node
+  hosts: localhost
   gather_facts: no
+  become: no
   tags:
     - letsencrypt
   roles:
     - role: LetsEncrypt
+
+- name: Subscribe system
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  tags:
+    - rhsm
+  gather_facts: yes
+  roles:
+    - role: subscription_manager 
+
+- name: Configure epel on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  tags:
+    - epel
+  roles:
+    - role: epel
+
+- name: Configure software on nodes
+  become: yes
+  remote_user: ec2-user
+  hosts: rhel_nodes
+  gather_facts: no
+  tags:
+    - software
+  roles:
+    - role: ansible.tower
+    - role: firewalld
+    - role: system-user
+  tasks:
+
+    - name: Create directories for LE
+      file:
+        path: "/etc/letsencrypt/{{ item.path }}"
+        state: directory
+        mode: '{{ item.mode }}'
+      with_filetree:
+        - "{{ letsencrypt_dir }}"
+      when: item.state == 'directory'
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: Copy files for LE
+      copy:
+        src: "{{ item.src }}"
+        dest: "/etc/letsencrypt/{{ item.path }}"
+        mode: "{{ item.mode }}"
+      with_filetree:
+        - "{{ letsencrypt_dir }}"
+      when: item.state == 'file'
+      loop_control:
+        label: "{{ item.path }}"
+      notify: restart nginx
+
+    - name: enable nginx module
+      ini_file:
+        path: /etc/dnf/modules.d/nginx.module
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        no_extra_spaces: yes
+      with_items:
+        - { section: "nginx", option: "name", value: "nginx" }
+        - { section: "nginx", option: "stream", value: "1.14" }
+        - { section: "nginx", option: "profiles", value: "" }
+        - { section: "nginx", option: "state", value: "enabled" }
+
+    - name: enable php module
+      ini_file:
+        path: /etc/dnf/modules.d/php.module
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        no_extra_spaces: yes
+      with_items:
+        - { section: "php", option: "name", value: "php" }
+        - { section: "php", option: "stream", value: "7.4" }
+        - { section: "php", option: "profiles", value: "" }
+        - { section: "php", option: "state", value: "enabled" }
+
+    - name: install LEMP stack
+      package:
+        name:
+        - mariadb
+        - mariadb-server
+        - nginx
+        - php
+        - php-opcache
+        - php-gd
+        - php-curl
+        - php-mysqlnd
+        state: latest
+
+    - name: change php fam user and group
+      ini_file:
+        path: /etc/php-fpm.d/www.conf
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        no_extra_spaces: no
+      with_items:
+        - { section: "www", option: "user", value: "nginx" }
+        - { section: "www", option: "group", value: "nginx" }
+
+    - name: link nginx document root to nginx
+      file:
+        src: /usr/share/nginx/html
+        dest: /var/www/html
+        state: link
+        force: yes
+
+    - name: install nginx ssl conf
+      template:
+        src: nginx-ssl.conf.j2
+        dest: /etc/nginx/conf.d/ssl.conf
+        mode: "0644"
+      notify: restart nginx
+
+    - name: install test page
+      copy:
+        src: info.php
+        dest: /usr/share/nginx/html/info.php
+
+    - name: start and enable nginx and php-fpm
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - nginx
+        - php-fpm
+
+    - name: open http and https firewalld ports
+      firewalld:
+        service: "{{ item }}"
+        state: enabled
+        immediate: yes
+        permanent: yes
+      loop:
+        - http
+        - https
+
+  handlers:
+    - name: restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
 
 - name: Configure web console (RHEL 7)
   become: yes

@@ -37,21 +37,21 @@
   ec2_instance_facts:
     region: "{{ region }}"
     filters:
-      tag:rhel_admin: "at-{{ workshop_prefix }}"
+      tag:rhel_admin: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
   register: ec2_rhel_admin
 
 - name: lookup running RHEL instances
   ec2_instance_facts:
     region: "{{ region }}"
     filters:
-      tag:rhel: "at-{{ workshop_prefix }}"
+      tag:rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
   register: ec2_rhel
 
 - name: lookup running RHEL Tower instances
   ec2_instance_facts:
     region: "{{ region }}"
     filters:
-      tag:tower_rhel: "at-{{ workshop_prefix }}"
+      tag:tower_rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
   register: ec2_tower_rhel
 
 - debug:
@@ -79,7 +79,7 @@
   ec2_instance_facts:
     region: "{{ region }}"
     filters:
-      tag:win: "at-{{ workshop_prefix }}"
+      tag:win: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
   register: ec2_win
 
 - name: Append Windows instances to list`
@@ -91,7 +91,7 @@
   ec2_group_facts:
     region: "{{ region }}"
     filters:
-      tag:win: "at-{{ workshop_prefix }}"
+      tag:win: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
   register: ec2_win_grp
 
 - name: Record Windows security group ID
@@ -103,7 +103,7 @@
   ec2_group_facts:
     region: "{{ region }}"
     filters:
-      tag:rhel: "at-{{ workshop_prefix }}"
+      tag:rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
   register: ec2_rhel_grp
 
 - name: Record RHEL security group ID
@@ -154,7 +154,8 @@
   route53:
     state: get
     zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.win2016.{{ dns_idx }}.{{ domain_name }}"
+#    record: "{{ workshop_prefix }}.win2016.{{ dns_idx }}.{{ domain_name }}"
+    record: "win2016-{{ dns_idx }}.{{ workshop_prefix }}.{{ domain_name }}"
     type: CNAME
   register: win_rec
   loop: "{{ win_instance_ids }}"
@@ -165,7 +166,8 @@
   route53:
     state: get
     zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
+#    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
+    record: "admin.{{ workshop_prefix }}.{{ domain_name }}"
     type: CNAME
   register: admin_rhel_rec
   loop: "{{ admin_rhel_instance_ids }}"
@@ -176,7 +178,8 @@
   route53:
     state: get
     zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.node.{{ dns_idx }}.{{ domain_name }}"
+#    record: "{{ workshop_prefix }}.node.{{ dns_idx }}.{{ domain_name }}"
+    record: "node-{{ dns_idx }}.{{ workshop_prefix }}.{{ domain_name }}"
     type: CNAME
   register: rhel_rec
   loop: "{{ rhel_instance_ids }}"
@@ -187,7 +190,8 @@
   route53:
     state: get
     zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.tower.{{ dns_idx }}.{{ domain_name }}"
+#    record: "{{ workshop_prefix }}.tower.{{ dns_idx }}.{{ domain_name }}"
+    record: "tower-{{ dns_idx }}.{{ workshop_prefix }}.{{ domain_name }}"
     type: CNAME
   register: tower_rhel_rec
   loop: "{{ tower_rhel_instance_ids }}"
@@ -212,8 +216,8 @@
 
 - name: Remove Windows instances
   ec2:
-    key_name: "at-{{ workshop_prefix }}-key"
-    group: "at-{{ workshop_prefix }}-win-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-win-sg"
     region: "{{ region }}"
     instance_type: "{{ win_instance_type }}"
     image: "{{ regions[region][win_ver].ami }}"
@@ -258,8 +262,8 @@
 
 - name: Remove RHEL Tower instances
   ec2:
-    key_name: "at-{{ workshop_prefix }}-key"
-    group: "at-{{ workshop_prefix }}-rhel-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ tower_instance_type }}"
     image: "{{ regions[region][rhel_ver].ami }}"
@@ -272,8 +276,8 @@
 
 - name: Remove RHEL admin instances
   ec2:
-    key_name: "at-{{ workshop_prefix }}-key"
-    group: "at-{{ workshop_prefix }}-rhel-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
     image: "{{ regions[region][rhel_ver].ami }}"
@@ -285,8 +289,8 @@
 
 - name: Remove RHEL instances
   ec2:
-    key_name: "at-{{ workshop_prefix }}-key"
-    group: "at-{{ workshop_prefix }}-rhel-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
     image: "{{ regions[region][rhel_ver].ami }}"
@@ -320,13 +324,13 @@
 
 - name: Delete Windows security group
   ec2_group:
-    name: "at-{{ workshop_prefix }}-win-sg"
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-win-sg"
     region: "{{ region }}"
     state: absent
 
 - name: Delete RHEL security group
   ec2_group:
-    name: "at-{{ workshop_prefix }}-rhel-sg"
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     state: absent
 
@@ -338,14 +342,14 @@
 
 - name: Delete VPC
   ec2_vpc_net:
-    name: "at-{{ workshop_prefix }}-vpc"
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-vpc"
     region: "{{ region }}"
     cidr_block: "10.0.0.0/16"
     state: absent
 
 - name: Delete key
   ec2_key:
-    name: "at-{{ workshop_prefix }}-key"
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
     region: "{{ region }}"
     state: absent
 

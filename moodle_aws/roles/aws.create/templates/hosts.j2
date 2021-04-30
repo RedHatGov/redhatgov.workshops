@@ -9,16 +9,19 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env py
 [tower_rhel_nodes]
 {% if tower_rhel_count is defined %}
 {% for n in range( tower_rhel_count|int ) %}
-{{ workshop_prefix }}.tower.{{ n }}.{{ domain_name }}
+tower-{{ n }}.{{ workshop_prefix }}.{{ domain_name }}
 {% endfor %}
 {% endif %}
 
 [tower_rhel_nodes:vars]
 ansible_ssh_private_key_file={{ ssh_key_path }}
 
+[le_node]
+node-0.{{ workshop_prefix }}.{{ domain_name }}
+
 [rhel_nodes]
 {% for n in range( rhel_count|int ) %}
-{{ workshop_prefix }}.node.{{ n }}.{{ domain_name }}
+node-{{ n }}.{{ workshop_prefix }}.{{ domain_name }}
 {% endfor %}
 
 [rhel_nodes:vars]
@@ -26,7 +29,7 @@ ansible_ssh_private_key_file={{ ssh_key_path }}
 
 [win_nodes]
 {% for n in range( win_count|int ) %}
-{{ workshop_prefix }}.win2016.{{ n }}.{{ domain_name }}
+win2016-{{ n }}.{{ workshop_prefix }}.{{ domain_name }}
 {% endfor %}
 
 [win_nodes:vars]
