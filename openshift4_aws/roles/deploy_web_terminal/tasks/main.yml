@@ -12,9 +12,17 @@
     dest: "{{ openshift_build_path }}/cli-timeout.yaml"
 
 - name: login to cluster
-  k8s_auth:
+  community.kubernetes.k8s_auth:
     state: present
+    host: "https://api.{{ openshift_cluster_fqdn }}:6443"
+    username: "{{ openshift_cluster_admin_username }}"
+    password: "{{ openshift_cluster_admin_password }}"
+    validate_certs: no
   register: k8s_auth_results
+
+- name: "Print the k8s_auth_resuts object returned"
+  debug:
+    msg: "{{ k8s_auth_results }}"
 
 - name: apply modified web cli idle timeout configmap
   shell: "{{ openshift_build_path }}/oc apply -f {{ openshift_build_path }}/cli-timeout.yaml"
