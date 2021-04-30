@@ -19,7 +19,7 @@
     dest: "{{ openshift_build_path }}/knative-serving.yml"
 
 - name: Verify KnativeServing Operator is present
-  k8s_info:
+  community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
     namespace: openshift-operators
@@ -41,7 +41,7 @@
     namespace: "openshift-operators"
 
 - name: Wait till the autoscaler is online
-  k8s_info:
+  community.kubernetes.k8s_info:
     kind: Pod
     wait: yes
     name: autoscaler

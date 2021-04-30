@@ -33,7 +33,7 @@
     namespace: "codeready-workspaces"
 
 - name: Verify CodeReady Workspaces Operator is present
-  k8s_info:
+  community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
     namespace: codeready-workspaces
@@ -60,7 +60,7 @@
     namespace: "codeready-workspaces"
 
 - name: Verify CodeReady Pod is present
-  k8s_info:
+  community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
     namespace: codeready-workspaces
