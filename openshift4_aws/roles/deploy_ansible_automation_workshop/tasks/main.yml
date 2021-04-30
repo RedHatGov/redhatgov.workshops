@@ -146,7 +146,6 @@
 
     - name: Run the _aws.create tasks
       include_tasks: _aws_create.yml
-    #    name: "{{ playbook_base_dir | dirname }}/ansible_tower_aws/roles/aws.create }}"
 
     - name: add student rhel SSH credential into Ansible Tower
       awx.awx.tower_credential:
