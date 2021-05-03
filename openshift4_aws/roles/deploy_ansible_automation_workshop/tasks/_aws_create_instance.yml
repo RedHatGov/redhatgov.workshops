@@ -4,14 +4,14 @@
 #===============================================================================
 - name: Debug for Student Provisioning Loop
   debug:
-    msg: "###Provisioning Student-{{ user_id }}"
+    msg: "###Provisioning edge-{{ user_id }}"
 
 #===============================================================================
 #  Create RHEL instance(s) for each student
 #===============================================================================
 
 - name: Query for existing ec2 instance
-  command: aws ec2 describe-instances --region {{ region }} --filter Name=tag:Name,Values="student-{{ user_id }}-{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel" --query "Reservations[].Instances[].PublicDnsName" --output text
+  command: aws ec2 describe-instances --region {{ region }} --filter Name=tag:Name,Values="edge-{{ user_id }}-{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel" --query "Reservations[].Instances[].PublicDnsName" --output text
   register: query_public_dns_name
 
 - debug:
@@ -29,12 +29,12 @@
     wait: true
     state: "{{ aws_state }}"
     instance_tags:
-      Name: "student-{{ user_id }}-{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel"
+      Name: "edge-{{ user_id }}-{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      rhel: "student-{{ user_id }}-{{ openshift_cluster_name }}"
+      rhel: "edge-{{ user_id }}-{{ openshift_cluster_name }}"
       # RH IT Required Tags
-      Route53: "student-{{ user_id }}-{{ workshop_prefix }}.node.0.{{ domain_name }}"
+      Route53: "edge-{{ user_id }}-{{ workshop_prefix }}.node.0.{{ domain_name }}"
       ServiceName: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel"
       ServiceOwner: "{{ local_user }}"
       ServicePhase: "{{ workshop_phase }}"
@@ -50,7 +50,7 @@
   community.aws.ec2_instance_info:
     region: "{{ region }}"
     filters:
-      "tag:Name": "student-{{ user_id }}-{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix}}-rhel"
+      "tag:Name": "edge-{{ user_id }}-{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix}}-rhel"
       instance-state-name: [ "starting", "running" ]
   register: ec2_details
 
@@ -66,22 +66,22 @@
 
 - name: add RHEL hosts to groups
   add_host:
-    name: "student-{{ user_id }}-{{ workshop_abbrev }}-{{ workshop_prefix}}-rhel-{{ ec2_details.instances.0.public_dns_name }}"
+    name: "edge-{{ user_id }}-{{ workshop_abbrev }}-{{ workshop_prefix}}-rhel-{{ ec2_details.instances.0.public_dns_name }}"
     ansible_ssh_host: "{{ ec2_details.instances.0.public_ip_address }}"
     groups: rhel_nodes
 
 - name: create inventory list (node hosts)
   lineinfile:
     path: "{{ deploy_working_dir }}/hostlist"
-    line: "{{ ec2_details.instances.0.public_ip_address }} student-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }} node.{{ ec2_details.instances.0.ami_launch_index }}"
-    regexp: ".*student-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }}.*"
+    line: "{{ ec2_details.instances.0.public_ip_address }} edge-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }} node.{{ ec2_details.instances.0.ami_launch_index }}"
+    regexp: ".*edge-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }}.*"
 
 - name: Add node hosts to inventory
   lineinfile:
     path: "{{ inventory_working_dir }}/hosts"
     insertafter: '^\[rhel_nodes\]$'
-    regexp: "^student-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }}"
-    line: "student-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }} ansible_ssh_host={{ ec2_details.instances.0.public_ip_address }} ansible_host={{ ec2_details.instances.0.public_dns_name }}"
+    regexp: "^edge-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }}"
+    line: "edge-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }} ansible_ssh_host={{ ec2_details.instances.0.public_ip_address }} ansible_host={{ ec2_details.instances.0.public_dns_name }}"
 
 #---------------------------------------------------
 #  DNS
@@ -91,7 +91,7 @@
     zone: "{{ openshift_cluster_base_domain }}"
     type: "CNAME"
     ttl: "300"
-    record: "student-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }}"
+    record: "edge-{{ user_id }}-{{ workshop_prefix }}.node.{{ ec2_details.instances.0.ami_launch_index }}.{{ domain_name }}"
     value: "{{ ec2_details.instances.0.public_dns_name }}"
     state: "{{ aws_state }}"
   register: dns_output
