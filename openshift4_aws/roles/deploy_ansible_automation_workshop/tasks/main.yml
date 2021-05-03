@@ -1,12 +1,24 @@
 ---
 # tasks file for deploy_ansible_automation_workshop
-- name: Remove the ansible edge workshop
-  include_tasks: _aws_delete.yml
-  when: aws_state == "absent" and aws_state is defined
 
+- name: set RHEL AMI to use
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].ami }}"
+  when: not beta|bool
+
+- name: set RHEL AMI to use (beta)
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
+  when: beta|bool
+
+- name: RHEL AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami }}"
+
+
+# Block- Deploy ansible edge workshop
 - name: Deploy the ansible edge workshop
   block:
-
     - name: Determine if Ansible Tower pod is online
       community.kubernetes.k8s_info:
         api_version: v1
@@ -133,7 +145,7 @@
 
     - name: Add user hosts to user inventories
       awx.awx.tower_host:
-        name: "{{ openshift_cluster_name }}.node.{{ item }}.{{ openshift_cluster_base_domain }}"
+        name: "{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
         inventory: "user{{ item }}-inventory"
         state: present
         tower_host: "{{ ansible_openshift_tower_url }}"
@@ -148,7 +160,7 @@
         description: "Edge System"
         inventory: "user{{ item }}-inventory"
         hosts:
-          - "{{ openshift_cluster_name }}.node.{{ item }}.{{ openshift_cluster_base_domain }}"
+          - "{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
         state: present
         tower_host: "{{ ansible_openshift_tower_url }}"
         tower_username: "{{ ansible_admin_user }}"
@@ -169,8 +181,20 @@
         validate_certs: no
       with_sequence: count="{{ ansible_user_count }}"
 
-    - name: Run the _aws.create tasks
-      include_tasks: _aws_create.yml
+    #===============================================================================
+    #  Create base AWS infrastructure
+    #===============================================================================
+    - name: Run the _aws.create_base_infra.yml to create Ansible Edge Workshop base infra
+      include_tasks: _aws_create_base_infra.yml
+
+    #===============================================================================
+    #  Create Ansible Edge Workshop resources for each student
+    #===============================================================================
+    - name: Run the _aws.create to create Ansible Edge Workshop for each student
+      include_tasks: _aws_create_instance.yml
+      with_sequence: start=1 count="{{ openshift_user_count }}"
+      loop_control:
+        loop_var: user_id
 
     - name: add student rhel SSH credential into Ansible Tower
       awx.awx.tower_credential:
@@ -263,3 +287,9 @@
       include_tasks: usertoken.yml
       with_sequence: count="{{ openshift_user_count }}"
   when: aws_state == "present" or aws_state is undefined
+
+
+## Remove Ansible Edge Workshop for Each Student
+- name: Remove  ansible edge workshop for each student
+  include_tasks: _aws_delete_all.yml
+  when: aws_state == "absent" and aws_state is defined
