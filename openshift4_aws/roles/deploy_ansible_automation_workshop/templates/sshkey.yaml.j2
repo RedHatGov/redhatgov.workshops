@@ -3,5 +3,5 @@ data:
   ansible-edge-key: "{{ ec2_key.key.private_key | b64encode }}"
 kind: Secret
 metadata:
-  name: student-ssh-secret
+  name: edge-ssh-secret
   namespace: default
