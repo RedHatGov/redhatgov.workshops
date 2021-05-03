@@ -2,33 +2,59 @@
 - debug:
     msg: "Configure CodeReady Workspaces for Ansible for user{{ item }}"
 
-- name: "Request token via URI"
-  uri:
-    url: "https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/realms/codeready/protocol/openid-connect/token"
-    validate_certs: false
-    method: POST
-    body:
-      username: "user{{ item }}"
-      password: "{{ openshift_user_password }}"
-      grant_type: "password"
-      client_id: "admin-cli"
-    body_format: form-urlencoded
-    status_code: 200
-  register: user_token
-
-- name: Pause for 1 second between connections
+- name: Pause for 2 second between connections
   pause:
-    seconds: 1
+    seconds: 2
 
-- name: Create workspace from devfile
-  uri:
-    url: "https://codeready-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/api/workspace/devfile?start-after-create=true&namespace=user{{ item }}"
-    validate_certs: false
-    method: POST
-    headers:
-      Content-Type: application/json
-      Authorization: "Bearer {{ user_token.json.access_token }}"
-    body: "{{ lookup('url', 'https://raw.githubusercontent.com/matmille/che-ansible/main/devfile.json', split_lines=False) }}"
-    body_format: json
-    status_code: 201,409
-  register: workspace_def
+- name: Create workspace for user in CodeReady
+  vars:
+    max_retries: "{{ 5 if max_retries is undefined else max_retries | int }}"
+    retry_delay: "{{ 5 if retry_delay is undefined else retry_delay | int }}"
+  block:
+  - name: Increment the retry count
+    set_fact:
+      retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
+  - name: Ensure k8s namespace for codeready does not already exist for the user
+    k8s:
+      name: "uesr{{ item }}-codeready"
+      api_version: v1
+      kind: Namespace
+      state: absent
+      api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  - name: "Request token via URI"
+    uri:
+      url: "https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/realms/codeready/protocol/openid-connect/token"
+      validate_certs: false
+      method: POST
+      body:
+        username: "user{{ item }}"
+        password: "{{ openshift_user_password }}"
+        grant_type: "password"
+        client_id: "admin-cli"
+      body_format: form-urlencoded
+      status_code: 200
+    register: user_token
+  - name: Create workspace from devfile
+    uri:
+      url: "https://codeready-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/api/workspace/devfile?start-after-create=false&namespace=user{{ item }}"
+      validate_certs: false
+      method: POST
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {{ user_token.json.access_token }}"
+      body: "{{ lookup('url', 'https://raw.githubusercontent.com/matmille/che-ansible/main/devfile.json', split_lines=False) }}"
+      body_format: json
+      status_code: 201,409
+    register: workspace_def
+  rescue:
+    - fail:
+        msg: Maximum retries of grouped tasks reached
+      when: retry_count | int == max_retries | int
+    - debug:
+        msg: "Unable to load devfile for user{{ item }} workspace- retry"
+    - name: Pause for 2 second between connections
+      pause:
+        seconds: 2
+    - include_tasks: usertoken.yml
+
+

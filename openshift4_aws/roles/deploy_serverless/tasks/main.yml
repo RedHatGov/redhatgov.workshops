@@ -7,7 +7,7 @@
     dest: "{{ openshift_build_path }}/serverless-operator.yml"
 
 - name: install operators required for serverless
-  k8s:
+  community.kubernetes.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/serverless-operator.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
@@ -18,8 +18,8 @@
     src: "{{ role_path }}/files/knative-serving.yml"
     dest: "{{ openshift_build_path }}/knative-serving.yml"
 
-- name: Verify KnativeServing Operator is present
-  k8s_info:
+- name: Verify KnativeServing is present
+  community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
     namespace: openshift-operators
@@ -34,14 +34,14 @@
   delay: 30
 
 - name: install knative-serving
-  k8s:
+  community.kubernetes.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/knative-serving.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
     namespace: "openshift-operators"
 
 - name: Wait till the autoscaler is online
-  k8s_info:
+  community.kubernetes.k8s_info:
     kind: Pod
     wait: yes
     name: autoscaler

@@ -1,8 +1,19 @@
 ---
 # tasks file for deploy_ansible_automation_workshop
 
+- name: Expose external OpenShift registry - template
+  template:
+    src: "{{ role_path }}/templates/expose-registry.yml.j2"
+    dest: "{{ openshift_build_path }}/expose-registry.yml"
+
+- name: Apply registry route expose
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/expose-registry.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
 - name: Determine if Ansible Tower pod is online
-  k8s_info:
+  community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
     namespace: tower
@@ -139,7 +150,7 @@
   with_sequence: count="{{ ansible_user_count }}"
 
 - name: Verify keycloak is present
-  k8s_info:
+  community.kubernetes.k8s_info:
     api_version: v1
     kind: Pod
     namespace: codeready-workspaces
@@ -155,7 +166,7 @@
   delay: 30
 
 - name: Retrieve Keycloak secret
-  k8s_facts:
+  community.kubernetes.k8s_facts:
     api: v1
     kind: Secret
     name: che-identity-secret
@@ -215,3 +226,67 @@
 - name: "Appy Devfile to CodeReady for each user"
   include_tasks: usertoken.yml
   with_sequence: count="{{ openshift_user_count }}"
+
+- name: template values for giving access to tower project to users
+  template:
+    src: "{{ role_path }}/templates/tower-rolebinding.yml.j2"
+    dest: "{{ openshift_build_path }}/user{{ item }}-tower-rolebinding.yml"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: apply tower project - user rolebindings
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-tower-rolebinding.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: template values for giving access to codeready-workspaces project to users
+  template:
+    src: "{{ role_path }}/templates/codeready-workspaces-rolebinding.yml.j2"
+    dest: "{{ openshift_build_path }}/user{{ item }}-codeready-workspaces-rolebinding.yml"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: apply codeready-workspaces project - user rolebindings
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-codeready-workspaces-rolebinding.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: Ensure k8s namespace for user exists for edge build
+  community.kubernetes.k8s:
+    name: "edge-{{ item }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: template values for giving access to edge projects to users
+  template:
+    src: "{{ role_path }}/templates/edge-rolebinding.yml.j2"
+    dest: "{{ openshift_build_path }}/user{{ item }}-edge-rolebinding.yml"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: apply edge project - user rolebindings
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-edge-rolebinding.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: template values for ServiceAccount edge projects 
+  template:
+    src: "{{ role_path }}/templates/edge-serviceaccount.yml.j2"
+    dest: "{{ openshift_build_path }}/user{{ item }}-edge-serviceaccount.yml"
+  with_sequence: count="{{ ansible_user_count }}"
+
+- name: apply edge project serviceaccounts
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-edge-serviceaccount.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  with_sequence: count="{{ ansible_user_count }}"
+
+
+
