@@ -32,6 +32,10 @@
       include_role:
         name: deploy_codeready_workspaces
       when: deploy_codeready_workspaces == true
+    - name: deploy pipelines - tektoncd
+      include_role:
+        name: deploy_pipelines
+      when: deploy_pipelines == true
     - name: deploy ansible automation workshop
       include_role:
         name: deploy_ansible_automation_workshop
