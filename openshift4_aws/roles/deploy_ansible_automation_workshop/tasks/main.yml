@@ -33,31 +33,32 @@
       until: twr_pod.resources|length > 0
       retries: 20
       delay: 30
-- name: Expose external OpenShift registry - template
-  template:
-    src: "{{ role_path }}/templates/expose-registry.yml.j2"
-    dest: "{{ openshift_build_path }}/expose-registry.yml"
 
-- name: Apply registry route expose
-  community.kubernetes.k8s:
-    state: present
-    definition: "{{ lookup('template', '{{ openshift_build_path }}/expose-registry.yml') }}"
-    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    - name: Expose external OpenShift registry - template
+      template:
+        src: "{{ role_path }}/templates/expose-registry.yml.j2"
+        dest: "{{ openshift_build_path }}/expose-registry.yml"
 
-- name: Determine if Ansible Tower pod is online
-  community.kubernetes.k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: tower
-    label_selectors:
-      - "app = ansible-tower"
-    field_selectors:
-      - status.phase=Running
-    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
-  register: twr_pod
-  until: twr_pod.resources|length > 0
-  retries: 20
-  delay: 30
+    - name: Apply registry route expose
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '{{ openshift_build_path }}/expose-registry.yml') }}"
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+    - name: Determine if Ansible Tower pod is online
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: tower
+        label_selectors:
+          - "app = ansible-tower"
+        field_selectors:
+          - status.phase=Running
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      register: twr_pod
+      until: twr_pod.resources|length > 0
+      retries: 20
+      delay: 30
 
     # Wait for Ansible Tower to become active
     - wait_for:
