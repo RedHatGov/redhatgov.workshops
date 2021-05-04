@@ -24,6 +24,15 @@
   when: execution is defined
 
 #---------------------------------------------------
+#  Ansible hostlist
+#---------------------------------------------------
+- name: Touch to make sure hostlist exists
+  file:
+    path: "{{ deploy_working_dir }}/hostlist"
+    state: touch
+    mode: '0644'
+
+#---------------------------------------------------
 #  SSH Key
 #---------------------------------------------------
 - name: Create EC2 keypair
