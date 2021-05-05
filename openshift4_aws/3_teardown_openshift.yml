@@ -103,6 +103,13 @@
 - hosts: localhost
 
   tasks:
+  - name: Tear down the Ansible Edge Workshop if deployed
+    include_role:
+      name: deploy_ansible_automation_workshop
+    vars:
+      aws_state:                        "absent"
+    when: deploy_ansible_automation_workshop == true
+
   - debug:
       msg:
         - "execute the following command to teardown the openshift cluster"

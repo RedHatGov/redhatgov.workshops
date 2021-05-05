@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  ansible-edge-key: "{{ ec2_key.key.private_key | b64encode }}"
+kind: Secret
+metadata:
+  name: edge-ssh-secret
+  namespace: default

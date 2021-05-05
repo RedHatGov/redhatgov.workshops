@@ -41,3 +41,5 @@ inventory/ec2.ini
 inventory/terraform.py
 openshift4_aws/build/
 openshift4_aws/pull-secret
+*/group_vars/all/all.yml
+*/inventory

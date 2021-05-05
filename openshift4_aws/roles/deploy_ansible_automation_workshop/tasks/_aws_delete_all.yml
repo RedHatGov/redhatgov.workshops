@@ -1,0 +1,157 @@
+---
+#===============================================================================
+#  Gather facts from AWS to use for deletion
+#===============================================================================
+- amazon.aws.ec2_vpc_net_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_prefix }}-vpc"
+  register: ec2_vpc
+
+- name: debug vpc object
+  debug:
+    msg: "{{ ec2_vpc }}"
+
+- amazon.aws.ec2_vpc_subnet_info:
+    region: "{{ region }}"
+    filters:
+      vpc-id: "{{ ec2_vpc.vpcs.0.id }}"
+  register: ec2_subnet
+
+- name: debug subnets object
+  debug:
+    msg: "{{ ec2_subnet }}"
+
+- name: Get rhel instance info
+  community.aws.ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      "tag:ServiceName": "{{ openshift_cluster_name }}-{{ workshop_prefix}}"
+      instance-state-name: [ "starting", "running" ]
+  register: ec2_rhel
+
+- name: debug rhel instance hosts
+  debug:
+    msg: "{{ ec2_rhel }}"
+
+#===============================================================================
+#  De-Provisioning
+#===============================================================================
+
+- name: set RHEL AMI to use
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].ami }}"
+  when: not beta|bool
+
+- name: set RHEL AMI to use (beta)
+  set_fact:
+    rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
+  when: beta|bool
+
+- name: RHEL AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami }}"
+
+- name: Delete DNS records for RHEL
+  route53:
+    zone: "{{ openshift_cluster_base_domain }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ i.tags.Route53 }}"
+    value: "{{ i.public_dns_name }}"
+    state: "{{ aws_state }}"
+  loop: "{{ ec2_rhel.instances }}"
+  loop_control:
+    loop_var: i
+
+- name: Delete RHEL instances
+  ec2:
+    assign_public_ip: yes
+    image: "{{ rhel_ami }}"
+    region: "{{ region }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnets.0.subnet_id }}"
+    wait: true
+    state: "{{ aws_state }}"
+    instance_ids: "{{ ec2.instance_id }}"
+  loop: "{{ ec2_rhel.instances }}"
+  loop_control:
+    loop_var: ec2
+  register: ec2_rhel
+
+- debug:
+    var: ec2_rhel
+
+- name: Delete RHEL security group
+  ec2_group:
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-sg"
+    description: "SG for RHEL hosts"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    state: "{{ aws_state }}"
+  register: result
+
+- debug:
+    var: result
+
+- name: Delete VPC internet gateway
+  ec2_vpc_igw:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    state: "{{ aws_state }}"
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-igw"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+  register: ec2_igw
+
+- debug:
+    var: result
+
+- name: Delete VPC route table
+  ec2_vpc_route_table:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    subnets: "{{ ec2_subnet.subnets }}"
+    lookup: tag
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-route"
+    state: "{{ aws_state }}"
+  register: ec2_route
+
+- debug:
+    var: ec2_route
+
+- name: Delete public subnet
+  ec2_vpc_subnet:
+    cidr: "10.0.2.0/24"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-subnet"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    wait: yes
+    state: "{{ aws_state }}"
+  register: ec2_subnet
+  ignore_errors: yes
+
+- debug:
+    var: ec2_subnet
+
+- name: Delete VPC
+  ec2_vpc_net:
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-vpc"
+    region: "{{ region }}"
+    cidr_block: "10.0.0.0/16"
+    state: "{{ aws_state }}"
+  register: temp_ec2_vpc
+
+- name: Delete EC2 keypair
+  ec2_key:
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-key"
+    region: "{{ region }}"
+    state: "{{ aws_state }}"
+  register: ec2_key
+...
