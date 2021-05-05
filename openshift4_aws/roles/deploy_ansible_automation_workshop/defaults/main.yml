@@ -15,7 +15,7 @@ deploy_working_dir:               "{{ ansible_env.PWD }}/.redhatgov"
 inventory_working_dir:            "{{ ansible_env.PWD }}/inventory"
 # Ansible SSH Key Location |      SSH Key Vars
 #workshop_abbrev:                  "ae" # the 2-letter abbreviation for the type of workshop being run
-workshop_prefix:                  "matt" # Workshop name - NO underscores!
+workshop_prefix:                  "node" # Workshop name - NO underscores!
 workshop_appCode:                 "????" # Waiting for code creation
 ssh_key_path:                     "{{ deploy_working_dir }}/{{openshift_cluster_name}}-{{ workshop_prefix }}-key"
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
