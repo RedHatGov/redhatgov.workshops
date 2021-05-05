@@ -5,7 +5,7 @@
 - amazon.aws.ec2_vpc_net_info:
     region: "{{ region }}"
     filters:
-      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-vpc"
+      "tag:Name": "{{ openshift_cluster_name }}-{{ workshop_prefix }}-vpc"
   register: ec2_vpc
 
 - name: debug vpc object
@@ -26,7 +26,7 @@
   community.aws.ec2_instance_info:
     region: "{{ region }}"
     filters:
-      "tag:ServiceName": "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix}}-rhel"
+      "tag:ServiceName": "{{ openshift_cluster_name }}-{{ workshop_prefix}}"
       instance-state-name: [ "starting", "running" ]
   register: ec2_rhel
 
@@ -83,7 +83,7 @@
 
 - name: Delete RHEL security group
   ec2_group:
-    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-sg"
     description: "SG for RHEL hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
@@ -99,7 +99,7 @@
     vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
     state: "{{ aws_state }}"
     tags:
-      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-igw"
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-igw"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -115,7 +115,7 @@
     subnets: "{{ ec2_subnet.subnets }}"
     lookup: tag
     tags:
-      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-route"
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-route"
     state: "{{ aws_state }}"
   register: ec2_route
 
@@ -128,7 +128,7 @@
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpcs.0.id }}"
     tags:
-      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-subnet"
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-subnet"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -142,7 +142,7 @@
 
 - name: Delete VPC
   ec2_vpc_net:
-    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-vpc"
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-vpc"
     region: "{{ region }}"
     cidr_block: "10.0.0.0/16"
     state: "{{ aws_state }}"
@@ -150,7 +150,7 @@
 
 - name: Delete EC2 keypair
   ec2_key:
-    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-key"
     region: "{{ region }}"
     state: "{{ aws_state }}"
   register: ec2_key

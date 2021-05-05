@@ -37,7 +37,7 @@
 #---------------------------------------------------
 - name: Create EC2 keypair
   ec2_key:
-    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-key"
     region: "{{ region }}"
     state: "{{ aws_state }}"
   register: ec2_key
@@ -78,7 +78,7 @@
 
 - name: Create VPC
   ec2_vpc_net:
-    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-vpc"
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-vpc"
     region: "{{ region }}"
     cidr_block: "10.0.0.0/16"
     dns_hostnames: yes
@@ -99,7 +99,7 @@
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     state: "{{ aws_state }}"
     tags:
-      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-igw"
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-igw"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -132,16 +132,17 @@
 
 - name: Create RHEL security group
   ec2_group:
-    name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-sg"
     description: "SG for RHEL hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     rules: "{{ ports_list_of_dicts }}"
     tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-sg"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      rhel: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}"
+      rhel: "{{ openshift_cluster_name }}-{{ workshop_prefix }}"
     state: "{{ aws_state }}"
   register: result
 
@@ -154,7 +155,7 @@
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     tags:
-      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-subnet"
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-subnet"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -176,7 +177,7 @@
         gateway_id: "{{ ec2_igw.gateway_id }}"
     lookup: tag
     tags:
-      Name: "{{ openshift_cluster_name }}-{{ workshop_abbrev }}-{{ workshop_prefix }}-route"
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-route"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
