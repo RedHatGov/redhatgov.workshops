@@ -70,6 +70,13 @@
     src: "{{ openshift_build_path }}/sshkey.yaml"
   when: ec2_key.key.private_key is defined
 
+- name: create user sshkey secret template
+  template:
+    src: "sshkey-user.yaml.j2"
+    dest: "{{ openshift_build_path }}/sshkey-user{{ item }}.yaml"
+  when: ec2_key.key.private_key is defined
+  with_sequence: start=1 count="{{ openshift_user_count }}"
+
 - name: Template Ansible Hosts File
   template:
     dest: "{{ inventory_working_dir }}/hosts"

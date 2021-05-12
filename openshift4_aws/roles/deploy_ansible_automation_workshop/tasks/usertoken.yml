@@ -5,22 +5,18 @@
 - name: Pause for 2 second between connections
   pause:
     seconds: 2
-
-- name: Create workspace for user in CodeReady
-  vars:
+- name: Define retries for creating CodeReady workspaces
+  set_fact:
     max_retries: "{{ 5 if max_retries is undefined else max_retries | int }}"
     retry_delay: "{{ 5 if retry_delay is undefined else retry_delay | int }}"
+
+- name: Create workspace for user in CodeReady
   block:
   - name: Increment the retry count
     set_fact:
       retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
-  - name: Ensure k8s namespace for codeready does not already exist for the user
-    k8s:
-      name: "uesr{{ item }}-codeready"
-      api_version: v1
-      kind: Namespace
-      state: absent
-      api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  - debug:
+      msg: "max_retries = {{ max_retries }}, attempt = {{ retry_count }}"
   - name: "Request token via URI"
     uri:
       url: "https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/realms/codeready/protocol/openid-connect/token"
@@ -36,16 +32,22 @@
     register: user_token
   - name: Create workspace from devfile
     uri:
-      url: "https://codeready-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/api/workspace/devfile?start-after-create=false&namespace=user{{ item }}"
+      url: "https://codeready-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/api/workspace/devfile?start-after-create=true&namespace=user{{ item }}"
       validate_certs: false
       method: POST
       headers:
         Content-Type: application/json
         Authorization: "Bearer {{ user_token.json.access_token }}"
-      body: "{{ lookup('url', 'https://raw.githubusercontent.com/matmille/che-ansible/main/devfile.json', split_lines=False) }}"
+      body: "{{ lookup('url', 'https://raw.githubusercontent.com/matmille/che-ansible/main/devfile2.json', split_lines=False) }}"
       body_format: json
       status_code: 201,409
     register: workspace_def
+
+  - name: Create user ssh-key secret
+    community.kubernetes.k8s:
+      state: present
+      src: "{{ openshift_build_path }}/sshkey-user{{ item }}.yaml"
+
   rescue:
     - fail:
         msg: Maximum retries of grouped tasks reached
@@ -57,4 +59,6 @@
         seconds: 2
     - include_tasks: usertoken.yml
 
-
+- name: Increment the retry count
+  set_fact:
+    retry_count: 0
