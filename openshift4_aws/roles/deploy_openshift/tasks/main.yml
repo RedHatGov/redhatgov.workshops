@@ -101,7 +101,7 @@
 #      shell: "{{ openshift_build_path }}/openshift-install create install-config --dir={{ openshift_build_path }}"
 
     - name: Generate the manifest files
-      shell: "{{ openshift_build_path }}/openshift-install create manifests"
+      shell: "{{ openshift_build_path }}/openshift-install create manifests --dir={{ openshift_build_path }}"
 
     - name: Create tls directory for isntall
       ansible.builtin.file:
