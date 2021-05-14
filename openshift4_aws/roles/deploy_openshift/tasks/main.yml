@@ -113,16 +113,16 @@
         content: "{{ SIGNER_PRIVATE_KEY }}"
         dest: "{{ openshift_build_path }}/bound-service-account-signing-key.key"
 
-    - name: Write Authentication Manifest
-      community.kubernetes.k8s:
-        state: present
-        definition:
-          apiVersion: "config.openshift.io/v1"
-          kind: Authentication
-          metadata:
-            name: cluster
-          spec:
-            serviceAccountIssuer: "{{ open_id_url }}"
+#    - name: Write Authentication Manifest
+#      community.kubernetes.k8s:
+#        state: present
+#        definition:
+#          apiVersion: "config.openshift.io/v1"
+#          kind: Authentication
+#          metadata:
+#            name: cluster
+#          spec:
+#            serviceAccountIssuer: "{{ open_id_url }}"
 
     - name: Installing the OCP cluster (this will take a while. ~60 minutes)
       shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
