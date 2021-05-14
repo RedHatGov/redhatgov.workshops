@@ -117,7 +117,7 @@
       community.kubernetes.k8s:
         state: present
         definition:
-          apiVersion: config.openshift.io/v1
+          apiVersion: "config.openshift.io/v1"
           kind: Authentication
           metadata:
             name: cluster
