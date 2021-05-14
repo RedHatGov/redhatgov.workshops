@@ -97,8 +97,8 @@
         msg: Cluster already exists with this name
       when: s3output.s3_keys|length != 0
 
-    - name: Generate the install-config
-      shell: "{{ openshift_build_path }}/openshift-install create install-config"
+#    - name: Generate the install-config
+#      shell: "{{ openshift_build_path }}/openshift-install create install-config --dir={{ openshift_build_path }}"
 
     - name: Generate the manifest files
       shell: "{{ openshift_build_path }}/openshift-install create manifests"
