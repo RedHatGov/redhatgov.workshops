@@ -118,10 +118,10 @@
 #        minutes: 5
 
     - name: pwd
-      shell: "pwd"
+      shell: "ls -l `pwd`"
       register: debug
 
-    - name: debug pwd
+    - name: debug ls of pwd
       debug:
         var: debug
 
