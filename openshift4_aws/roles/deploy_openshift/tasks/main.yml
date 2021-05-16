@@ -103,7 +103,7 @@
     - name: Generate the manifest files
       shell: "{{ openshift_build_path }}/openshift-install create manifests --dir={{ openshift_build_path }}"
 
-    - name: Create tls directory for isntall
+    - name: Create tls directory for install
       ansible.builtin.file:
         path: "{{ openshift_build_path }}/tls"
         state: directory
@@ -111,7 +111,13 @@
     - name: Write private key to directory
       copy:
         content: "{{ SIGNER_PRIVATE_KEY }}"
-        dest: "{{ openshift_build_path }}/bound-service-account-signing-key.key"
+        dest: "{{ openshift_build_path }}/tls/bound-service-account-signing-key.key"
+
+    - name: list directory contents
+      shell: "ls {{ openshift_build_path }}/"
+
+    - name: list directory contents
+      shell: "cat {{ openshift_build_path }}/tls/bound-service-account-signing-key.key"
 
 #    - name: Write Authentication Manifest
 #      community.kubernetes.k8s:
