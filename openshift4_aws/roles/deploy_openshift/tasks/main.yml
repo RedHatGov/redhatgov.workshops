@@ -113,11 +113,25 @@
         content: "{{ SIGNER_PRIVATE_KEY }}"
         dest: "{{ openshift_build_path }}/tls/bound-service-account-signing-key.key"
 
+    - name: Pause for 5 minutes to build app cache
+      pause:
+        minutes: 5
+
     - name: list directory contents
       shell: "ls {{ openshift_build_path }}/"
+      register: debug
+
+    - name: debug1
+      debug:
+        var: debug
 
     - name: list directory contents
       shell: "cat {{ openshift_build_path }}/tls/bound-service-account-signing-key.key"
+      register: debug
+
+    - name: debug1
+      debug:
+        var: debug
 
 #    - name: Write Authentication Manifest
 #      community.kubernetes.k8s:
