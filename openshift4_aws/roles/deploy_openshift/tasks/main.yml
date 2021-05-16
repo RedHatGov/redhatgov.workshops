@@ -118,7 +118,7 @@
 #        minutes: 5
 
     - name: check if sops file is there
-      shell: "ls {{ openshift_build_path }}/.sops.yaml"
+      shell: "cat .sops.yaml"
       register: debug
 
     - name: debug1
