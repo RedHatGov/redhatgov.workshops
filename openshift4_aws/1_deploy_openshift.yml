@@ -5,3 +5,5 @@
     - name: create cluster admin and user accounts
       include_role:
         name: deploy_openshift
+      vars:
+        ANSIBLE_VARS_ENABLED: host_group_vars,community.sops.sops
