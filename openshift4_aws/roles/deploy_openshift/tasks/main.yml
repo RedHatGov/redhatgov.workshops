@@ -117,6 +117,14 @@
 #      pause:
 #        minutes: 5
 
+    - name: pwd
+      shell: "pwd"
+      register: debug
+
+    - name: debug pwd
+      debug:
+        var: debug
+
     - name: check if sops file is there
       shell: "cat .sops.yaml"
       register: debug
