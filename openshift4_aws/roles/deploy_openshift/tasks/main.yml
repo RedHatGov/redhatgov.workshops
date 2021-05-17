@@ -141,6 +141,10 @@
       debug:
         var: debug
 
+    - name: Pause for 5 minutes to build app cache
+      pause:
+        minutes: 5
+
 #    - name: Write Authentication Manifest
 #      community.kubernetes.k8s:
 #        state: present
