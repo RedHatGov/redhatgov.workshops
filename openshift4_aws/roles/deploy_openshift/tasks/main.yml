@@ -97,9 +97,6 @@
         msg: Cluster already exists with this name
       when: s3output.s3_keys|length != 0
 
-#    - name: Generate the install-config
-#      shell: "{{ openshift_build_path }}/openshift-install create install-config --dir={{ openshift_build_path }}"
-
     - name: Generate the manifest files
       shell: "{{ openshift_build_path }}/openshift-install create manifests --dir={{ openshift_build_path }}"
 
@@ -112,65 +109,6 @@
       copy:
         content: "{{ SIGNER_PRIVATE_KEY }}"
         dest: "{{ openshift_build_path }}/tls/bound-service-account-signing-key.key"
-
-#    - name: Pause for 5 minutes to build app cache
-#      pause:
-#        minutes: 5
-
-    - name: pwd
-      shell: "ls -l `pwd`"
-      register: debug
-
-    - name: debug ls of pwd
-      debug:
-        var: debug
-
-    - name: ansible version
-      shell: "ansible-playbook --version"
-      register: debug
-
-    - name: debug1
-      debug:
-        var: debug
-
-    - name: ansible version
-      shell: "ansible-doc -t vars -l"
-      register: debug
-
-    - name: debug1
-      debug:
-        var: debug
-
-    - name: check if sops file is there
-      shell: "cat .sops.yaml"
-      register: debug
-
-    - name: debug1
-      debug:
-        var: debug
-
-    - name: list directory contents
-      shell: "cat {{ openshift_build_path }}/tls/bound-service-account-signing-key.key"
-      register: debug
-
-    - name: debug1
-      debug:
-        var: debug
-
-    - name: Pause for 5 minutes to build app cache
-      pause:
-        minutes: 5
-
-#    - name: Write Authentication Manifest
-#      community.kubernetes.k8s:
-#        state: present
-#        definition:
-#          apiVersion: "config.openshift.io/v1"
-#          kind: Authentication
-#          metadata:
-#            name: cluster
-#          spec:
-#            serviceAccountIssuer: "{{ open_id_url }}"
 
     - name: Installing the OCP cluster (this will take a while. ~60 minutes)
       shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
