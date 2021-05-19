@@ -124,13 +124,17 @@
         tower_password: "{{ ansible_admin_password }}"
         validate_certs: no
         scm_type: git
-        scm_url: https://github.com/ansible/ansible-tower-samples
+        scm_url: https://github.com/matmille/edge-workshop
         scm_update_on_launch: yes
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: Ansible Tower Requires a subscription
       pause:
         prompt: "Please login into {{ ansible_openshift_tower_url }} and enter subscription; then, hit enter to continue"
+
+    - name: Set Ansible Galaxy Credential
+      pause:
+        prompt: "In tower, go to Organizations -> workshop_org -> Galaxy Credentials and set credential as Ansible Galaxy"
 
     - name: Add user inventories
       awx.awx.tower_inventory:
