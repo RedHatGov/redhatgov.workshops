@@ -16,7 +16,7 @@ ORGNAME = Summit
 # resolve to the same IP address as the FQDN.
 # ALTNAMES = DNS:$FQDN   # , DNS:bar.example.org , DNS:www.foo.example.org
 # ALTNAMES = DNS:$FQDN  
-ALTNAMES = DNS:$FQDN
+ALTNAMES = DNS:{{inventory_hostname}}
 
 # --- no modifications required below ---
 [ req ]
@@ -33,5 +33,8 @@ O = $ORGNAME
 CN = $FQDN
 
 [ req_ext ]
-subjectAltName = $ALTNAMES
-
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = $FQDN
