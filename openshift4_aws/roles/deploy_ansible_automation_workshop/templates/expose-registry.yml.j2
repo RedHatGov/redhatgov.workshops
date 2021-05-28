@@ -1,0 +1,18 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: registry
+  namespace: openshift-image-registry
+spec:
+  host: registry-openshift-image-registry.apps.{{ openshift_cluster_fqdn }}
+  to:
+    kind: Service
+    name: image-registry
+    weight: 100
+  port:
+    targetPort: 5000-tcp
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Allow
+  wildcardPolicy: None
+

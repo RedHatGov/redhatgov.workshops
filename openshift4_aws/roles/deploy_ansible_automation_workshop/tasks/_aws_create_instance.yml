@@ -1,0 +1,112 @@
+---
+#===============================================================================
+#  Provisioning
+#===============================================================================
+- name: Debug for Student Provisioning Loop
+  debug:
+    msg: "###Provisioning edge.{{ user_id }}"
+
+#===============================================================================
+#  Create RHEL instance(s) for each user
+#===============================================================================
+
+- name: Get ec2 instance info
+  community.aws.ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }}"
+      instance-state-name: [ "starting", "running" ]
+  register: query_public_dns_name
+
+- debug:
+    var: query_public_dns_name
+
+- debug:
+    msg: "{{ query_public_dns_name.instances }}"
+
+- debug:
+    msg: "{{ query_public_dns_name.instances }} | length"
+
+- name: Create RHEL instances
+  amazon.aws.ec2:
+    assign_public_ip: yes
+    key_name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-key"
+    group: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-sg"
+    region: "{{ region }}"
+    instance_type: "{{ rhel_instance_type }}"
+    image: "{{ rhel_ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    wait: true
+    state: "{{ aws_state }}"
+    instance_tags:
+      Name: "{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }}"
+      username: "{{ local_user }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      rhel: "{{ workshop_prefix }}.edge.{{ user_id }}"
+      # RH IT Required Tags
+      Route53: "{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }}"
+      ServiceName: "{{ openshift_cluster_name }}-{{ workshop_prefix }}"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
+  register: ec2_rhel
+  when: query_public_dns_name.instances | length == 0
+
+- debug:
+    var: ec2_rhel
+
+- name: Get ec2 instance info
+  community.aws.ec2_instance_info:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }}"
+      instance-state-name: [ "starting", "running" ]
+  register: ec2_details
+
+
+- debug:
+    var: ec2_details
+
+- debug:
+    var: ec2_details.instances
+
+- debug:
+    var: ec2_details.instances.0.public_dns_name
+
+- name: add RHEL hosts to groups
+  add_host:
+    name: "{{ openshift_cluster_name }}.edge.{{ user_id }}-{{ ec2_details.instances.0.public_dns_name }}"
+    ansible_ssh_host: "{{ ec2_details.instances.0.public_ip_address }}"
+    groups: rhel_nodes
+
+- name: create inventory list (node hosts)
+  lineinfile:
+    path: "{{ deploy_working_dir }}/hostlist"
+    line: "{{ ec2_details.instances.0.public_ip_address }} {{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }} node.{{ user_id }}"
+    regexp: ".*{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }}.*"
+
+- name: Add node hosts to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    insertafter: '^\[rhel_nodes\]$'
+    regexp: "^{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }}"
+    line: "{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }} ansible_ssh_host={{ ec2_details.instances.0.public_ip_address }} ansible_host={{ ec2_details.instances.0.public_dns_name }}"
+
+#---------------------------------------------------
+#  DNS
+#---------------------------------------------------
+- name: Create DNS records for RHEL
+  route53:
+    zone: "{{ openshift_cluster_base_domain }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ openshift_cluster_name }}.edge.{{ user_id }}.{{ openshift_cluster_base_domain }}"
+    value: "{{ ec2_details.instances.0.public_dns_name }}"
+    state: "{{ aws_state }}"
+    overwrite: yes
+  register: dns_output
+
+- name: Debug DNS Output
+  debug:
+    var: dns_output

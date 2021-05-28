@@ -1,217 +1,374 @@
 ---
 # tasks file for deploy_ansible_automation_workshop
 
-- name: Determine if Ansible Tower pod is online
-  k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: tower
-    label_selectors:
-      - "app = ansible-tower"
-    field_selectors:
-      - status.phase=Running
-    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
-  register: twr_pod
-  until: twr_pod.resources|length > 0
-  retries: 20
-  delay: 30
-
-# Wait for Ansible Tower to become active
-- wait_for:
-    host: "{{ ansible_openshift_tower_host }}"
-    port: 443
-    delay: 30
-    timeout: 300
-
-# Create Tower Organization
-- name: Create tower organization
-  tower_organization:
-    name: workshop_org
-    description: "workshop org"
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-
-- name: Create tower team
-  tower_team:
-    name: workshop_team
-    description: "workshop team"
-    organization: workshop_org
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-
-# Add Users to Tower
-- name: Add tower workshop users
-  tower_user:
-    username: "user{{ item }}"
-    password: "{{ ansible_user_password }}"
-    email: "user{{ item }}@example.org"
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-  with_sequence: count="{{ ansible_user_count }}"
-
-- name: Add tower workshop users to the workshop team
-  tower_role:
-    user: "user{{ item }}"
-    target_team: workshop_team
-    role: member
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-  with_sequence: count="{{ ansible_user_count }}"
-
-- name: Add tower projects for the workshop users
-  tower_project:
-    name: "user{{ item }}-playbooks"
-    organization: workshop_org
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-    scm_type: git
-    scm_url: https://github.com/ansible/ansible-tower-samples
-    scm_update_on_launch: yes
-  with_sequence: count="{{ ansible_user_count }}"
-
-- name: Ansible Tower Requires a subscription
-  pause:
-    prompt: "Please login into {{ ansible_openshift_tower_url }} and enter subscription; then, hit enter to continue"
-
-- name: Add user inventories
-  tower_inventory:
-    name: "user{{ item }}-inventory"
-    description: "Edge Servers"
-    organization: workshop_org
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-  with_sequence: count="{{ ansible_user_count }}"
-
-- name: Add user hosts to user inventories
-  tower_host:
-    name: "{{ openshift_cluster_name }}.node.{{ item }}.{{ openshift_cluster_base_domain }}"
-    inventory: "user{{ item }}-inventory"
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-  with_sequence: count="{{ ansible_user_count }}"
-
-- name: Add tower group
-  tower_group:
-    name: edge
-    description: "Edge System"
-    inventory: "user{{ item }}-inventory"
-    hosts:
-      - "{{ openshift_cluster_name }}.node.{{ item }}.{{ openshift_cluster_base_domain }}"
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-  with_sequence: count="{{ ansible_user_count }}"
-
-- name: Add users to their project and inventory
-  tower_role:
-    user: "user{{ item }}"
-    inventory: "user{{ item }}-inventory"
-    project: "user{{ item }}-playbooks"
-    role: admin
-    state: present
-    tower_host: "{{ ansible_openshift_tower_url }}"
-    tower_username: "{{ ansible_admin_user }}"
-    tower_password: "{{ ansible_admin_password }}"
-    validate_certs: no
-  with_sequence: count="{{ ansible_user_count }}"
-
-- name: Verify keycloak is present
-  k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: codeready-workspaces
-    field_selectors:
-      - status.phase=Running
-    label_selectors:
-      - "app = codeready"
-      - "component = keycloak"
-    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
-  register: kc_pod
-  until: kc_pod.resources|length > 0
-  retries: 20
-  delay: 30
-
-- name: Retrieve Keycloak secret
-  k8s_facts:
-    api: v1
-    kind: Secret
-    name: che-identity-secret
-    namespace: codeready-workspaces
-    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
-  register: pullsecret
-
-- name: Get the original cred secrets
+- name: set RHEL AMI to use
   set_fact:
-    codeready_sso_admin_username: "{{ item.data.user | b64decode }}"
-  with_items: "{{ pullsecret.resources }}"
+    rhel_ami: "{{ regions[region][rhel_ver].ami }}"
+  when: not beta|bool
 
-- name: Get the original cred secrets
+- name: set RHEL AMI to use (beta)
   set_fact:
-    codeready_sso_admin_password: "{{ item.data.password | b64decode }}"
-  with_items: "{{ pullsecret.resources }}"
+    rhel_ami: "{{ regions[region][rhel_ver].beta.ami }}"
+  when: beta|bool
 
-- name: Get codeready SSO admin token
-  uri:
-    url: https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/realms/master/protocol/openid-connect/token
-    validate_certs: false
-    method: POST
-    body:
-      username: "{{ codeready_sso_admin_username }}"
-      password: "{{ codeready_sso_admin_password }}"
-      grant_type: "password"
-      client_id: "admin-cli"
-    body_format: form-urlencoded
-    status_code: 200,201,204
-  register: codeready_sso_admin_token
-  retries: 15
-  delay: 20
+- name: RHEL AMI
+  debug:
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami }}"
 
-- name: Add users to Che
-  uri:
-    url: https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/admin/realms/codeready/users
-    validate_certs: false
-    method: POST
-    headers:
-      Content-Type: application/json
-      Authorization: "Bearer {{ codeready_sso_admin_token.json.access_token }}"
-    body:
-      username: "user{{ item }}"
-      enabled: true
-      emailVerified: true
-      firstName: "user{{ item }}"
-      lastName: Ansible_Workshop
-      email: "user{{ item }}@no-reply.{{ openshift_cluster_fqdn }}.com"
-      credentials:
-        - type: password
-          value: "{{ openshift_user_password }}"
-          temporary: false
-    body_format: json
-    status_code: 201,409
-  with_sequence: count="{{ openshift_user_count }}"
 
-- name: "Appy Devfile to CodeReady for each user"
-  include_tasks: usertoken.yml
-  with_sequence: count="{{ openshift_user_count }}"
+# Block- Deploy ansible edge workshop
+- name: Deploy the ansible edge workshop
+  block:
+    - name: Determine if Ansible Tower pod is online
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: tower
+        label_selectors:
+          - "app = ansible-tower"
+        field_selectors:
+          - status.phase=Running
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      register: twr_pod
+      until: twr_pod.resources|length > 0
+      retries: 20
+      delay: 30
+
+    - name: Expose external OpenShift registry - template
+      template:
+        src: "{{ role_path }}/templates/expose-registry.yml.j2"
+        dest: "{{ openshift_build_path }}/expose-registry.yml"
+
+    - name: Apply registry route expose
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '{{ openshift_build_path }}/expose-registry.yml') }}"
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+    - name: Determine if Ansible Tower pod is online
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: tower
+        label_selectors:
+          - "app = ansible-tower"
+        field_selectors:
+          - status.phase=Running
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      register: twr_pod
+      until: twr_pod.resources|length > 0
+      retries: 20
+      delay: 30
+
+    # Wait for Ansible Tower to become active
+    - wait_for:
+        host: "{{ ansible_openshift_tower_host }}"
+        port: 443
+        delay: 30
+        timeout: 300
+
+    # Create Tower Organization
+    - name: Create tower organization
+      awx.awx.tower_organization:
+        name: workshop_org
+        description: "workshop org"
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+
+    - name: Create tower team
+      awx.awx.tower_team:
+        name: workshop_team
+        description: "workshop team"
+        organization: workshop_org
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+
+    # Add Users to Tower
+    - name: Add tower workshop users
+      awx.awx.tower_user:
+        username: "user{{ item }}"
+        password: "{{ ansible_user_password }}"
+        email: "user{{ item }}@example.org"
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Add tower workshop users to the workshop team
+      awx.awx.tower_role:
+        user: "user{{ item }}"
+        target_team: workshop_team
+        role: member
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Add tower projects for the workshop users
+      awx.awx.tower_project:
+        name: "user{{ item }}-playbooks"
+        organization: workshop_org
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+        scm_type: git
+        scm_url: https://github.com/matmille/edge-workshop
+        scm_update_on_launch: yes
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Ansible Tower Requires a subscription
+      pause:
+        prompt: "Please login into {{ ansible_openshift_tower_url }} and enter subscription; then, hit enter to continue"
+
+    - name: Set Ansible Galaxy Credential
+      pause:
+        prompt: "In tower, go to Organizations -> workshop_org -> Galaxy Credentials and set credential as Ansible Galaxy"
+
+    - name: Add user inventories
+      awx.awx.tower_inventory:
+        name: "user{{ item }}-inventory"
+        description: "Edge Servers"
+        organization: workshop_org
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Add user hosts to user inventories
+      awx.awx.tower_host:
+        name: "{{ openshift_cluster_name }}.edge.{{ item }}.{{ openshift_cluster_base_domain }}"
+        inventory: "user{{ item }}-inventory"
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Add tower group
+      awx.awx.tower_group:
+        name: edge
+        description: "Edge System"
+        inventory: "user{{ item }}-inventory"
+        hosts:
+          - "{{ openshift_cluster_name }}.edge.{{ item }}.{{ openshift_cluster_base_domain }}"
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Add users to their project and inventory
+      awx.awx.tower_role:
+        user: "user{{ item }}"
+        inventory: "user{{ item }}-inventory"
+        project: "user{{ item }}-playbooks"
+        role: admin
+        state: present
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        validate_certs: no
+      with_sequence: count="{{ ansible_user_count }}"
+
+    #===============================================================================
+    #  Create base AWS infrastructure
+    #===============================================================================
+    - name: Run the _aws.create_base_infra.yml to create Ansible Edge Workshop base infra
+      include_tasks: _aws_create_base_infra.yml
+      tags: usernode
+
+    #===============================================================================
+    #  Create Ansible Edge Workshop resources for each user
+    #===============================================================================
+    - name: Run the _aws.create to create Ansible Edge Workshop for each user
+      include_tasks: _aws_create_instance.yml
+      with_sequence: start=1 count="{{ openshift_user_count }}"
+      loop_control:
+        loop_var: user_id
+      tags: usernode
+
+    - name: add users rhel SSH credential into Ansible Tower
+      awx.awx.tower_credential:
+        name: "user{{ item }}-cred"
+        inputs:
+          username: ec2-user
+          become_method: sudo
+        user: "user{{ item }}"
+        description: "Workshop edge node credential"
+        ssh_key_data: "{{ lookup('file', ssh_key_path ) }}"
+        credential_type: Machine
+        tower_username: "{{ ansible_admin_user }}"
+        tower_password: "{{ ansible_admin_password }}"
+        tower_host: "{{ ansible_openshift_tower_url }}"
+        validate_certs: no
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Verify keycloak is present
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: codeready-workspaces
+        field_selectors:
+          - status.phase=Running
+        label_selectors:
+          - "app = codeready"
+          - "component = keycloak"
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      register: kc_pod
+      until: kc_pod.resources|length > 0
+      retries: 20
+      delay: 30
+      tags: che
+
+    - name: Retrieve Keycloak secret
+      community.kubernetes.k8s_info:
+        api: v1
+        kind: Secret
+        name: che-identity-secret
+        namespace: codeready-workspaces
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      register: pullsecret
+      tags: che
+
+    - name: Get the original cred secrets
+      set_fact:
+        codeready_sso_admin_username: "{{ item.data.user | b64decode }}"
+      with_items: "{{ pullsecret.resources }}"
+      tags: che
+
+    - name: Get the original cred secrets
+      set_fact:
+        codeready_sso_admin_password: "{{ item.data.password | b64decode }}"
+      with_items: "{{ pullsecret.resources }}"
+      tags: che
+
+    - name: Get codeready SSO admin token
+      uri:
+        url: https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/realms/master/protocol/openid-connect/token
+        validate_certs: false
+        method: POST
+        body:
+          username: "{{ codeready_sso_admin_username }}"
+          password: "{{ codeready_sso_admin_password }}"
+          grant_type: "password"
+          client_id: "admin-cli"
+        body_format: form-urlencoded
+        status_code: 200,201,204
+      register: codeready_sso_admin_token
+      retries: 15
+      delay: 20
+      tags: che
+
+    - name: Add users to Che
+      uri:
+        url: https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/admin/realms/codeready/users
+        validate_certs: false
+        method: POST
+        headers:
+          Content-Type: application/json
+          Authorization: "Bearer {{ codeready_sso_admin_token.json.access_token }}"
+        body:
+          username: "user{{ item }}"
+          enabled: true
+          emailVerified: true
+          firstName: "user{{ item }}"
+          lastName: Ansible_Workshop
+          email: "user{{ item }}@no-reply.{{ openshift_cluster_fqdn }}.com"
+          credentials:
+            - type: password
+              value: "{{ openshift_user_password }}"
+              temporary: false
+        body_format: json
+        status_code: 201,409
+      with_sequence: count="{{ openshift_user_count }}"
+      tags: che
+
+    - name: "Appy Devfile to CodeReady for each user"
+      include_tasks: usertoken.yml
+      with_sequence: count="{{ openshift_user_count }}"
+      tags: che
+
+    - name: template values for giving access to tower project to users
+      template:
+        src: "{{ role_path }}/templates/tower-rolebinding.yml.j2"
+        dest: "{{ openshift_build_path }}/user{{ item }}-tower-rolebinding.yml"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: apply tower project - user rolebindings
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-tower-rolebinding.yml') }}"
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: template values for giving access to codeready-workspaces project to users
+      template:
+        src: "{{ role_path }}/templates/codeready-workspaces-rolebinding.yml.j2"
+        dest: "{{ openshift_build_path }}/user{{ item }}-codeready-workspaces-rolebinding.yml"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: apply codeready-workspaces project - user rolebindings
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-codeready-workspaces-rolebinding.yml') }}"
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: Ensure k8s namespace for user exists for edge build
+      community.kubernetes.k8s:
+        name: "edge-{{ item }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: template values for giving access to edge projects to users
+      template:
+        src: "{{ role_path }}/templates/edge-rolebinding.yml.j2"
+        dest: "{{ openshift_build_path }}/user{{ item }}-edge-rolebinding.yml"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: apply edge project - user rolebindings
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-edge-rolebinding.yml') }}"
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: template values for ServiceAccount edge projects 
+      template:
+        src: "{{ role_path }}/templates/edge-serviceaccount.yml.j2"
+        dest: "{{ openshift_build_path }}/user{{ item }}-edge-serviceaccount.yml"
+      with_sequence: count="{{ ansible_user_count }}"
+
+    - name: apply edge project serviceaccounts
+      community.kubernetes.k8s:
+        state: present
+        definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-edge-serviceaccount.yml') }}"
+        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+      with_sequence: count="{{ ansible_user_count }}"
+
+  when: aws_state == "present" or aws_state is undefined
+
+
+## Remove Ansible Edge Workshop for Each Student
+- name: Remove  ansible edge workshop for each student
+  include_tasks: _aws_delete_all.yml
+  when: aws_state == "absent" and aws_state is defined

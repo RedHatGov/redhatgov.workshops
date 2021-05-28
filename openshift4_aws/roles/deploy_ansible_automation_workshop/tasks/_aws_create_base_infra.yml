@@ -1,0 +1,195 @@
+#---------------------------------------------------
+#  Deployment directory creation
+#---------------------------------------------------
+- name: Make temporary location to run deployment
+  file:
+    path: "{{ deploy_working_dir }}"
+    state: directory
+
+#---------------------------------------------------
+#  Template directory creation
+#---------------------------------------------------
+- name: Make temporary location to run inventory
+  file:
+    path: "{{ inventory_working_dir }}"
+    state: directory
+
+#---------------------------------------------------
+#  EC2 INI Creation
+#---------------------------------------------------
+- name: Template EC2 INI File
+  template:
+    dest: "{{ inventory_working_dir }}/ec2.ini"
+    src: "ec2.ini.j2"
+  when: execution is defined
+
+#---------------------------------------------------
+#  Ansible hostlist
+#---------------------------------------------------
+- name: Touch to make sure hostlist exists
+  file:
+    path: "{{ deploy_working_dir }}/hostlist"
+    state: touch
+    mode: '0644'
+
+#---------------------------------------------------
+#  SSH Key
+#---------------------------------------------------
+- name: Create EC2 keypair
+  ec2_key:
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-key"
+    region: "{{ region }}"
+    state: "{{ aws_state }}"
+  register: ec2_key
+
+- debug:
+    var: ec2_key
+
+- name: Write ssh private key
+  copy:
+    content: "{{ ec2_key.key.private_key }}\n"
+    dest: "{{ ssh_key_path }}"
+    mode: 0400
+  when: ec2_key.changed
+
+- name: Write ssh public key
+  openssl_publickey:
+    path: "{{ ssh_key_path }}.pub"
+    privatekey_path: "{{ ssh_key_path }}"
+  when: ec2_key.changed
+
+- name: template values in operators
+  template:
+    src: "sshkey.yaml.j2"
+    dest: "{{ openshift_build_path }}/sshkey.yaml"
+  when: ec2_key.key.private_key is defined
+
+- name: Create OpenShift ssh-key secret
+  community.kubernetes.k8s:
+    state: present
+    src: "{{ openshift_build_path }}/sshkey.yaml"
+  when: ec2_key.key.private_key is defined
+
+- name: create user sshkey secret template
+  template:
+    src: "sshkey-user.yaml.j2"
+    dest: "{{ openshift_build_path }}/sshkey-user{{ item }}.yaml"
+  when: ec2_key.key.private_key is defined
+  with_sequence: start=1 count="{{ openshift_user_count }}"
+
+- name: Template Ansible Hosts File
+  template:
+    dest: "{{ inventory_working_dir }}/hosts"
+    src: hosts.j2
+    mode: '644'
+
+- name: Create VPC
+  ec2_vpc_net:
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-vpc"
+    region: "{{ region }}"
+    cidr_block: "10.0.0.0/16"
+    dns_hostnames: yes
+    dns_support: yes
+    tags:
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    state: "{{ aws_state }}"
+  register: ec2_vpc
+
+- debug:
+    var: ec2_vpc
+
+- name: Create VPC internet gateway
+  ec2_vpc_igw:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    state: "{{ aws_state }}"
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-igw"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+  register: ec2_igw
+
+- debug:
+    var: ec2_igw
+
+- set_fact:
+    ports_list_of_dicts: |
+      {% set res = [] -%}
+      {% if ports.tcp != None %}
+      {% for key in ports.tcp.keys() -%}
+         {% for value in ports.tcp[key] -%}
+          {% set ignored = res.extend([{ 'proto': 'tcp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+         {%- endfor %}
+      {%- endfor %}
+      {%- endif %}
+      {% if ports.udp != None %}
+      {% for key in ports.udp.keys() -%}
+         {% for value in ports.udp[key] -%}
+          {% set ignored = res.extend([{ 'proto': 'udp', 'ports': key, 'rule_desc': value, 'cidr_ip': '0.0.0.0/0' }]) -%}
+         {%- endfor %}
+      {%- endfor %}
+      {%- endif %}
+      {{ res }}
+
+- debug:
+    var: ports_list_of_dicts
+
+- name: Create RHEL security group
+  ec2_group:
+    name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-sg"
+    description: "SG for RHEL hosts"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    rules: "{{ ports_list_of_dicts }}"
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-sg"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      rhel: "{{ openshift_cluster_name }}-{{ workshop_prefix }}"
+    state: "{{ aws_state }}"
+  register: result
+
+- debug:
+    var: result
+
+- name: Create public subnet
+  ec2_vpc_subnet:
+    cidr: "10.0.2.0/24"
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-subnet"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    wait: yes
+    state: "{{ aws_state }}"
+  register: ec2_subnet
+
+- debug:
+    var: ec2_subnet
+
+- name: Create VPC route table
+  ec2_vpc_route_table:
+    region: "{{ region }}"
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+    subnets:
+      - "{{ ec2_subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ ec2_igw.gateway_id }}"
+    lookup: tag
+    tags:
+      Name: "{{ openshift_cluster_name }}-{{ workshop_prefix }}-route"
+      username: "{{ local_user }}"
+      workshop: "{{ workshop_name }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+    state: "{{ aws_state }}"
+  register: ec2_route
+
+- debug:
+    var: ec2_route

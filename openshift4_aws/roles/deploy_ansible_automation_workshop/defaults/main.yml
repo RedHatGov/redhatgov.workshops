@@ -1,2 +1,87 @@
 ---
 # defaults file for deploy_ansible_automation_workshop
+
+# Ansible Edge Workshop Default Settings
+aws_state:                        "present"
+
+region:                           "us-east-2"
+
+beta:                             false # when true, use beta respoitories
+rhel_ver:                         "rhel8"
+
+
+workshop_name:                    "{{ openshift_cluster_name }}-ansible-edge"
+deploy_working_dir:               "{{ ansible_env.PWD }}/.redhatgov"
+inventory_working_dir:            "{{ ansible_env.PWD }}/inventory"
+# Ansible SSH Key Location |      SSH Key Vars
+#workshop_abbrev:                  "ae" # the 2-letter abbreviation for the type of workshop being run
+workshop_prefix:                  "node" # Workshop name - NO underscores!
+workshop_appCode:                 "????" # Waiting for code creation
+ssh_key_path:                     "{{ deploy_working_dir }}/{{openshift_cluster_name}}-{{ workshop_prefix }}-key"
+local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
+rhel_instance_type:               "t3.small"
+workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
+rhel_count:                       1            # RHEL node(s) per student
+domain_name:                      "{{ openshift_cluster_name }}.{{ openshift_cluster_base_domain }}"
+execution:                        "local" # when not running from Tower, define this variable
+workshop_password:                "{{ openshift_user_password }}"
+
+
+ports:
+  tcp:
+    22:
+      - "ssh"
+    80:
+      - "http"
+    9090:
+      - "cockpit"
+  udp:
+#    53:
+#    - "dns"
+
+# AWS region AMI info
+regions:
+  us-east-1:
+    rhel7:
+      #      ami: "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-6408521b" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+    rhel8:
+      beta:
+        ami: "ami-0331c24396b0d7863" # RHEL-8.3.0_HVM_BETA-20200701-x86_64-2-Access2-GP2
+      #      ami: "ami-02dadfb74f3ef24c7" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+      ami: "ami-0c82f7789103a1e20" # RHEL-8.3.0_HVM-20201031-x86_64-0-Access2-GP2
+  us-east-2:
+    rhel7:
+      #      ami: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+    rhel8:
+      beta:
+        ami: "ami-0ca583193e26638cc" # RHEL-8.3.0_HVM_BETA-20200701-x86_64-2-Access2-GP2
+      #      ami: "ami-0b2821bf4a7dba483" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+      ami: "ami-00cbb7bf4617ee51d" # RHEL-8.3.0_HVM-20201031-x86_64-0-Access2-GP2
+  us-west-1:
+    rhel7:
+      #      ami: "ami-02574210e91c38419" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-92ec0df1" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+    rhel8:
+      beta:
+        ami: "ami-08bcdd56744bd7fc4" # RHEL-8.3.0_HVM_BETA-20200701-x86_64-2-Access2-GP2
+      #      ami: "ami-0721a1b2a798c8424" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+      ami: "ami-0752cb7e43e7185cd" # RHEL-8.3.0_HVM-20201031-x86_64-0-Access2-GP2
+  us-west-2:
+    rhel7:
+      #      ami: "ami-02574210e91c38419" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-30763c48" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+    rhel8:
+      beta:
+        ami: "ami-0e4ad8073ddd6a29d" # RHEL-8.3.0_HVM_BETA-20200701-x86_64-2-Access2-GP2
+      #      ami: "ami-0620a243fb9f26c9a" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+      ami: "ami-0b7643b41f5c9b3c5" # RHEL-8.3.0_HVM-20201031-x86_64-0-Access2-GP2
+  eu-central-1:
+    rhel7:
+      #      ami: "ami-07d3f0705bebac978" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-4ab980a1" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+    rhel8:
+      #      ami: "ami-00d3b950efe6c34cd" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+      ami: "ami-078f1ce9bb441fe2f" # RHEL-8.3.0_HVM-20201031-x86_64-0-Access2-GP2
+...

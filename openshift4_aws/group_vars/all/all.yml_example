@@ -5,7 +5,7 @@
 openshift_installer_type:               local
 
 # get installation files playbook variables
-openshift_version:                      4.6.16
+openshift_version:                      4.7.6
 openshift_installer_path:               "{{ ansible_env.PWD }}"
 openshift_build_path:                   "{{ ansible_env.PWD }}/build"
 openshift_odo_version:                  2.0.1
@@ -35,15 +35,18 @@ openshift_installer_log_level:          debug          # recommended log level o
 deploy_web_terminal:                    True
 openshift_webcli_idle_timeout:          24h
 
-# serverless operator
-deploy_serverless:                      True
+# deploy codeready workspaces (required for Ansible workshop)
+deploy_codeready_workspaces:            False
+
+# deploy OpenShift pipelines (required for Ansible workshop)
+deploy_pipelines:                       False
+
+# serverless operator (required for Ansible workshop)
+deploy_serverless:                      False
 
 # ansible automation
 deploy_ansible_automation:		False
 deploy_ansible_automation_workshop:     False
-
-# deploy codeready workspaces
-deploy_codeready_workspaces:            True
 
 # service mesh operator variables
 deploy_service_mesh:                    false
