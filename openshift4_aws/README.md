@@ -3,6 +3,29 @@ ansible-ocp4-install-aws is an ansible OpenShift 4 installer helper using the fu
 
 The ansible-ocp4-install-aws playbooks were developed to enable simple and rapid OpenShift 4 cluster deployments generally, and specifically to deliver OpenShift training workshop lab environments.  This is especially true for the Service Mesh deployment, as the `deploy_service_mesh_workshop` Ansible role is designed to deliver a Red Hat Service Mesh workshop environment.  The lab guide for this workshop is available [here](http://redhatgov.io/workshops/openshift_service_mesh/).
 
+## Build Notes
+
+### Mac OS X
+
+#### ARM work-arounds
+
+On ARM/M1 Macs, you will need to set the following environment variables to work around ARM-related issues:
+```
+$ export GODEBUG=asyncpreemptoff=1
+$ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+```
+
+First, install the tools that you will need to do the build. You will need [Homebrew](https://brew.sh/):
+```
+$ brew install awscli terraform
+```
+To setup your Python virtualenv for Ansible, do the following:
+```
+$ virtualenv ansible # if you haven't already created this...
+$ source ansible/bin/activate
+$ pip install ansible botocore boto3 selinux passlib requests requests-oauthlib openshift boto
+```
+
 ---
 ## Dependencies
 
