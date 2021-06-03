@@ -130,8 +130,8 @@
       register: debug2
 
     - name: show debug 2
-        debug:
-          var: debug2
+      debug:
+        var: debug2
 
     - name: Load variables into the global namespace
       community.sops.load_vars:
