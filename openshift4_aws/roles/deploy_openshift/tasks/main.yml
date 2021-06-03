@@ -117,6 +117,12 @@
         - "secrets.sops.yml"
       ignore_errors: yes
 
+    - name: debug if file is there
+      shell: "ls {{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/"
+
+    - name: debug if file is there2
+      shell: "ls {{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars/"
+
     - name: Load variables into the global namespace
       community.sops.load_vars:
         file: secrets.sops.yml
