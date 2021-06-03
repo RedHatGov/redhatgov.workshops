@@ -101,7 +101,7 @@
       aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_secrets_prefix }}/{{ item }}"
-        dest: "{{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars/{{ item }}"
+        dest: "{{ ansible_env.PWD }}/roles/deploy_openshift/vars/{{ item }}"
         mode: get
       with_items:
         - "secrets.sops.yml"
