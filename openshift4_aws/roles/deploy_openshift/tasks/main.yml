@@ -98,14 +98,14 @@
       when: s3output.s3_keys|length != 0
 
     - name: "Copy in encrypted vars from S3"
-        aws_s3:
-          bucket: "{{ s3_bucket }}"
-          object: "{{ s3_secrets_prefix }}/{{ item }}"
-          dest: "{{ ansible_env.PWD }}/group_vars/all/{{ item }}"
-          mode: get
-        with_items:
-          - "secrets.sops.yml"
-        ignore_errors: yes
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ s3_secrets_prefix }}/{{ item }}"
+        dest: "{{ ansible_env.PWD }}/group_vars/all/{{ item }}"
+        mode: get
+      with_items:
+        - "secrets.sops.yml"
+      ignore_errors: yes
 
     - name: Load variables into the global namespace
       community.sops.load_vars:
