@@ -99,7 +99,7 @@
 
     - name: debug pwd
       debug:
-        var: {{ ansible_env.PWD }}
+        msg: "{{ ansible_env.PWD }}"
 
     - name: "Copy in encrypted vars from S3"
       aws_s3:
