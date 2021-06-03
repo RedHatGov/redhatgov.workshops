@@ -135,7 +135,7 @@
 
     - name: Load variables into the global namespace
       community.sops.load_vars:
-        file: secrets.sops.yml
+        file: "{{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars/secrets.sops.yml"
 
     - name: Generate the manifest files
       shell: "{{ openshift_build_path }}/openshift-install create manifests --dir={{ openshift_build_path }}"
