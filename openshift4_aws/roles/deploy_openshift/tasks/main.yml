@@ -97,6 +97,10 @@
         msg: Cluster already exists with this name
       when: s3output.s3_keys|length != 0
 
+    - name: debug pwd
+      debug:
+        var: {{ ansible_env.PWD }}
+
     - name: "Copy in encrypted vars from S3"
       aws_s3:
         bucket: "{{ s3_bucket }}"
