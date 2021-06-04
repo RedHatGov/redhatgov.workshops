@@ -44,10 +44,11 @@
       include_role:
         name: deploy_service_mesh
       when: deploy_service_mesh == true
-
+    - name: deploy signed certs
+      include_role:
+        name: deploy_signed_certs
+      when: deploy_signed_certs == true or
     - name: deploy and configure openshift workshop resources
       include_role:
         name: deploy_service_mesh_workshop
       when: deploy_service_mesh_workshop == true
-
-
