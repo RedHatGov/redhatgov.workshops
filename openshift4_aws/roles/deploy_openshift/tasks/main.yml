@@ -101,17 +101,17 @@
       debug:
         msg: "{{ ansible_env.PWD }}"
 
-    - name: ensure vars directory exists
-      ansible.builtin.file:
-        path: "{{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars"
-        state: directory
-        mode: '0755'
+#    - name: ensure vars directory exists
+#      ansible.builtin.file:
+#        path: "{{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars"
+#        state: directory
+#        mode: '0755'
 
     - name: "Copy in encrypted vars from S3"
       aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_secrets_prefix }}/{{ item }}"
-        dest: "{{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars/{{ item }}"
+        dest: "{{ openshift_build_path }}/{{ item }}"
         mode: get
       with_items:
         - "secrets.sops.yml"
@@ -119,7 +119,7 @@
 
     - name: Load variables into the global namespace
       community.sops.load_vars:
-        file: "{{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars/secrets.sops.yml"
+        file: "{{ openshift_build_path }}/secrets.sops.yml"
 
     - name: Generate the manifest files
       shell: "{{ openshift_build_path }}/openshift-install create manifests --dir={{ openshift_build_path }}"
