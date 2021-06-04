@@ -1,0 +1,21 @@
+server {
+    listen              443 ssl;
+    server_name         {{ inventory_hostname }};
+    root                /usr/share/nginx/html;
+    ssl_certificate     /etc/letsencrypt/certs/fullchain_{{ domain_name }};
+    ssl_certificate_key /etc/letsencrypt/keys/{{ domain_name }}.key;
+
+    # Load configuration files for the default server block.
+    include /etc/nginx/default.d/*.conf;
+
+    location / {
+    }
+
+    error_page 404 /404.html;
+        location = /40x.html {
+    }
+
+    error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+    }
+}
