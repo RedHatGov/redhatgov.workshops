@@ -5,14 +5,14 @@
   register: secrets
 
 - name: "Copy in encrypted vars from S3"
-    aws_s3:
-      bucket: "{{ s3_bucket }}"
-      object: "{{ s3_secrets_prefix }}/{{ item }}"
-      dest: "{{ openshift_build_path }}/{{ item }}"
-      mode: get
-    with_items:
-      - "secrets.sops.yml"
-    ignore_errors: yes
+  aws_s3:
+    bucket: "{{ s3_bucket }}"
+    object: "{{ s3_secrets_prefix }}/{{ item }}"
+    dest: "{{ openshift_build_path }}/{{ item }}"
+    mode: get
+  with_items:
+    - "secrets.sops.yml"
+  ignore_errors: yes
   when: not secrets.stat.exists
 
 - name: Load variables into the global namespace
