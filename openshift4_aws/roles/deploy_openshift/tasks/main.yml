@@ -97,16 +97,6 @@
         msg: Cluster already exists with this name
       when: s3output.s3_keys|length != 0
 
-    - name: debug pwd
-      debug:
-        msg: "{{ ansible_env.PWD }}"
-
-#    - name: ensure vars directory exists
-#      ansible.builtin.file:
-#        path: "{{ ansible_env.PWD }}/openshift4_aws/roles/deploy_openshift/vars"
-#        state: directory
-#        mode: '0755'
-
     - name: "Copy in encrypted vars from S3"
       aws_s3:
         bucket: "{{ s3_bucket }}"
