@@ -1,0 +1,37 @@
+---
+- name: Check if secrets file exists (For letsencrypt AWS credentials)
+  stat:
+    path: "{{ openshift_build_path }}/secrets.sops.yml"
+  register: secrets
+
+- name: "Copy in encrypted vars from S3"
+    aws_s3:
+      bucket: "{{ s3_bucket }}"
+      object: "{{ s3_secrets_prefix }}/{{ item }}"
+      dest: "{{ openshift_build_path }}/{{ item }}"
+      mode: get
+    with_items:
+      - "secrets.sops.yml"
+    ignore_errors: yes
+  when: not secrets.stat.exists
+
+- name: Load variables into the global namespace
+  community.sops.load_vars:
+    file: "{{ openshift_build_path }}/secrets.sops.yml"
+
+- name: Create letsencrypt-job namespace
+  community.kubernetes.k8s:
+    name: letsencrypt-job
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: template secrets for cert gen
+  community.kubernetes.k8s:
+    state: present
+    template: 'letsencrypt-secret.yml.j2'
+
+- name: Apply manifest files
+#  shell: "kustomize build {{playbook_dir}}/roles/{{ role_name }}/files/ | oc apply -f -"
+  shell: "oc apply -k {{playbook_dir}}/roles/{{ role_name }}/files/"
+  ignore_errors: yes
