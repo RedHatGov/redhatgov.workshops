@@ -1,5 +1,32 @@
 # Container Security Workshop - AWS Version
 
+`container_security` is an introductory workshop on RHEL container security, using the student workbook located at [redhatgov.io](http://redhatgov.io/workshops/security_container_intro/).
+
+## Detailed AWS Infrastructure Creation Guides
+
+### RHEL 8
+
+Unfortunately, the required Python modules are not uniformly available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
+```
+$ sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
+$ sudo dnf install -y git python3-virtualenv rust bc
+$ virtualenv --system-site-packages ansible
+$ source ansible/bin/activate
+(ansible) $ pip install boto boto3 awscli ansible
+(ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
+(ansible) $ mkdir src
+(ansible) $ cd src/
+(ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+(ansible) $ cd ~/src/redhatgov.workshops/container_security/
+(ansible) $ cp group_vars/all_example.yml group_vars/all.yml
+(ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ ansible-playbook 1_provision.yml
+(ansible) $ ansible-playbook 2_preload.yml 
+(ansible) $ ./admin.sh                       # logs you into the admin host
+(admin) $ cd src/container_security
+(admin) $ ansible-playbook 3_load.yml
+```
+
 # The rest of this is a stub, please ignore
 
 ![ansible](img/Ansible-Tower-Logotype-Large-RGB-FullGrey-300x124.png)
