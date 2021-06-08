@@ -19,6 +19,14 @@ ORGNAME = Summit
 ALTNAMES = DNS:$FQDN
 
 # --- no modifications required below ---
+
+default_bits        = 2048
+distinguished_name  = dn
+x509_extensions     = extensions
+req_extensions      = req_ext
+extensions          = extensions
+prompt              = no
+
 [ req ]
 default_bits = 2048
 default_md = sha256
@@ -32,6 +40,16 @@ C = CH
 O = $ORGNAME
 CN = $FQDN
 
-[ req_ext ]
-subjectAltName = $ALTNAMES
+[ extensions ]
+basicConstraints       = critical, CA:true
+keyUsage = keyEncipherment, dataEncipherment, keyCertSign, cRLSign
+subjectAltName = @alt_names
 
+[ req_ext ]
+keyUsage = keyEncipherment, dataEncipherment, keyCertSign, cRLSign
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+subjectKeyIdentifier   = hash
+
+[alt_names]
+DNS.1 = $FQDN
