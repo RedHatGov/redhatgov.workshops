@@ -365,6 +365,10 @@
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
       with_sequence: count="{{ ansible_user_count }}"
 
+    - name: "Add Ansible Tower ContainerGroup for each user"
+      include_tasks: cg.yml
+      with_sequence: count="{{ openshift_user_count }}"
+
   when: aws_state == "present" or aws_state is undefined
 
 
