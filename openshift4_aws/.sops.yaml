@@ -1,3 +1,0 @@
-creation_rules:
-  - filename_regex: \.sops.yml$
-    kms: 'arn:aws:kms:us-east-1:605251984176:key/c4a4f715-fc58-4d7b-93ad-1413784f0e85'
