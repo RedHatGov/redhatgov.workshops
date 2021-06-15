@@ -12,10 +12,6 @@
 
 
   tasks:
-    - name: create cluster admin and user accounts
-      include_role:
-        name: create_openshift_users
-      when: create_openshift_users == true
     - name: deploy web terminal
       include_role:
         name: deploy_web_terminal
