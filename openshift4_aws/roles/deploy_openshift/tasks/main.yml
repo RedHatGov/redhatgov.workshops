@@ -105,6 +105,7 @@
         mode: get
       with_items:
         - "secrets.sops.yml"
+        - ".sops.yaml"
       ignore_errors: yes
 
     - name: Load variables into the global namespace
