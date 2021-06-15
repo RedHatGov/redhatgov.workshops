@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: edge-{{ item }}}
+  namespace: edge-{{ item }}
+subjects:
+  - kind: ServiceAccount
+    name: containergroup-{{ item  }}
+    namespace: edge-{{ item }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-manager-{{ item }}
