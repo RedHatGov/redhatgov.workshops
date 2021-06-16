@@ -97,20 +97,20 @@
         msg: Cluster already exists with this name
       when: s3output.s3_keys|length != 0
 
-    - name: "Copy in encrypted vars from S3"
-      aws_s3:
-        bucket: "{{ s3_bucket }}"
-        object: "{{ s3_secrets_prefix }}/{{ item }}"
-        dest: "{{ openshift_build_path }}/{{ item }}"
-        mode: get
-      with_items:
-        - "secrets.sops.yml"
-        - ".sops.yaml"
-      ignore_errors: yes
-
-    - name: Load variables into the global namespace
-      community.sops.load_vars:
-        file: "{{ openshift_build_path }}/secrets.sops.yml"
+#    - name: "Copy in encrypted vars from S3"
+#      aws_s3:
+#        bucket: "{{ s3_bucket }}"
+#        object: "{{ s3_secrets_prefix }}/{{ item }}"
+#        dest: "{{ openshift_build_path }}/{{ item }}"
+#        mode: get
+#      with_items:
+#        - "secrets.sops.yml"
+#        - ".sops.yaml"
+#      ignore_errors: yes
+#
+#    - name: Load variables into the global namespace
+#      community.sops.load_vars:
+#        file: "{{ openshift_build_path }}/secrets.sops.yml"
 
     - name: Generate the manifest files
       shell: "{{ openshift_build_path }}/openshift-install create manifests --dir={{ openshift_build_path }}"
