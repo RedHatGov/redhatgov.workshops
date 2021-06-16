@@ -105,6 +105,15 @@
         mode: get
       with_items:
         - "secrets.sops.yml"
+      ignore_errors: yes
+
+    - name: "Copy in sops config file"
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ s3_secrets_prefix }}/{{ item }}"
+        dest: "{{ openshift_installer_path }}/{{ item }}"
+        mode: get
+      with_items:
         - ".sops.yaml"
       ignore_errors: yes
 
