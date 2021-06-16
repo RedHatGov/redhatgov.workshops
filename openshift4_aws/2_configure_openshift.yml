@@ -15,7 +15,7 @@
     - name: create cluster admin and user accounts
       include_role:
         name: create_openshift_users
-      when: create_openshift_users == true and s3_bucket is defined and openshift_installer_type == "automation"
+      when: create_openshift_users == true and openshift_installer_type != "automation"
     - name: deploy web terminal
       include_role:
         name: deploy_web_terminal
