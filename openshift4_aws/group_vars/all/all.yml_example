@@ -67,4 +67,4 @@ keycloak_operator_version:              "v10.0.0"
 # S3 bucket to AWS creds with Route53 permission- used for generating signed certs
 #s3_secrets_prefix:                      "example/bucket/path"
 deploy_signed_certs:                     false
-acme_version:                           2.8.9
+acme_version:                            2.8.9
