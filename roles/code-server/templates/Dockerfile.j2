@@ -6,11 +6,11 @@ RUN yum install -y openssl
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 RUN mkdir -p ~/.config/code-server
 RUN echo -e "\
-bind-addr: 127.0.0.1:8443 \n\
+bind-addr: 0.0.0.0:8443 \n\
 auth: password \n\
 password: {{ code_pass }} \n\
 cert: true \
 " > ~/.config/code-server/config.yaml
 RUN setcap cap_net_bind_service=+ep /usr/lib/code-server/lib/node
-CMD ["/usr/bin/code-server"]
+CMD ["/usr/bin/code-server","--verbose"]
 EXPOSE 8443/tcp

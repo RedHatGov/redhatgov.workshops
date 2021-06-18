@@ -1,4 +1,4 @@
-# file: 2_load.yml
+# file: 3_load.yml
 ---
 
 - name: Wait for AWS AMIs to become initialized
