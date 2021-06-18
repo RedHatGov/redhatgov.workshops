@@ -15,7 +15,7 @@
     - name: create cluster admin and user accounts
       include_role:
         name: create_openshift_users
-      when: create_openshift_users == true
+      when: create_openshift_users == true and openshift_installer_type != "automation"
     - name: deploy web terminal
       include_role:
         name: deploy_web_terminal
@@ -44,10 +44,11 @@
       include_role:
         name: deploy_service_mesh
       when: deploy_service_mesh == true
-
+    - name: deploy signed certs
+      include_role:
+        name: deploy_signed_certs
+      when: deploy_signed_certs == true
     - name: deploy and configure openshift workshop resources
       include_role:
         name: deploy_service_mesh_workshop
       when: deploy_service_mesh_workshop == true
-
-
