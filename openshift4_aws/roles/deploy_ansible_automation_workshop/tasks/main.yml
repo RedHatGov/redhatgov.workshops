@@ -106,6 +106,7 @@
       awx.awx.tower_role:
         user: "user{{ item }}"
         target_team: workshop_team
+        organization: workshop_org
         role: member
         state: present
         tower_host: "{{ ansible_openshift_tower_url }}"
