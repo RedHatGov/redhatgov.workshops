@@ -82,6 +82,43 @@
     regexp: '^openshift_pg_emptydir=.*'
     line: "openshift_pg_emptydir={{ ansible_openshift_pg_emptydir }}"
 
+## Update resource reservation settings
+- name: Update memory reservation for Ansible Tower deployment (web)"
+  lineinfile:
+    path: "{{ download_dir_ansible.path }}/ansible-openshift/roles/kubernetes/defaults/main.yml"
+    regexp: '^web_mem_request:'
+    line: 'web_mem_request: 4'
+
+- name: Update cpu reservation for Ansible Tower deployment (web)"
+  lineinfile:
+    path: "{{ download_dir_ansible.path }}/ansible-openshift/roles/kubernetes/defaults/main.yml"
+    regexp: '^web_cpu_request:'
+    line: 'web_cpu_request: 1500'
+
+- name: Update memory reservation for Ansible Tower deployment (tasks)"
+  lineinfile:
+    path: "{{ download_dir_ansible.path }}/ansible-openshift/roles/kubernetes/defaults/main.yml"
+    regexp: '^task_mem_request:'
+    line: 'task_mem_request: 10'
+
+- name: Update cpu reservation for Ansible Tower deployment (tasks)"
+  lineinfile:
+    path: "{{ download_dir_ansible.path }}/ansible-openshift/roles/kubernetes/defaults/main.yml"
+    regexp: '^task_cpu_request:'
+    line: 'task_cpu_request: 2500'
+
+- name: Update memory reservation for Ansible Tower deployment (redis)"
+  lineinfile:
+    path: "{{ download_dir_ansible.path }}/ansible-openshift/roles/kubernetes/defaults/main.yml"
+    regexp: '^redis_mem_request:'
+    line: 'redis_mem_request: 2'
+
+- name: Update cpu reservation for Ansible Tower deployment (redis)"
+  lineinfile:
+    path: "{{ download_dir_ansible.path }}/ansible-openshift/roles/kubernetes/defaults/main.yml"
+    regexp: '^redis_cpu_request:'
+    line: 'redis_cpu_request: 1500'
+
 #### Create namespace for Ansible Automation
 - name: Create tower namespace
   k8s:
