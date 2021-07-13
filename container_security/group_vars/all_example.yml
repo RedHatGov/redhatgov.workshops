@@ -41,9 +41,9 @@ win_ver:                          "win2016"
 ebs_root_block_size:              50
 #------------------------------------------------------------------------------
 # instance_types
-win_instance_type:                "t3.large"
-bastion_instance_type:            "t3.large"
-rhel_instance_type:               "t3.small"
+win_instance_type:                "t3a.large"
+bastion_instance_type:            "t3a.large"
+rhel_instance_type:               "t3a.small"
 #------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                     true
@@ -104,3 +104,4 @@ ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
 system_user:                      "ec2-user"    # AWS
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
 workshop_name:                    "container_security" # the type of workshop being run
+workshop_abbrev:                  "cs" # the prefix for the type of workshop being run
