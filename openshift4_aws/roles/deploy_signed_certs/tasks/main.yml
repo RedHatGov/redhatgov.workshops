@@ -1,0 +1,163 @@
+---
+
+- name: set final_certs var for these tasks
+  set_fact:
+    final_certs: "{{ openshift_build_path }}/tmp/final"
+
+- name: Check if fullchain.pem file already exists
+  stat:
+    path: "{{ final_certs }}/fullchain.pem"
+  register: full_chain
+
+# Grab aws settings from credentials file if it exists
+- name: set aws_access_key_id
+  shell: aws configure get aws_access_key_id
+  register: aws_access_key_id
+  ignore_errors: yes
+  when: not full_chain.stat.exists
+
+- name: set aws_secret_access_key
+  shell: aws configure get aws_secret_access_key
+  register: aws_secret_access_key
+  ignore_errors: yes
+  when: not full_chain.stat.exists
+
+- name: set aws_session_token
+  shell: aws configure get aws_session_token
+  register: aws_session_token
+  ignore_errors: yes
+  when: not full_chain.stat.exists
+
+# Set vars to ENV variables if set, if not use above vars from AWS creds file
+- name: Set var aws_access_key_id
+  set_fact:
+    aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') | default(aws_access_key_id.stdout, true) }}"
+    aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') | default(aws_secret_access_key.stdout, true) }}"
+    aws_session_token: "{{ lookup('env', 'AWS_SESSION_TOKEN') | default(aws_session_token.stdout, true) }}"
+  when: not full_chain.stat.exists
+
+- name: Get default ingress controller
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: IngressController
+    name: default
+    namespace: openshift-ingress-operator
+  register: le_wildcard
+  when: not full_chain.stat.exists
+
+- name: set letsencrypt facts
+  set_fact:
+    le_wildcard: "*.{{le_wildcard.resources[0].status.domain}}"
+    le_api: "{{ le_wildcard.resources[0].status.domain | regex_replace('^apps\\.', 'api.') }}"
+    le_secret_name: "le-certs-{{ ansible_date_time.date }}"
+  when: not full_chain.stat.exists
+
+- name: Create finalcerts dir if it doesn't exist
+  ansible.builtin.file:
+    path: "{{ final_certs }}"
+    state: directory
+    recurse: yes
+    mode: '0755'
+  when: not full_chain.stat.exists
+
+- name: download and extract acme installer
+  unarchive:
+    src: https://github.com/acmesh-official/acme.sh/archive/{{ acme_version }}.tar.gz
+    dest: "{{ openshift_build_path }}/tmp"
+    remote_src: yes
+  when: not full_chain.stat.exists
+
+- name: acme.sh to issue certs with session token
+  ansible.builtin.shell: >
+    {{ openshift_build_path }}/tmp/acme.sh-{{ acme_version }}/acme.sh
+    --issue
+    --dns dns_aws
+    -d "{{ le_api }}"
+    -d "{{ le_wildcard }}"
+    --home "{{openshift_build_path }}/tmp"
+    --cert-home "{{openshift_build_path }}/tmp"
+    --config-home "{{openshift_build_path }}/tmp"
+    --debug
+  environment:
+    AWS_ACCESS_KEY_ID:        "{{ aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY:    "{{ aws_secret_access_key }}"
+    AWS_SESSION_TOKEN:       "{{ aws_session_token }}"
+  when: not full_chain.stat.exists and aws_access_key_id is defined and aws_secret_access_key is defined and aws_session_token != ""
+
+- name: acme.sh to issue certs without session token
+  ansible.builtin.shell: >
+    {{ openshift_build_path }}/tmp/acme.sh-{{ acme_version }}/acme.sh
+    --issue
+    --dns dns_aws
+    -d "{{ le_api }}"
+    -d "{{ le_wildcard }}"
+    --home "{{openshift_build_path }}/tmp"
+    --cert-home "{{openshift_build_path }}/tmp"
+    --config-home "{{openshift_build_path }}/tmp"
+    --debug
+  environment:
+      AWS_ACCESS_KEY_ID:        "{{ aws_access_key_id }}"
+      AWS_SECRET_ACCESS_KEY:    "{{ aws_secret_access_key }}"
+  when: not full_chain.stat.exists and aws_access_key_id is defined and aws_secret_access_key is defined and aws_session_token == ""
+
+- name: acme.sh to install certs
+  ansible.builtin.shell: >
+    {{ openshift_build_path }}/tmp/acme.sh-{{ acme_version }}/acme.sh
+    --install-cert
+    -d "{{ le_api }}"
+    -d "{{ le_wildcard }}"
+    --cert-file "{{ final_certs }}/cert.pem"
+    --key-file "{{ final_certs }}/key.pem"
+    --fullchain-file "{{ final_certs }}/fullchain.pem"
+    --ca-file "{{ final_certs }}/ca.cer"
+    --home "{{openshift_build_path }}/tmp"
+    --cert-home "{{openshift_build_path }}/tmp"
+    --config-home "{{openshift_build_path }}/tmp"
+    --debug
+  when: not full_chain.stat.exists
+
+- name: Create OCP secret
+  ansible.builtin.shell: >
+    "{{openshift_build_path }}/oc"
+    create
+    secret
+    tls
+    "{{ le_secret_name }}"
+    --cert="{{ final_certs }}/fullchain.pem"
+    --key="{{ final_certs }}/key.pem"
+    -n {{ item }}
+  with_items:
+    - openshift-config
+    - openshift-ingress
+  when: not full_chain.stat.exists
+
+- name: Patch ingress to use new certificate
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      api_version: v1
+      kind: IngressController
+      metadata:
+        namespace: openshift-ingress-operator
+        name: default
+      spec:
+        defaultCertificate:
+          name: "{{ le_secret_name }}"
+  when: not full_chain.stat.exists
+
+- name: Patch api server to use new certificate
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      api_version: config.openshift.io/v1
+      kind: APIServer
+      metadata:
+        name: cluster
+      spec:
+        servingCerts:
+          namedCertificates:
+          - names:
+            - "{{ le_api }}"
+            servingCertificate:
+              name: "{{ le_secret_name }}"
+  when: not full_chain.stat.exists

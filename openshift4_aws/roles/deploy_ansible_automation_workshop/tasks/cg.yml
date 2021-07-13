@@ -1,0 +1,78 @@
+---
+- name: Create tower ServiceAccount for user Tower containergroup
+  community.kubernetes.k8s:
+    kind: ServiceAccount
+    state: present
+    name: "containergroup-{{ item  }}"
+    namespace: "edge-{{ item }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+- name: Create role template for pod-manager for containergroup(s) 
+  template:
+    src: "{{ role_path }}/templates/tower-cg-pod-manager.yml.j2"
+    dest: "{{ openshift_build_path }}/tower-cg-pod-manager-{{ item }}.yml"
+
+- name: Apply pod-manager role to allow access to Tower containergroup
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/tower-cg-pod-manager-{{ item }}.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+- name: Create rolebinding template for pod-manager for containergroup(s) 
+  template:
+    src: "{{ role_path }}/templates/tower-cg-rolebinding.yml.j2"
+    dest: "{{ openshift_build_path }}/tower-cg-rolebinding-{{ item }}.yml"
+
+- name: Apply pod-manager rolebinding to allow access to Tower containergroup
+  community.kubernetes.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/tower-cg-rolebinding-{{ item }}.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+- name: Retrieve containergroup service account information
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: ServiceAccount
+    name: "containergroup-{{ item }}"
+    namespace: "edge-{{ item }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  register: cgsa
+
+- name: Capture token from container from account information
+  set_fact:
+    token: "{{ secret.name }}"
+  when: '"token" in secret.name'
+  loop:  "{{ cgsa.resources[0].secrets }}"
+  loop_control:
+    loop_var: secret
+
+- debug:
+    msg: "{{ token }}"
+
+- name: Retrieve containergroup secret
+  community.kubernetes.k8s_info:
+    api: v1
+    kind: Secret
+    name: "{{ token }}"
+    namespace: "edge-{{ item }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  register: cgsecret
+
+- debug:
+    msg: "{{ cgsecret.resources[0].data.token }}"
+
+- name: Add OpenShift credential for containergroup
+  awx.awx.tower_credential:
+    name: "user{{ item }}-rhocp-cg-cred"
+    organization: workshop_org
+    inputs:
+      host: "https://api.{{ openshift_cluster_fqdn }}:6443"
+      bearer_token: "{{ cgsecret.resources[0].data.token }}"
+      verify_ssl: false
+    description: "OpenShift Service Account for Ansible Tower ContainerGroup"
+    credential_type: "OpenShift or Kubernetes API Bearer Token"
+    tower_username: "{{ ansible_admin_user }}"
+    tower_password: "{{ ansible_admin_password }}"
+    tower_host: "{{ ansible_openshift_tower_url }}"
+    validate_certs: no
+

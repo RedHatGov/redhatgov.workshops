@@ -2,13 +2,19 @@
 - debug:
     msg: "Configure CodeReady Workspaces for Ansible for user{{ item }}"
 
-- name: Pause for 2 second between connections
+- name: Pause for 15 second between connections
   pause:
-    seconds: 2
-- name: Define retries for creating CodeReady workspaces
+    seconds: 15
+
+- name: Create workspace for user in CodeReady (user1)
   set_fact:
-    max_retries: "{{ 5 if max_retries is undefined else max_retries | int }}"
-    retry_delay: "{{ 5 if retry_delay is undefined else retry_delay | int }}"
+    max_retries: "{{ 40 if max_retries is undefined else max_retries | int }}"
+  when: item  == "1"
+
+- name: Create workspace for user in CodeReady (>user1)
+  set_fact:
+    max_retries: "{{ 5 if (max_retries == '40') else max_retries | int }}"
+  when:  item >= "2"
 
 - name: Create workspace for user in CodeReady
   block:
@@ -17,6 +23,7 @@
       retry_count: "{{ 0 if retry_count is undefined else retry_count | int + 1 }}"
   - debug:
       msg: "max_retries = {{ max_retries }}, attempt = {{ retry_count }}"
+
   - name: "Request token via URI"
     uri:
       url: "https://keycloak-codeready-workspaces.apps.{{ openshift_cluster_fqdn }}/auth/realms/codeready/protocol/openid-connect/token"

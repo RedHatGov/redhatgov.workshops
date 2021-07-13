@@ -77,7 +77,7 @@
   copy: content="{{ openshift_version }}" dest="{{ openshift_build_path }}/openshift_version.txt"
   when: openshift_installer_type == "automation"
 
-# Automation Componenets
+# Automation Components
 - name: Block to try and copy off installation files to S3
   block:
     - name: Check to see if workshop already exists
@@ -96,6 +96,43 @@
       fail:
         msg: Cluster already exists with this name
       when: s3output.s3_keys|length != 0
+
+    - name: "Copy in encrypted vars from S3"
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ s3_secrets_prefix }}/{{ item }}"
+        dest: "{{ openshift_build_path }}/{{ item }}"
+        mode: get
+      with_items:
+        - "secrets.sops.yml"
+      ignore_errors: yes
+
+    - name: "Copy in sops config file"
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ s3_secrets_prefix }}/{{ item }}"
+        dest: "{{ openshift_installer_path }}/{{ item }}"
+        mode: get
+      with_items:
+        - ".sops.yaml"
+      ignore_errors: yes
+
+    - name: Load variables into the global namespace
+      community.sops.load_vars:
+        file: "{{ openshift_build_path }}/secrets.sops.yml"
+
+    - name: Generate the manifest files
+      shell: "{{ openshift_build_path }}/openshift-install create manifests --dir={{ openshift_build_path }}"
+
+    - name: Create tls directory for install
+      ansible.builtin.file:
+        path: "{{ openshift_build_path }}/tls"
+        state: directory
+
+    - name: Write private key to directory
+      copy:
+        content: "{{ SIGNER_PRIVATE_KEY }}"
+        dest: "{{ openshift_build_path }}/tls/bound-service-account-signing-key.key"
 
     - name: Installing the OCP cluster (this will take a while. ~60 minutes)
       shell: "{{ openshift_build_path }}/openshift-install create cluster --dir={{ openshift_build_path }} --log-level={{ openshift_installer_log_level }}"
