@@ -4,7 +4,7 @@
 # on the command line.
 
 # the fully qualified server (or service) name
-FQDN = node1.GUID.internal
+FQDN={{inventory_hostname}}
 
 # the name of your organization
 # (see also https://www.switch.ch/pki/participants/)
@@ -16,17 +16,9 @@ ORGNAME = Summit
 # resolve to the same IP address as the FQDN.
 # ALTNAMES = DNS:$FQDN   # , DNS:bar.example.org , DNS:www.foo.example.org
 # ALTNAMES = DNS:$FQDN  
-ALTNAMES = DNS:$FQDN
+ALTNAMES = DNS:{{inventory_hostname}}
 
 # --- no modifications required below ---
-
-default_bits        = 2048
-distinguished_name  = dn
-x509_extensions     = extensions
-req_extensions      = req_ext
-extensions          = extensions
-prompt              = no
-
 [ req ]
 default_bits = 2048
 default_md = sha256
@@ -40,16 +32,6 @@ C = CH
 O = $ORGNAME
 CN = $FQDN
 
-[ extensions ]
-basicConstraints       = critical, CA:true
-keyUsage = keyEncipherment, dataEncipherment, keyCertSign, cRLSign
-subjectAltName = @alt_names
-
 [ req_ext ]
-keyUsage = keyEncipherment, dataEncipherment, keyCertSign, cRLSign
-extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
-subjectKeyIdentifier   = hash
+subjectAltName = $ALTNAMES
 
-[alt_names]
-DNS.1 = $FQDN

@@ -7,7 +7,7 @@ localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env py
 {% endif %}
 
 [admin_rhel_node]
-{{ workshop_prefix }}.admin.{{ domain_name }} ansible_ssh_host={{ ec2_rhel_admin.instances[0].public_ip }}
+admin.{{ workshop_prefix }}.{{ domain_name }} ansible_ssh_host={{ ec2_rhel_admin.instances[0].public_ip }}
 
 [bastion_rhel_nodes]
 
@@ -21,7 +21,7 @@ ansible_ssh_private_key_file={{ ssh_key_path }}
 
 [win_nodes]
 {% for n in range( win_count|int ) %}
-{{ workshop_prefix }}.win2016.{{ n }}.{{ domain_name }}
+win2016.{{ n }}.{{ workshop_prefix }}.{{ domain_name }}
 {% endfor %}
 
 [win_nodes:vars]

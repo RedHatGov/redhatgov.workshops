@@ -56,8 +56,8 @@
 #  SSH Key
 #---------------------------------------------------
 - name: Create EC2 keypair
-  ec2_key:
-    name: "cs-{{ workshop_prefix }}-key"
+  amazon.aws.ec2_key:
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
     region: "{{ region }}"
     state: present
   register: ec2_key
@@ -76,8 +76,8 @@
 #  Create AWS objects
 #---------------------------------------------------
 - name: Create VPC
-  ec2_vpc_net:
-    name: "cs-{{ workshop_prefix }}-vpc"
+  amazon.aws.ec2_vpc_net:
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-vpc"
     region: "{{ region }}"
     cidr_block: "10.0.0.0/16"
     dns_hostnames: yes
@@ -93,12 +93,12 @@
     var: ec2_vpc
 
 - name: Create VPC internet gateway
-  ec2_vpc_igw:
+  community.aws.ec2_vpc_igw:
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     state: present
     tags:
-      Name: "cs-{{ workshop_prefix }}-igw"
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-igw"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -131,8 +131,8 @@
     var: ports_list_of_dicts
 
 - name: Create RHEL security group
-  ec2_group:
-    name: "cs-{{ workshop_prefix }}-rhel-sg"
+  amazon.aws.ec2_group:
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     description: "SG for RHEL hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
@@ -141,7 +141,7 @@
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      rhel: "cs-{{ workshop_prefix }}"
+      rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
     state: present
   register: result
 
@@ -149,8 +149,8 @@
     var: result
 
 - name: Create Windows security group
-  ec2_group:
-    name: "cs-{{ workshop_prefix }}-win-sg"
+  amazon.aws.ec2_group:
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-win-sg"
     description: "SG for Windows hosts"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
@@ -159,16 +159,16 @@
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      win: "cs-{{ workshop_prefix }}"
+      win: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
     state: present
 
 - name: Create public subnet
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     cidr: "10.0.2.0/24"
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     tags:
-      Name: "cs-{{ workshop_prefix }}-subnet"
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-subnet"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -179,7 +179,7 @@
     var: ec2_subnet
 
 - name: Create VPC route table
-  ec2_vpc_route_table:
+  community.aws.ec2_vpc_route_table:
     region: "{{ region }}"
     vpc_id: "{{ ec2_vpc.vpc.id }}"
     subnets:
@@ -189,7 +189,7 @@
         gateway_id: "{{ ec2_igw.gateway_id }}"
     lookup: tag
     tags:
-      Name: "cs-{{ workshop_prefix }}-route"
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-route"
       username: "{{ local_user }}"
       workshop: "{{ workshop_name }}"
       workshop_prefix: "{{ workshop_prefix }}"
@@ -200,22 +200,22 @@
     var: ec2_route
 
 - name: Create RHEL admin host
-  ec2:
+  amazon.aws.ec2:
     assign_public_ip: yes
-    key_name: "cs-{{ workshop_prefix }}-key"
-    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
     image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
-      Name: "cs-{{ workshop_prefix }}-admin"
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      rhel_admin: "cs-{{ workshop_prefix }}"
+      rhel_admin: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
       # RH IT Required Tags
-      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceName: "{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
       ServiceOwner: "{{ local_user }}"
       ServicePhase: "{{ workshop_phase }}"
       BusinessUnit: "415"
@@ -225,22 +225,22 @@
   register: ec2_rhel_admin
 
 - name: Create RHEL instances
-  ec2:
+  amazon.aws.ec2:
     assign_public_ip: yes
-    key_name: "cs-{{ workshop_prefix }}-key"
-    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
     image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
-      Name: "cs-{{ workshop_prefix }}-rhel"
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      rhel: "cs-{{ workshop_prefix }}"
+      rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
       # RH IT Required Tags
-      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceName: "{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
       ServiceOwner: "{{ local_user }}"
       ServicePhase: "{{ workshop_phase }}"
       BusinessUnit: "415"
@@ -250,22 +250,22 @@
   register: ec2_rhel
 
 - name: Create RHEL Bastion instances
-  ec2:
+  amazon.aws.ec2:
     assign_public_ip: yes
-    key_name: "cs-{{ workshop_prefix }}-key"
-    group: "cs-{{ workshop_prefix }}-rhel-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ bastion_instance_type }}"
     image: "{{ rhel_ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
-      Name: "cs-{{ workshop_prefix }}-bastion_rhel"
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-bastion_rhel"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      bastion_rhel: "cs-{{ workshop_prefix }}"
+      bastion_rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
       # RH IT Required Tags
-      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceName: "{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
       ServiceOwner: "{{ local_user }}"
       ServicePhase: "{{ workshop_phase }}"
       BusinessUnit: "415"
@@ -284,10 +284,10 @@
     var: ec2_bastion_rhel
 
 - name: Create Windows instances
-  ec2:
+  amazon.aws.ec2:
     assign_public_ip: yes
-    key_name: "cs-{{ workshop_prefix }}-key"
-    group: "cs-{{ workshop_prefix }}-win-sg"
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-win-sg"
     region: "{{ region }}"
     instance_type: "{{ win_instance_type }}"
     image: "{{ regions[region][win_ver].ami }}"
@@ -295,12 +295,12 @@
     user_data: "{{ lookup('file', '{{ winrm_path }}') }}"
     wait: true
     instance_tags:
-      Name: "cs-{{ workshop_prefix }}-win"
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-win"
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
-      win: "cs-{{ workshop_prefix }}"
+      win: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
       # RH IT Required Tags
-      ServiceName: "cs-{{ workshop_prefix }}-admin"
+      ServiceName: "{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
       ServiceOwner: "{{ local_user }}"
       ServicePhase: "{{ workshop_phase }}"
       BusinessUnit: "415"
@@ -336,7 +336,7 @@
 
 - name: add RHEL hosts to groups
   add_host:
-    name: cs-{{ workshop_prefix}}-rhel-{{ item.id }}
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix}}-rhel-{{ item.id }}"
     ansible_ssh_host: "{{ item.public_ip }}"
     groups: rhel_nodes
   with_items:
@@ -417,9 +417,10 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
+    record: "admin.{{ workshop_prefix }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
-    wait: yes
+    overwrite: yes
+#    wait: yes
     state: present
   loop: "{{ ec2_rhel_admin.instances }}"
 #  ignore_errors: true
@@ -431,6 +432,7 @@
     ttl: "300"
     record: "{{ dns_name_list['stdout_lines'][ansible_loop.index0] }}"
     value: "{{ item.dns_name }}"
+    overwrite: yes
 #    wait: yes
     state: present
   loop: "{{ ec2_rhel.instances }}"
@@ -443,8 +445,10 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "{{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }}"
+#    record: "{{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }}"
+    record: "bastion.{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
+    overwrite: yes
 #    wait: yes
     state: present
   loop: "{{ ec2_bastion_rhel.instances }}"
@@ -462,7 +466,7 @@
 
 - name: add Windows hosts to groups
   add_host:
-    name: cs-{{ workshop_prefix}}-win-{{ item.id }}
+    name: "{{ workshop_abbrev }}-{{ workshop_prefix}}-win-{{ item.id }}"
     ansible_ssh_host: "{{ item.public_ip }}"
     groups: win_nodes
   with_items: "{{ ec2_win.tagged_instances }}"
@@ -472,8 +476,10 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
+#    record: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
+    record: "win2016.{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
+    overwrite: yes
 #    wait: yes
     state: present
   loop: "{{ ec2_win.instances }}"

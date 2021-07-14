@@ -21,8 +21,7 @@ beta:                             false # when true, use beta respoitories
 # aws                      |      deployment working dir 
 deploy_working_dir:               "{{ lookup('env','PWD') }}/.redhatgov"
 # aws                      |      AWS Route 53
-domain_name:                      ""
-zone_id:                          ""
+domain_name:                      "" # REQUIRED
 # aws                      |      AWS Node Counts
 tower_rhel_count:                 "2"            # RHEL Ansible Tower node(s)
 rhel_count:                       "2"            # RHEL node(s)
@@ -41,10 +40,12 @@ win_ver:                          "win2016"
 ebs_root_block_size:              50
 #------------------------------------------------------------------------------
 # instance_types
-win_instance_type:                "t3.large"
-tower_instance_type:              "t3.large"
-rhel_instance_type:               "t3.small"
+win_instance_type:                "t3a.large"
+tower_instance_type:              "t3a.large"
+rhel_instance_type:               "t3a.small"
 #------------------------------------------------------------------------------
+# subscription info
+# you MUST either set 'cloud_access' to 'true' OR fill out a 'username' and 'password' and 'pool_id' OR fill out an 'rhsm_org_id' and 'rhsm_activationkey'
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                     true
 # subscription_manager     |      Red Hat Subscription via username & password
@@ -59,6 +60,7 @@ rhsm_org_id:                      ""
 letsencrypt_email:                "someone@redhat.com"
 letsencrypt:                      false
 #------------------------------------------------------------------------------
+# you MUST set a password here
 # console                  |      password
 workshop_password:                "" # Note that Windows 2016 requires 3 character classes and 10 characters
 #------------------------------------------------------------------------------
