@@ -23,4 +23,4 @@ Here is some example usage:
 ...
 ```
 
-Please let me know if you ahev problems or suggestions.
+Please let me know if you have problems or suggestions.
