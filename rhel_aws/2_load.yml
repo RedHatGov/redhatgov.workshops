@@ -35,15 +35,20 @@
   roles:
     - role: epel
 
-- name: Configure repositories on nodes
-  become: yes
-  remote_user: ec2-user
-  hosts: le_node
-  gather_facts: no
+- name: Issue SSL certs
+  become: false
+  hosts: localhost
+  vars:
+    command:      "issue"
+#    command:      "revoke"
+    email:        "{{ letsencrypt_email }}"
+    cert_dir:     "{{ deploy_working_dir }}"
+    cert_fqdns:
+      - "*.{{ workshop_prefix }}.{{ domain_name }}"
   tags:
-    - letsencrypt
+    - acme
   roles:
-    - role: LetsEncrypt
+    - role: acme
 
 - name: Configure software on nodes
   become: yes
@@ -164,6 +169,17 @@
       args:
         creates: /home/ec2-user/.ssh/known_hosts
 
+    - name: install real certificate to web console
+      copy:
+        dest: "/etc/cockpit/ws-certs.d/acme.cert"
+        content: "{{ lookup('file', deploy_working_dir + '/cert.pem') }}\n{{ lookup('file', deploy_working_dir + '/key.pem') }}"
+        owner: "root"
+        group: "cockpit-ws"
+
+    - name: restart web console
+      systemd:
+        name: "cockpit"
+        state: restarted
 
 - name: Pre-load system role playbook
   become: no
