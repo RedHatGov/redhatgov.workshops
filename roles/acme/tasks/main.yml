@@ -1,0 +1,120 @@
+---
+
+- name: default cert directory, if it isn't specified
+  set_fact:
+    final_certs: "{{ cert_dir | default('/tmp/certs-' + ansible_date_time.iso8601_basic_short ) }}"
+
+- name: create fqdn arguments for acme.sh
+  set_fact:
+    fqdns: "{{ '-d \"' + cert_fqdns | join('\" -d \"') + '\"' }}"
+
+- name: define installation, issuance and revoking commands
+  set_fact:
+    install_cmd:  "{{ final_certs }}/tmp/acme.sh-{{ acme_version }}/acme.sh --server '{{ server }}' --install-cert {{ fqdns }} --cert-file '{{ final_certs }}/cert.pem' --key-file '{{ final_certs }}/key.pem' --fullchain-file '{{ final_certs }}/fullchain.pem' --ca-file '{{ final_certs }}/ca.cer' --home '{{ final_certs }}/tmp' --cert-home '{{ final_certs }}/tmp' --config-home '{{ final_certs }}/tmp' --debug"
+    issue_cmd:    "{{ final_certs }}/tmp/acme.sh-{{ acme_version }}/acme.sh --server '{{ server }}' --issue --dns dns_aws {{ fqdns }} --home '{{ final_certs }}/tmp' --cert-home '{{ final_certs }}/tmp' --config-home '{{ final_certs }}/tmp' -m '{{ email }}' --debug"
+    revoke_cmd:   "{{ final_certs }}/tmp/acme.sh-{{ acme_version }}/acme.sh --server '{{ server }}' --revoke --revoke-reason 0 {{ fqdns }} --home '{{ final_certs }}/tmp' --cert-home '{{ final_certs }}/tmp' --config-home '{{ final_certs }}/tmp' -m '{{ email }}' --debug"
+
+- name: create cert directory
+  file:
+    path: "{{ final_certs }}/tmp"
+    state: directory
+    mode: '0755'
+    recurse: yes
+
+- name: Check if fullchain.pem file already exists
+  stat:
+    path: "{{ final_certs }}/fullchain.pem"
+  register: full_chain
+
+- name: check to see if aws credentials file exists
+  stat:
+    path: "~/.aws/credentials"
+  register: aws_creds
+
+- name: check to see acme.sh exists
+  stat:
+    path: "{{ final_certs }}/tmp/acme.sh-{{ acme_version}}/acme.sh"
+  register: acme
+
+- name: grab aws settings from credentials file if it exists
+  block:
+    - name: set aws_access_key_id
+      shell: aws configure get aws_access_key_id
+      register: aws_access_key_id
+#        ignore_errors: yes
+
+    - name: set aws_secret_access_key
+      shell: aws configure get aws_secret_access_key
+      register: aws_secret_access_key
+#        ignore_errors: yes
+
+    - name: set aws_session_token
+      shell: aws configure get aws_session_token
+      register: aws_session_token
+      ignore_errors: yes
+  when: command == "issue" and aws_creds.stat.exists and not full_chain.stat.exists
+
+- name: download and extract acme installer
+  unarchive:
+    src: "https://github.com/acmesh-official/acme.sh/archive/{{ acme_version }}.tar.gz"
+    dest: "{{ final_certs }}/tmp"
+    remote_src: yes
+  when: not acme.stat.exists
+
+- name: issue certs when they don't already exist
+  block:
+    - name: show acme issue cmd
+      debug:
+        msg: "{{ issue_cmd }}"
+
+# We MAY be able to use this module, in the future, but it doesn't work for this usage, currently
+#      - name: acme_certificate to issue certs
+#        community.crypto.acme_certificate:
+#           account_email: "{{ email }}"
+#           acme_directory: "{{ server }}"
+#           acme_version: 2
+#           challenge: "dns-01"
+#           dest: "{{ final_certs }}/tmp"
+#           terms_agreed: yes
+
+    - name: acme.sh to issue certs with session token
+      shell: "{{ issue_cmd }}"
+      environment:
+        AWS_ACCESS_KEY_ID:        "{{ aws_access_key_id.stdout }}"
+        AWS_SECRET_ACCESS_KEY:    "{{ aws_secret_access_key.stdout }}"
+        AWS_SESSION_TOKEN:        "{{ aws_session_token.stdout }}"
+      when: aws_access_key_id is defined and aws_secret_access_key is defined and aws_session_token != ""
+
+    - name: acme.sh to issue certs without session token
+      shell: "{{ issue_cmd }}"
+      environment:
+          AWS_ACCESS_KEY_ID:        "{{ aws_access_key_id.stdout }}"
+          AWS_SECRET_ACCESS_KEY:    "{{ aws_secret_access_key.stdout }}"
+      when: aws_access_key_id is defined and aws_secret_access_key is defined and aws_session_token == ""
+
+    - name: show acme install cmd
+      debug:
+        msg: "{{ install_cmd }}"
+
+    - name: acme.sh to install certs
+      shell: "{{ install_cmd }}"
+
+    - debug:
+        msg: "Installed {{ cert_fqdns | join(', ') }} certificates to directory {{ final_certs }}."
+
+  when: command == "issue" and not full_chain.stat.exists
+
+- name: revoke certs
+  block:
+    - name: show acme revoke cmd
+      debug:
+        msg: "{{ revoke_cmd }}"
+
+    - name: acme.sh to revoke certs
+      shell: "{{ revoke_cmd }}"
+
+    - debug:
+        msg: "Revoked {{ cert_fqdns | join(', ') }} certificates in directory {{ final_certs }}."
+  when: command == "revoke"
+
+...
