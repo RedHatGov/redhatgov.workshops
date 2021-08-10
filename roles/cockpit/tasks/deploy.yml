@@ -35,6 +35,7 @@
     - cockpit-packagekit
     - cockpit-podman
     - cockpit-storaged
+    - cockpit-pcp
     when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
 
 - when: ansible_facts.packages["firewalld"] is defined
@@ -63,6 +64,12 @@
       destination_port: 9090
       jump: ACCEPT
     when: ansible_facts.packages["iptables"] is defined
+
+- name: Ensure pmlogger is started (for cockpit-pcp)
+  systemd:
+    name: "pmlogger.service"
+    state: "started"
+    enabled: true
 
 - name: Ensure cockpit is started
   systemd:
