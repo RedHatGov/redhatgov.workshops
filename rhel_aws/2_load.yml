@@ -76,6 +76,14 @@
         - cockpit-session-recording
         - systemd-journal-remote
         state: present
+    - name: install bash-completion (RHEL 8)
+      yum:
+        name:
+        - bash-completion
+        state: present
+      when: rhel_ver == 'rhel8'
+      tags:
+        - bash-completion
 
 - name: Configure web console (RHEL 7)
   become: yes
