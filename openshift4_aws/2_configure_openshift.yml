@@ -20,10 +20,6 @@
       include_role:
         name: deploy_web_terminal
       when: deploy_web_terminal == true
-    - name: deploy serverless
-      include_role:
-        name: deploy_serverless
-      when: deploy_serverless == true
     - name: deploy ansible automation
       include_role:
         name: deploy_ansible_automation
@@ -48,6 +44,10 @@
       include_role:
         name: deploy_signed_certs
       when: deploy_signed_certs == true
+    - name: deploy serverless
+      include_role:
+        name: deploy_serverless
+      when: deploy_serverless == true
     - name: deploy and configure openshift workshop resources
       include_role:
         name: deploy_service_mesh_workshop
