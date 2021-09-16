@@ -1,17 +1,17 @@
 # file: 2_preload.yml
 ---
 
-#- name: Wait for AWS AMIs to become initialized
-#  hosts: localhost
-#  gather_facts: no
-#  tasks:
-#    - wait_for:
-#        host: "{{ item }}"
-#        port: 22
-#        state: started
-#        timeout: 300
-#      with_items:
-#        - "{{ groups.admin_rhel_node }}"
+- name: Wait for AWS AMIs to become initialized
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - wait_for:
+        host: "{{ item }}"
+        port: 22
+        state: started
+        timeout: 300
+      with_items:
+        - "{{ groups.admin_rhel_node }}"
 
 - name: Prep files for admin server
   hosts: localhost
