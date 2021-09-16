@@ -76,6 +76,12 @@
       jump: ACCEPT
     when: ansible_facts.packages["iptables"] is defined
 
+- name: Ensure pmlogger is started (for cockpit-pcp)
+  systemd:
+    name: "pmlogger.service"
+    state: "started"
+    enabled: true
+
 - name: Ensure cockpit is started
   systemd:
     name: "cockpit.socket"

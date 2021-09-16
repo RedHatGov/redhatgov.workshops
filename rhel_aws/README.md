@@ -8,6 +8,19 @@ These modules all require that you have AWS API keys available to use to provisi
 
 This repo also requires that you have Ansible installed on your local machine. For the most upto date methods of installing Ansible for your operating system [check here](http://docs.ansible.com/ansible/intro_installation.html).
 
+## Valid AWS regions
+
+By default this workshop is deployed in AWS region us-east-2 (Ohio).
+
+The available regions for the RHEL 8 workshop are:
+- us-east-2 (Ohio)
+- us-east-1 (N. Virginia)
+- ap-southeast-2 (Sydney)
+
+This is based on a dependency for the correct AWS AMIs being defined for the region in roles/aws.create/defaults/main.yml
+
+Please refer to the configuration instructions below for further information
+
 ## Detailed AWS Infrastructure Creation Guides
 
 #### OS X Catalina (10.15.x)
@@ -87,16 +100,16 @@ $ source ansible/bin/activate
 (ansible) $ ansible-playbook 2_load.yml 
 ```
 
-#### Fedora 30/31/32
+#### Fedora 30/31/32/33
 ```
 $ sudo dnf -y install git python3-boto python3-boto3 ansible awscli
 $ aws configure # fill out at least your AWS API keys, other variables are optional
 $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-$ sed -i 's/env python/env python3/' inventory/hosts
+$ sed -i 's/env python/env python3/' inventory/hosts _(probably not relevant any longer)_
 $ cd ~/src/redhatgov.workshops/rhel_aws/
 $ cp group_vars/all_example.yml group_vars/all.yml
 $ vim group_vars/all.yml # fill in all the required fields
-$ source env.sh
+$ source env.sh _(probably not relevant any longer)_
 $ ansible-playbook 1_provision.yml
 $ ansible-playbook 2_load.yml 
 ```

@@ -24,5 +24,19 @@ regions:
       ami: "ami-0a54aef4ef3b5f881" # RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2
     win2016:
       ami: "ami-08b4a0f6e106c1dba" # Windows_Server-2016-English-Full-Base-2019.02.13
+  ap-southeast-2:
+    rhel6:
+      # ami: "ami-0fcbf553f091053d7" # RHEL-6.10_HVM-20190524-x86_64-0-Hourly2-GP2 NOT AVAILABLE IN THIS REGION
+    rhel7:
+#      ami: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+      ami: "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2 NOT AVAILABLE IN THIS REGION
+    rhel8:
+#      ami: "ami-0b2821bf4a7dba483" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+#      ami: "ami-0a54aef4ef3b5f881" # RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2 NOT AVAILABLE IN THIS REGION
+      ami: "ami-0810abbfb78d37cdf" # RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2 NOT AVAILABLE IN THIS REGION
+    win2016:
+#      ami: "ami-08b4a0f6e106c1dba" # Windows_Server-2016-English-Full-Base-2019.02.13 NOT AVAILABLE IN THIS REGION
+      ami: "ami-03808957a3743a18c" # Windows_Server-2016-English-Full-Base-2021.07.14 UNTESTED
 
+...
 ...
