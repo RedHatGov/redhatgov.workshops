@@ -8,9 +8,15 @@
   set_fact:
     fqdns: "{{ '-d \"' + cert_fqdns | join('\" -d \"') + '\"' }}"
 
+- name: set output name for files
+  set_fact:
+    cert_name: "{{ workshop_prefix }}.{{ domain_name }}_cert.pem"
+    key_name: "{{ workshop_prefix }}.{{ domain_name }}_key.pem"
+    fullchain_name: "{{ workshop_prefix }}.{{ domain_name }}_fullchain.pem"
+
 - name: define installation, issuance and revoking commands
   set_fact:
-    install_cmd:  "{{ final_certs }}/tmp/acme.sh-{{ acme_version }}/acme.sh --server '{{ server }}' --install-cert {{ fqdns }} --cert-file '{{ final_certs }}/cert.pem' --key-file '{{ final_certs }}/key.pem' --fullchain-file '{{ final_certs }}/fullchain.pem' --ca-file '{{ final_certs }}/ca.cer' --home '{{ final_certs }}/tmp' --cert-home '{{ final_certs }}/tmp' --config-home '{{ final_certs }}/tmp' --debug"
+    install_cmd:  "{{ final_certs }}/tmp/acme.sh-{{ acme_version }}/acme.sh --server '{{ server }}' --install-cert {{ fqdns }} --cert-file '{{ final_certs }}/{{ cert_name }}' --key-file '{{ final_certs }}/{{ key_name }}' --fullchain-file '{{ final_certs }}/{{ fullchain_name }}' --ca-file '{{ final_certs }}/ca.cer' --home '{{ final_certs }}/tmp' --cert-home '{{ final_certs }}/tmp' --config-home '{{ final_certs }}/tmp' --debug"
     issue_cmd:    "{{ final_certs }}/tmp/acme.sh-{{ acme_version }}/acme.sh --server '{{ server }}' --issue --dns dns_aws {{ fqdns }} --home '{{ final_certs }}/tmp' --cert-home '{{ final_certs }}/tmp' --config-home '{{ final_certs }}/tmp' -m '{{ email }}' --debug"
     revoke_cmd:   "{{ final_certs }}/tmp/acme.sh-{{ acme_version }}/acme.sh --server '{{ server }}' --revoke --revoke-reason 0 {{ fqdns }} --home '{{ final_certs }}/tmp' --cert-home '{{ final_certs }}/tmp' --config-home '{{ final_certs }}/tmp' -m '{{ email }}' --debug"
 
@@ -23,7 +29,7 @@
 
 - name: Check if fullchain.pem file already exists
   stat:
-    path: "{{ final_certs }}/fullchain.pem"
+    path: "{{ final_certs }}/{{ fullchain_name }}"
   register: full_chain
 
 - name: check to see if aws credentials file exists
