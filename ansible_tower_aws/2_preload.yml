@@ -1,17 +1,17 @@
 # file: 2_preload.yml
 ---
 
-- name: Wait for AWS AMIs to become initialized
-  hosts: localhost
-  gather_facts: no
-  tasks:
-    - wait_for:
-        host: "{{ item }}"
-        port: 22
-        state: started
-        timeout: 300
-      with_items:
-        - "{{ groups.admin_rhel_node }}"
+#- name: Wait for AWS AMIs to become initialized
+#  hosts: localhost
+#  gather_facts: no
+#  tasks:
+#    - wait_for:
+#        host: "{{ item }}"
+#        port: 22
+#        state: started
+#        timeout: 300
+#      with_items:
+#        - "{{ groups.admin_rhel_node }}"
 
 - name: Prep files for admin server
   hosts: localhost
@@ -19,6 +19,25 @@
   become: no
   roles:
     - role: admin_server_prep
+
+- name: Load real cert for web console
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - admin_rhel_node
+  gather_facts: yes
+  tasks:
+    - name: install cockpit package if it's not present
+      package:
+        name: cockpit-ws
+        state: present
+
+    - name: install real certificate to web console
+      copy:
+        dest: "/etc/cockpit/ws-certs.d/acme.cert"
+        content: "{{ lookup('file', deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_cert.pem') }}\n{{ lookup('file', deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_key.pem') }}"
+        owner: "root"
+        group: "cockpit-ws"
 
 - name: Configure admin server
   become: yes
@@ -32,9 +51,10 @@
     - role: epel 
     - role: cockpit 
     - role: admin_server_config 
+    - role: system-user
   tasks:
   - name: explain how to login
     debug:
-      msg: "Please run './admin.sh' to login to the admin server. Then, you may proceed to install the other nodes with 'cd src/ansible_tower_aws && ansible-playbook 3_load.yml'."
+      msg: "Please run './admin.sh', or navigate to 'https://admin.{{ workshop_prefix }}.{{ domain_name }}:9090/system/terminal', to login to the admin server. Then, you may proceed to install the other nodes with 'cd src/ansible_tower_aws && ansible-playbook 3_load.yml'."
 
 ...
