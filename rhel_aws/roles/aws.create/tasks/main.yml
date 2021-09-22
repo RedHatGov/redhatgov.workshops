@@ -333,12 +333,19 @@
     groups: rhel_nodes
   with_items: "{{ ec2_rhel.tagged_instances }}"
 
+- name: add IP addresses to inventory
+  lineinfile:
+    path: "{{ inventory_working_dir }}/hosts"
+    regex: "^node-{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
+    line: "node-{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }} ansible_ssh_host={{ item.public_ip }}"
+  with_items: "{{ ec2_rhel.instances }}"
+
 - name: Create DNS records for RHEL
   route53:
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "{{ workshop_prefix }}.node.{{ item.ami_launch_index }}.{{ domain_name }}"
+    record: "node-{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
 #    wait: yes
     state: present
@@ -350,7 +357,7 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "{{ workshop_prefix }}.tower.{{ item.ami_launch_index }}.{{ domain_name }}"
+    record: "tower-{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
 #    wait: yes
     state: present
@@ -380,7 +387,7 @@
     zone: "{{ domain_name }}"
     type: "CNAME"
     ttl: "300"
-    record: "{{ workshop_prefix }}.win2016.{{ item.ami_launch_index }}.{{ domain_name }}"
+    record: "win2016-{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
     value: "{{ item.dns_name }}"
 #    wait: yes
     state: present

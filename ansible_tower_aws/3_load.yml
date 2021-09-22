@@ -91,6 +91,40 @@
       - "hello.js"
       - "hello.service"
 
+- name: Load real cert for web console
+  become: yes
+  remote_user: ec2-user
+  hosts: tower_rhel_nodes
+  gather_facts: yes
+  tasks:
+    - name: install cockpit package if it's not present
+      package:
+        name: cockpit-ws
+        state: present
+
+    - name: install real certificate to web console
+      copy:
+        dest: "/etc/cockpit/ws-certs.d/acme.cert"
+        content: "{{ lookup('file', deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_cert.pem') }}\n{{ lookup('file', deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_key.pem') }}"
+        owner: "root"
+        group: "cockpit-ws"
+
+    - name: stage real cert for tower
+      copy:
+        dest: "~ec2-user/cert.pem"
+        src: "{{ deploy_working_dir }}/{{ workshop_prefix }}.{{ domain_name }}_cert.pem"
+        owner: "ec2-user"
+        group: "ec2-user"
+        mode: "0644"
+
+    - name: stage real key for tower
+      copy:
+        dest: "~ec2-user/key.pem"
+        src: "{{ deploy_working_dir }}/{{ workshop_prefix }}.{{ domain_name }}_key.pem"
+        owner: "ec2-user"
+        group: "ec2-user"
+        mode: "0644"
+
 - name: Configure web console (RHEL 7)
   become: yes
   remote_user: ec2-user

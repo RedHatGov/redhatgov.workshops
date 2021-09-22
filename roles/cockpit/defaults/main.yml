@@ -1,2 +1,4 @@
 ---
 # defaults file for cockpit
+
+podman_install: true

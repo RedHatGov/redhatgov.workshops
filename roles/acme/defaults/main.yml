@@ -1,0 +1,7 @@
+---
+
+acme_version: "2.9.0"
+command:      "issue"
+server:       "https://acme.zerossl.com/v2/DV90"
+
+...

@@ -77,10 +77,10 @@
     mode: '0644'
   become: no
 
-- name: append hosts to host file
-  blockinfile:
-    path: "/etc/hosts"
-    block: "{{ lookup('file', deploy_working_dir + '/hostlist') }}"
+#- name: append hosts to host file
+#  blockinfile:
+#    path: "/etc/hosts"
+#    block: "{{ lookup('file', deploy_working_dir + '/hostlist') }}"
 
 - name: install ssh key
   copy:

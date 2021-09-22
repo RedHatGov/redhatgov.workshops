@@ -24,7 +24,7 @@
     - cockpit-ws
     - subscription-manager-cockpit
 
-  - name: Add extra packages when on RHEL 8
+  - name: Add extra packages when on RHEL 8 (with podman)
     package:
       name: "{{ item }}"
       state: latest
@@ -35,8 +35,19 @@
     - cockpit-packagekit
     - cockpit-podman
     - cockpit-storaged
-    - cockpit-pcp
-    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and podman_install == true
+
+  - name: Add extra packages when on RHEL 8 (without podman)
+    package:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+    - cockpit-composer
+    - cockpit-session-recording
+    - cockpit-machines
+    - cockpit-packagekit
+    - cockpit-storaged
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and podman_install == false
 
 - when: ansible_facts.packages["firewalld"] is defined
   block:

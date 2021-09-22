@@ -1,8 +1,8 @@
-# Ansible Tower Workshop - AWS Version
+# RHEL 8 Workshop - AWS Version
 
-![ansible](img/Ansible-Tower-Logotype-Large-RGB-FullGrey-300x124.png)
+![rhel 8](img/Logo-Red_Hat-Enterprise_Linux_8-B-Standard-RGB.png)
 
-`Ansible_Tower_Workshop` is a ansible playbook to provision Ansible Tower in AWS. This playbook uses Ansible to provision AWS infrastructure and nodes.
+`rhel8_aws` is a playbook to provision RHEL 8 in AWS. This playbook uses Ansible to provision AWS infrastructure and nodes.
 
 These modules all require that you have AWS API keys available to use to provision AWS resources. You also need to have IAM permissions set to allow you to create resources within AWS. There are several methods for setting up your AWS environment, on you local machine.
 
@@ -30,30 +30,20 @@ $ source ansible/bin/activate
 (ansible) $ mkdir src
 (ansible) $ cd src
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
-(ansible) $ export AWS_ACCESS_KEY_ID='0123456789123456789' # insert your AWS Access Key here
-(ansible) $ export AWS_SECRET_ACCESS_KEY='0123456789112345678921234567893123456789' # insert your AWS secret key here
-(ansible) $ sed \
--e "s~AWS_ACCESS_KEY_ID.*~AWS_ACCESS_KEY_ID='$AWS_ACCESS_KEY_ID'~" \
--e "s~AWS_SECRET_ACCESS_KEY.*~AWS_SECRET_ACCESS_KEY='$AWS_SECRET_ACCESS_KEY'~" \
-env.sh_example > env.sh
-(ansible) $ sed \
--e "s~aws_access_key:.*~aws_access_key:                   \"$AWS_ACCESS_KEY_ID\"~" \
--e "s~aws_secret_key:.*~aws_secret_key:                   \"$AWS_SECRET_ACCESS_KEY\"~" \
-group_vars/all_example.yml >group_vars/all.yml
+(ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
+(ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
-(ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ./admin.sh                       # logs you into the admin host
-(admin) $ cd src/ansible_tower_aws
-(admin) $ source env.sh                      # enter your workshop password here
+(ansible) $ ansible-playbook 2_load.yml 
+(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
+(admin) $ cd src/rhel_aws
 (admin) $ ansible-playbook 3_load.yml
 ```
 
 #### RHEL 7
 
 Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
+
 ```
 $ sudo subscription-manager repos \
 --enable rhel-7-server-ansible-2.8-rpms \
@@ -67,20 +57,18 @@ $ source ansible/bin/activate
 (ansible) $ mkdir src
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
+(ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ./admin.sh                       # logs you into the admin host
-(admin) $ cd src/ansible_tower_aws
-(admin) $ source env.sh                      # enter your workshop password here
-(admin) $ ansible-playbook 3_load.yml
+(ansible) $ ansible-playbook 2_load.yml 
 ```
 
 #### RHEL 8
 
 Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
+
 ```
 $ sudo subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms --enable codeready-builder-for-rhel-8-x86_64-rpms
 $ sudo dnf install -y git python3-virtualenv ansible
@@ -91,15 +79,12 @@ $ source ansible/bin/activate
 (ansible) $ mkdir src
 (ansible) $ cd src/
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
-(ansible) $ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+(ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
+(ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
 (ansible) $ source env.sh
 (ansible) $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ./admin.sh                       # logs you into the admin host
-(admin) $ cd src/ansible_tower_aws
-(admin) $ source env.sh                      # enter your workshop password here
-(admin) $ ansible-playbook 3_load.yml
+(ansible) $ ansible-playbook 2_load.yml 
 ```
 
 #### Fedora 30/31/32
@@ -108,15 +93,12 @@ $ sudo dnf -y install git python3-boto python3-boto3 ansible awscli
 $ aws configure # fill out at least your AWS API keys, other variables are optional
 $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 $ sed -i 's/env python/env python3/' inventory/hosts
-$ cd ~/src/redhatgov.workshops/ansible_tower_aws/
+$ cd ~/src/redhatgov.workshops/rhel_aws/
+$ cp group_vars/all_example.yml group_vars/all.yml
 $ vim group_vars/all.yml # fill in all the required fields
 $ source env.sh
 $ ansible-playbook 1_provision.yml
-(ansible) $ ansible-playbook 2_preload.yml 
-(ansible) $ ./admin.sh                       # logs you into the admin host
-(admin) $ cd src/ansible_tower_aws
-(admin) $ source env.sh                      # enter your workshop password here
-(admin) $ ansible-playbook 3_load.yml
+$ ansible-playbook 2_load.yml 
 ```
 
 #### Custom Variable Requirements
@@ -126,14 +108,17 @@ $ ansible-playbook 1_provision.yml
   workshop_prefix  : defaults to "tower", set to the name of your workshop
   jboss            : defaults to "true", comment out to disable jboss
   graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
-  beta             : defaults to "false", change it to true if you want to use RHEL HTB releases. *required* for podman kube module in exercise 1, until RHEL 8.3 is released
-  domain_name      : your DNS domain, likely "redhatgov.io" or "rhnaps.io"
+  aws_access_key   : your Amazon AWS API key
+  aws_secret_key   : your Amazon AWS secret key
+  domain_name      : your DNS domain, likely "redhagov.io"
   zone_id:         : the AWS Route 53 zone ID for your domain
   tower_rhel_count : the number of tower instances, usually 1 per student
   rhel_count       : the number of regular RHEL instances, usually 1 per student
   win_count        : the number of Windows 2016 instances, currently not used
   region:          : defaults to "us-east-2", set to any region
-  workshop_password: pick a password for your students to login with
+  rhel_ami_id      : defaults to "us-east-2" AMIs, uncomment us-east-1, or add your preferred region, as desired.  There are both JBoss-enabled and plain RHEL instances avalable
+  win_ami_id       : similarly to "rhel_ami_id", uncomment to match your region choice
+  workshop_passwoed: pick a password for your students to login with
   rabbit_password  : pick a password for RabbitMQ in Tower, usually not needed
   local_user       : if you are using a Mac, uncomment the Mac-specific entry, and comment the RHEL/Fedora one
 ```
@@ -179,9 +164,9 @@ ansible-playbook 1_provision.yml
 #### Install packages and configure the newly provisioned nodes.
 
 ```
-ansible-playbook 2_preload.yml
-ssh -i .redhatgov/{{ workshop prefix }}-key ec2-user@{{ workshop prefix }}.admin.{{ domain name }}
-cd ~/src/ansible_tower_aws)
+ansible-playbook 2_load.yml
+(login to admin node as ec2-user)
+cd ~/src/rhel_aws)
 ansible-playbook 3_load.yml
 ```
 
@@ -192,20 +177,12 @@ ansible-playbook 4_unregister.yml
 rm -rf .redhatgov
 ```
 
-
-#### Or, if you just want to clear out the config, and not attempt to unsubscribe the RHEL nodes:
-
-```
-ansible-playbook 4_unregister.yml -e NOSSH=true
-```
-```
-
 ## Login to the primary workshop node
 
 Browse to the URL of the EC2 instance and enter the `ec2-user`'s password `workshop_password:` located in `group_vars/all.yml`.
 
 ```
-https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:9090
+https://{{ workshop_prefix }}.tower.0.{{ domain_name }}:8888/wetty/ssh/ec2-user
 ```
 
 ## Alternative interface: RDP (Microsoft Remote Desktop)

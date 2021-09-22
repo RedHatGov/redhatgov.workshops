@@ -115,7 +115,7 @@
   ec2_vpc_subnet_info:
     region: "{{ region }}"
     filters:
-      tag:workshop: "{{ workshop_name }}"
+      tag:workshop: "{{ workshop }}"
       tag:workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_subnet
 
@@ -128,7 +128,7 @@
   ec2_vpc_route_table_info:
     region: "{{ region }}"
     filters:
-      tag:workshop: "{{ workshop_name }}"
+      tag:workshop: "{{ workshop }}"
       tag:workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_route
 
@@ -141,7 +141,7 @@
   ec2_vpc_net_info:
     region: "{{ region }}"
     filters:
-      tag:workshop: "{{ workshop_name }}"
+      tag:workshop: "{{ workshop }}"
       tag:workshop_prefix: "{{ workshop_prefix }}"
   register: ec2_vpc
 
@@ -150,60 +150,21 @@
     vpc_id: "{{ ec2_vpc.vpcs[0].id }}"
   when: ec2_vpc.vpcs|length > 0
 
-- name: Lookup existing Windows DNS records
-  route53:
-    state: get
-    zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.win2016.{{ dns_idx }}.{{ domain_name }}"
-    type: CNAME
-  register: win_rec
-  loop: "{{ win_instance_ids }}"
-  loop_control:
-    index_var: dns_idx
-  ignore_errors: true
-
-- name: Lookup existing RHEL admin DNS records
-  route53:
-    state: get
-    zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.admin.{{ domain_name }}"
-    type: CNAME
-  register: admin_rhel_rec
-  loop: "{{ admin_rhel_instance_ids }}"
-  loop_control:
-    index_var: dns_idx
-  ignore_errors: true
-
-- name: Lookup existing RHEL DNS records
-  route53:
-    state: get
-    zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.node.{{ dns_idx }}.{{ domain_name }}"
-    type: CNAME
-  register: rhel_rec
-  loop: "{{ rhel_instance_ids }}"
-  loop_control:
-    index_var: dns_idx
-  ignore_errors: true
-
-- name: Lookup existing RHEL Tower DNS records
-  route53:
-    state: get
-    zone: "{{ domain_name }}"
-    record: "{{ workshop_prefix }}.tower.{{ dns_idx }}.{{ domain_name }}"
-    type: CNAME
-  register: tower_rhel_rec
-  loop: "{{ tower_rhel_instance_ids }}"
-  loop_control:
-    index_var: dns_idx
-  ignore_errors: true
-
-
 #===============================================================================
 #  Deprovisioning
 #===============================================================================
 
-- name: Remove existing Windows DNS records
+- name: Lookup existing DNS records
+  community.aws.route53:
+    state: get
+    zone: "{{ domain_name }}"
+    record: "{{ item }}"
+    type: "CNAME"
+  register: recs
+  with_inventory_hostnames:
+    - all:!localhost
+
+- name: Remove existing DNS records
   route53:
     state: absent
     zone: "{{ domain_name }}"
@@ -212,7 +173,7 @@
     type: "{{ item.set.type }}"
     value: "{{ item.set.value }}"
   when: item.set.record is defined
-  with_items: "{{ win_rec.results }}"
+  loop: "{{ recs[ 'results' ] }}"
 
 - name: Remove Windows instances
   ec2:
@@ -226,39 +187,6 @@
     instance_ids: "{{ win_instance_ids }}"
     state: absent
   when: win_instance_ids|length > 0
-
-- name: Remove existing RHEL admin DNS records
-  route53:
-    state: absent
-    zone: "{{ domain_name }}"
-    record: "{{ item.set.record }}"
-    ttl: "{{ item.set.ttl }}"
-    type: "{{ item.set.type }}"
-    value: "{{ item.set.value }}"
-  when: item.set.record is defined
-  with_items: "{{ admin_rhel_rec.results }}"
-
-- name: Remove existing RHEL DNS records
-  route53:
-    state: absent
-    zone: "{{ domain_name }}"
-    record: "{{ item.set.record }}"
-    ttl: "{{ item.set.ttl }}"
-    type: "{{ item.set.type }}"
-    value: "{{ item.set.value }}"
-  when: item.set.record is defined
-  with_items: "{{ rhel_rec.results }}"
-
-- name: Remove existing RHEL Tower DNS records
-  route53:
-    state: absent
-    zone: "{{ domain_name }}"
-    record: "{{ item.set.record }}"
-    ttl: "{{ item.set.ttl }}"
-    type: "{{ item.set.type }}"
-    value: "{{ item.set.value }}"
-  when: item.set.record is defined
-  with_items: "{{ tower_rhel_rec.results }}"
 
 - name: Remove RHEL Tower instances
   ec2:
@@ -312,6 +240,13 @@
   ec2_vpc_subnet:
     region: "{{ region }}"
     cidr: "10.0.2.0/24"
+    vpc_id: "{{ vpc_id }}"
+    state: absent
+
+- name: Delete private subnet
+  ec2_vpc_subnet:
+    region: "{{ region }}"
+    cidr: "10.0.3.0/24"
     vpc_id: "{{ vpc_id }}"
     state: absent
 

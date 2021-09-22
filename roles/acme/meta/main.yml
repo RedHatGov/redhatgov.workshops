@@ -1,0 +1,20 @@
+# file: roles/acme/meta/main.yml
+---
+galaxy_info:
+  author: Alexander Jacocks
+  description: Simple role to issue and revoke certificates via the ACME protocol
+  company: Red Hat
+  license: GPLv3
+  min_ansible_version: 2.9
+  platforms:
+  - name: EL
+    versions:
+    - all
+  galaxy_tags:
+    - acme
+    - web
+    - ssl
+    - certificate
+dependencies:
+  # - { role: username.common, some_parameter: 3 }
+  # - { role: username.iptables, open_port: 80 }
