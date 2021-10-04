@@ -10,7 +10,7 @@ export count=1 student=0 node=1
 while [ $count -lt `echo $nodes*$students+1 | bc` ]; do
   export mod=`echo $count%$nodes|bc`
 #  echo $workshop.node$node.$student.$domain
-  echo node$node.$student.$workshop.$domain
+  echo node$node-$student.$workshop.$domain
   count=`echo $count+1 |bc`
   if [ $mod -eq 0 ]; then
     student=`echo $student+1|bc`

@@ -39,6 +39,8 @@
     rsync_opts:
     - "--exclude=group_vars/all.yml"
     - "--exclude=group_vars/.all.yml.swp"
+    - "-L"
+    - "-K"
   with_items:
   - "{{ lookup('env','PWD') }}/../roles"
   - "{{ lookup('env','PWD') }}"

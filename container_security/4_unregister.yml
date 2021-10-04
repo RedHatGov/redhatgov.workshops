@@ -26,8 +26,8 @@
       name: "{{ item }}"
       state: absent
     with_flattened:
-      - "{{ groups['bastion_rhel_nodes'] }}"
-      - "{{ groups['rhel_nodes'] }}"
-      - "{{ groups['admin_rhel_node'] }}"
+      - "{{ groups['bastion_rhel_nodes'] | default( [] ) }}"
+      - "{{ groups['rhel_nodes'] | default( [] ) }}"
+      - "{{ groups['admin_rhel_node'] | default( [] ) }}"
 
 ...
