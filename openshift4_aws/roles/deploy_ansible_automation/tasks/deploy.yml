@@ -141,7 +141,7 @@
   register: job_result
   until: job_result.finished
   delay: 30
-  retries: 46
+  retries: 350
 
 #### Clean up
 - name: Remove ansible download directory
