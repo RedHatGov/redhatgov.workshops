@@ -117,6 +117,21 @@
         owner: "root"
         group: "cockpit-ws"
 
+- name: Load real cert for container registry
+  become: yes
+  remote_user: ec2-user
+  hosts:
+    - rhel_nodes
+  gather_facts: yes
+  tasks:
+    - name: install real cert and key for container registry
+      copy:
+        dest: "/home/{{ system_user }}/files/{{ item.name }}"
+        src: "{{ item.file }}"
+      loop:
+        - { file: "{{ deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_fullchain.pem' }}", name: "cert.pem" }
+        - { file: "{{ deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_key.pem' }}", name: "key.pem" }
+
 - name: Configure web console (RHEL 8)
   become: yes
   remote_user: ec2-user
