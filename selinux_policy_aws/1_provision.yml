@@ -1,10 +1,1 @@
-# file: 1_provision.yml
----
-# https://www.terraform.io/docs/providers/aws/index.html
-
-- name: Provision AWS Infrastucture
-  hosts: localhost
-  roles:
-  - { role: aws.create, tags: ["create"] }
-
-...
+../ansible_tower_aws/1_provision.yml
