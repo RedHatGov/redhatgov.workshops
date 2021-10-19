@@ -11,7 +11,7 @@ workshop_prefix:                  "selinux" # Workshop name - NO underscores!
 workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
 workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
-beta:                             true  # when true, use beta respoitories
+beta:                             false # when true, use beta respoitories
 graphical:                        false # when true, install a graphical desktop on the tower nodes
 
 ################################################################################
