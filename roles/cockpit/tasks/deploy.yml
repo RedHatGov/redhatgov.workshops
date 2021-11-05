@@ -81,6 +81,7 @@
     name: "pmlogger.service"
     state: "started"
     enabled: true
+  when: ansible_facts.services["pmlogger.service"] is defined
 
 - name: Ensure cockpit is started
   systemd:

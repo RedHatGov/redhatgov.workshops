@@ -9,8 +9,11 @@ rhel_instance_vols: []
 #    volume_type:                  "gp3"       # aws device type
 #    delete_on_termination:        "true"      # delete with the instance
 
-admin_rhel_count: 1
-force_dns: no
+# defaults for workshop settings
+admin_rhel_count:     1
+student_count:        2
+student_nodes_count:  1
+force_dns:            "no"
 
 # AWS region AMI info
 regions:

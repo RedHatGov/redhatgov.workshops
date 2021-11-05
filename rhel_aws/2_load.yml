@@ -35,21 +35,6 @@
   roles:
     - role: epel
 
-- name: Issue SSL certs
-  become: false
-  hosts: localhost
-  vars:
-    command:      "issue"
-#    command:      "revoke"
-    email:        "{{ letsencrypt_email }}"
-    cert_dir:     "{{ deploy_working_dir }}"
-    cert_fqdns:
-      - "*.{{ workshop_prefix }}.{{ domain_name }}"
-  tags:
-    - acme
-  roles:
-    - role: acme
-
 - name: Configure software on nodes
   become: yes
   remote_user: ec2-user

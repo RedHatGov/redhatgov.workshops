@@ -10,4 +10,19 @@
     debug:
       msg: "Please run 'ansible-playbook 2_preload.yml' to load the admin server."
 
+- name: Issue SSL certs
+  become: false
+  hosts: localhost
+  vars:
+    command:      "issue"
+#    command:      "revoke"
+    email:        "{{ letsencrypt_email }}"
+    cert_dir:     "{{ deploy_working_dir }}"
+    cert_fqdns:
+      - "*.{{ workshop_prefix }}.{{ domain_name }}"
+  tags:
+    - acme
+  roles:
+    - role: acme
+
 ...
