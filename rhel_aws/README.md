@@ -119,10 +119,12 @@ $ ansible-playbook 2_load.yml
 Pre-requisites: Linux host with podman installed
 
 ```
+# From Linux host (as regular non-root user)
 $ podman run -dt -v $(pwd):/src:Z quay.io/rhn_sa_bblasco/build_rhel8_workshop:test_20211110
-podman ps -a
-podman exec -it <container name from previous command>
-# Once inside the container
+$ podman ps -a
+$ podman exec -it <container name from previous command>
+
+# Once inside the container (as root user)
 export USER=root
 cd /root
 git clone https://github.com/RedHatGov/redhatgov.workshops.git
