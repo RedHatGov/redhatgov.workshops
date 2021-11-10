@@ -1,0 +1,48 @@
+# file: 2_load.yml
+---
+# Pre-requisites
+# Install geerlingguy.swap role:
+# $ ansible-galaxy install geerlingguy.swap
+
+- hosts: rhel_nodes
+
+  name: Fix cockpit installation
+  gather_facts: yes
+  become: yes
+  
+  vars:
+    swap_file_path: /tmp/swap
+    swap_file_size_mb: 1024
+    swap_file_state: present
+
+  roles:
+    #- cockpit
+  - geerlingguy.swap
+
+  tasks:
+  - name: install pcp and cockpit-pcp (RHEL 8)
+    yum:
+      name:
+      - pcp
+      - cockpit-pcp
+      state: present
+    when: rhel_ver == 'rhel8'
+    tags:
+      - cockpit-pcp
+
+  - name: Ensure pmlogger is started (for cockpit-pcp)
+    systemd:
+      name: "pmlogger.service"
+      state: "started"
+      enabled: true
+    tags:
+      - cockpit-pcp
+
+  - name: install bash-completion (RHEL 8)
+    yum:
+      name:
+      - bash-completion
+      state: present
+    when: rhel_ver == 'rhel8'
+    tags:
+      - bash-completion
