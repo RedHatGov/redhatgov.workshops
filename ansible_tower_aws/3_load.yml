@@ -46,14 +46,6 @@
       when: jboss|bool
       ignore_errors: yes
 
-- name: Configure repositories on nodes
-  become: yes
-  remote_user: ec2-user
-  hosts: le_node
-  gather_facts: no
-  roles:
-    - role: LetsEncrypt
-    
 - name: Ensure python3-pip installed for powerline (RHEL 8)
   become: yes
   remote_user: ec2-user

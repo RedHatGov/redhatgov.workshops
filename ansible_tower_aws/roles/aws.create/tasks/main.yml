@@ -12,6 +12,21 @@
   debug:
     msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ regions[region][win_ver].ami }}"
 
+- name: deploy container security workshop
+  block:
+    - name: create DNS name list
+      shell: "files/dns-list-create.sh {{ student_nodes_count }} {{ student_count }} {{ domain_name }} {{ workshop_prefix }}"
+      register: dns_name_list
+
+    - debug:
+        var: dns_name_list
+
+    - name: define container_security required racts
+      set_fact:
+        rhel_count: "{{ student_count|int*student_nodes_count|int }}"
+
+  when: workshop == "container_security"
+
 #---------------------------------------------------
 #  Deployment directory creation
 #---------------------------------------------------
@@ -126,6 +141,7 @@
       workshop_prefix: "{{ workshop_prefix }}"
       rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
     state: present
+  register: result
 
 - debug:
     var: result
@@ -143,6 +159,7 @@
       workshop_prefix: "{{ workshop_prefix }}"
       win: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
     state: present
+  register: result
 
 - debug:
     var: result
@@ -159,6 +176,9 @@
       workshop_prefix: "{{ workshop_prefix }}"
     wait: yes
   register: ec2_subnet
+
+- debug:
+    var: ec2_subnet
 
 - name: Create private subnet
   ec2_vpc_subnet:
@@ -238,9 +258,41 @@
       username: "{{ local_user }}"
       workshop_prefix: "{{ workshop_prefix }}"
       rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
     exact_count: "{{ rhel_count }}"
     count_tag: rhel
   register: ec2_rhel
+
+- name: Create RHEL Bastion instances (container security)
+  amazon.aws.ec2:
+    assign_public_ip: yes
+    key_name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-key"
+    group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
+    region: "{{ region }}"
+    instance_type: "{{ bastion_instance_type }}"
+    image: "{{ regions[region][rhel_ver].ami }}"
+    vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
+    wait: true
+    instance_tags:
+      Name: "{{ workshop_abbrev }}-{{ workshop_prefix }}-bastion_rhel"
+      username: "{{ local_user }}"
+      workshop_prefix: "{{ workshop_prefix }}"
+      bastion_rhel: "{{ workshop_abbrev }}-{{ workshop_prefix }}"
+      # RH IT Required Tags
+      ServiceName: "{{ workshop_abbrev }}-{{ workshop_prefix }}-admin"
+      ServiceOwner: "{{ local_user }}"
+      ServicePhase: "{{ workshop_phase }}"
+      BusinessUnit: "415"
+      AppCode: "{{ workshop_appCode }}"
+    exact_count: "{{ student_count }}"
+    count_tag: bastion_rhel
+  register: ec2_bastion_rhel
+  when: workshop == "container_security"
 
 - name: Attach additional network interface to RHEL nodes
   ec2_eni:
@@ -380,6 +432,10 @@
     line: "node-{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }} ansible_ssh_host={{ item.public_ip }}"
   with_items: "{{ ec2_rhel.instances }}"
 
+- debug:
+    msg: "Create DNS record admin.{{ workshop_prefix }}.{{ domain_name }} pointing to {{ item.dns_name }}"
+  loop: "{{ ec2_rhel_admin.instances }}"
+
 - name: Create DNS records for RHEL admin
   route53:
     zone: "{{ domain_name }}"
@@ -404,6 +460,37 @@
     state: present
   loop: "{{ ec2_rhel.instances }}"
 #  ignore_errors: true
+  when: workshop != "container_security"
+
+- name: Create DNS records for RHEL (container security)
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+    record: "{{ dns_name_list['stdout_lines'][ansible_loop.index0] }}"
+    value: "{{ item.dns_name }}"
+    overwrite: yes
+#    wait: yes
+    state: present
+  loop: "{{ ec2_rhel.instances }}"
+  loop_control:
+    extended: yes
+#  ignore_errors: true
+  when: workshop == "container_security"
+
+- name: Create DNS records for RHEL bastions (container security)
+  route53:
+    zone: "{{ domain_name }}"
+    type: "CNAME"
+    ttl: "300"
+#    record: "{{ workshop_prefix }}.bastion.{{ item.ami_launch_index }}.{{ domain_name }}"
+    record: "bastion-{{ item.ami_launch_index }}.{{ workshop_prefix }}.{{ domain_name }}"
+    value: "{{ item.dns_name }}"
+    overwrite: yes
+#    wait: yes
+    state: present
+  loop: "{{ ec2_bastion_rhel.instances }}"
+  when: workshop == "container_security"
 
 - name: Create DNS records for RHEL Towers
   route53:

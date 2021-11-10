@@ -57,7 +57,6 @@ rhsm_org_id:                      ""
 #------------------------------------------------------------------------------
 # LetsEncrypt              |      email
 letsencrypt_email:                "someone@redhat.com"
-letsencrypt:                      false
 #------------------------------------------------------------------------------
 # console                  |      password
 workshop_password:                "" # Note that Windows 2016 requires 3 character classes and 10 characters
@@ -104,4 +103,5 @@ ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
 system_user:                      "ec2-user"    # AWS
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
 workshop_name:                    "container_security" # the type of workshop being run
+workshop_name:                    "{{ workshop }}"
 workshop_abbrev:                  "cs" # the prefix for the type of workshop being run

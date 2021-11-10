@@ -11,7 +11,7 @@ workshop_prefix:                  "selinux" # Workshop name - NO underscores!
 workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
 workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
-beta:                             true  # when true, use beta respoitories
+beta:                             false # when true, use beta respoitories
 graphical:                        false # when true, install a graphical desktop on the tower nodes
 
 ################################################################################
@@ -100,5 +100,6 @@ vpc_rhel_ids_path:                "{{ deploy_working_dir }}/{{ workshop_prefix }
 ansible_ssh_private_key_file:     "{{ ssh_key_path }}"
 system_user:                      "ec2-user"    # AWS
 local_user:                       "{{ ansible_env.USERNAME | default( ansible_env.USER ) }}"
-workshop_name:                    "selinux" # the type of workshop being run
+workshop:                         "selinux"
+workshop_name:                    "{{ workshop }}" # the type of workshop being run
 workshop_abbrev:                  "se" # the 2-letter abbreviation for the type of workshop being run
