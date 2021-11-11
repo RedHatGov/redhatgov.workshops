@@ -114,6 +114,35 @@ $ ansible-playbook 1_provision.yml
 $ ansible-playbook 2_load.yml 
 ```
 
+#### Containerised build environment as non-root user
+
+Pre-requisites: Linux host with podman installed
+
+From Linux host (as regular non-root user)
+```
+$ podman run -dt -v $(pwd):/src:Z quay.io/rhn_sa_bblasco/build_rhel8_workshop:test_20211110
+$ podman ps -a
+$ podman exec -it <container name from previous command>
+```
+
+Once inside the container (as root user)
+```
+[root@3beb48b4e1cf /]# export USER=root
+[root@3beb48b4e1cf /]# cd /root
+[root@3beb48b4e1cf /]# git clone https://github.com/RedHatGov/redhatgov.workshops.git
+[root@3beb48b4e1cf /]# cd redhatgov.workshops/rhel_aws
+[root@3beb48b4e1cf /]# cp -p group_vars/all_example.yml group_vars/all.yml # fill in all the required fields
+[root@3beb48b4e1cf /]# aws configure # Fill in keys, default region
+
+[root@3beb48b4e1cf /]# unbuffer ansible-playbook 1_provision.yml -v | tee 1_provision-$(date +%Y-%m-%d.%H%M).log 2>&1
+[root@3beb48b4e1cf /]# unbuffer ansible-playbook 2_load.yml -v | tee 2_load-$(date +%Y-%m-%d.%H%M).log 2>&1
+[root@3beb48b4e1cf /]# unbuffer ansible-playbook 2a_fix.yml -v | tee 2a_fix-$(date +%Y-%m-%d.%H%M).log 2>&1
+```
+Remove hosts etc. when workshop is finished
+```
+[root@3beb48b4e1cf /]# unbuffer ansible-playbook 3_unregister.yml -v | tee 3_unregister-$(date +%Y-%m-%d.%H%M).log 2>&1
+```
+
 #### Custom Variable Requirements
 * Copy `group_vars/all_example.yml` to `group_vars/all.yml`
 * Fill in the following fields:
