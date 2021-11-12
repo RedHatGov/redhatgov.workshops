@@ -8,6 +8,8 @@
 
 # Ensure that the name does not include special characters such as underscores, etc.
 workshop_prefix:                  "rhel" # Workshop name - NO underscores!
+workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
+workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
 graphical:                        "false" # when true, install a graphical desktop on the tower nodes
 
@@ -35,7 +37,7 @@ rhel_instance_type:               "t3a.small"
 tower_instance_type:              "t3a.small"
 #------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
-cloud_access:                     false
+cloud_access:                     true
 # subscription_manager     |      Red Hat Subscription via username & password
 username:                         ""
 password:                         ""

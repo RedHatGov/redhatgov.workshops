@@ -23,7 +23,7 @@ Please refer to the configuration instructions below for further information
 
 ## Detailed AWS Infrastructure Creation Guides
 
-#### OS X Catalina (10.15.x)
+#### Mac OS 10.15.x+
 
 For easy installation and maintenance of the required tools, please first install [Homebrew](https://brew.sh/). From their site, the following command will install it to your system: 
 
@@ -46,11 +46,12 @@ $ source ansible/bin/activate
 (ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
 (ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
+(ansible) $ ansible-galaxy collection install ansible.posix
+(ansible) $ ansible-galaxy collection install community.aws
+(ansible) $ ansible-galaxy install geerlingguy.swap
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_load.yml 
-(ansible) $ ssh -i $(ls -1 .redhatgov/*-key | head -1) ec2-user@$(egrep '^workshop_prefix' group_vars/all.yml | awk -F\" '{ print $2 }').admin.redhatgov.io
-(admin) $ cd src/rhel_aws
-(admin) $ ansible-playbook 3_load.yml
+(ansible) $ ansible-playbook 2a_fix.yml 
 ```
 
 #### RHEL 7
@@ -73,9 +74,12 @@ $ source ansible/bin/activate
 (ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
 (ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
-(ansible) $ source env.sh
+(ansible) $ ansible-galaxy collection install ansible.posix
+(ansible) $ ansible-galaxy collection install community.aws
+(ansible) $ ansible-galaxy install geerlingguy.swap
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_load.yml 
+(ansible) $ ansible-playbook 2a_fix.yml 
 ```
 
 #### RHEL 8
@@ -95,12 +99,15 @@ $ source ansible/bin/activate
 (ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
 (ansible) $ cp group_vars/all_example.yml group_vars/all.yml
 (ansible) $ vim group_vars/all.yml # fill in all the required fields
-(ansible) $ source env.sh
+(ansible) $ ansible-galaxy collection install ansible.posix
+(ansible) $ ansible-galaxy collection install community.aws
+(ansible) $ ansible-galaxy install geerlingguy.swap
 (ansible) $ ansible-playbook 1_provision.yml
 (ansible) $ ansible-playbook 2_load.yml 
+(ansible) $ ansible-playbook 2a_fix.yml 
 ```
 
-#### Fedora 30/31/32/33
+#### Fedora 30/31/32/33/34/35
 ```
 $ sudo dnf -y install git python3-boto python3-boto3 ansible awscli
 $ aws configure # fill out at least your AWS API keys, other variables are optional
@@ -109,9 +116,12 @@ $ sed -i 's/env python/env python3/' inventory/hosts _(probably not relevant any
 $ cd ~/src/redhatgov.workshops/rhel_aws/
 $ cp group_vars/all_example.yml group_vars/all.yml
 $ vim group_vars/all.yml # fill in all the required fields
-$ source env.sh _(probably not relevant any longer)_
+$ ansible-galaxy collection install ansible.posix
+$ ansible-galaxy collection install community.aws
+$ ansible-galaxy install geerlingguy.swap
 $ ansible-playbook 1_provision.yml
 $ ansible-playbook 2_load.yml 
+$ ansible-playbook 2a_fix.yml 
 ```
 
 #### Containerised build environment as non-root user
