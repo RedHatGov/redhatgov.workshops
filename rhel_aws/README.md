@@ -28,20 +28,33 @@ Please refer to the configuration instructions below for further information
 For easy installation and maintenance of the required tools, please first install [Homebrew](https://brew.sh/). From their site, the following command will install it to your system: 
 
 ```
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 Next, you need to install the required management tools, for Ansible and AWS:
 
 ```
-$ brew install python3
+$ brew install python3 socat gnu-tar openssl
 $ pip3 install virtualenv
-$ virtualenv ansible
+$ python3 -m venv ansible
 $ source ansible/bin/activate
-(ansible) $ pip install ansible boto boto3 awscli
+(ansible) $ ln -s /usr/local/bin/gtar ~/ansible/bin/tar
+(ansible) $ ln -s /usr/local/opt/openssl@3/bin/openssl ~/ansible/bin/
+(ansible) $ pip install ansible boto boto3 awscli passlib
+```
+
+*NOTE*: If you get an error building any of these python packages, then you probably should upgrade pip:
+```
+(ansible) $ python3 -m pip install --upgrade pip
+(ansible) $ pip install ansible boto boto3 awscli passlib
+```
+
+Continuing:
+
+```
 (ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
-(ansible) $ mkdir src
-(ansible) $ cd src
+(ansible) $ mkdir ~/src
+(ansible) $ cd ~/src
 (ansible) $ git clone https://github.com/RedHatGov/redhatgov.workshops.git
 (ansible) $ cd ~/src/redhatgov.workshops/rhel_aws/
 (ansible) $ cp group_vars/all_example.yml group_vars/all.yml
@@ -49,7 +62,20 @@ $ source ansible/bin/activate
 (ansible) $ ansible-galaxy collection install ansible.posix
 (ansible) $ ansible-galaxy collection install community.aws
 (ansible) $ ansible-galaxy install geerlingguy.swap
+(ansible) $ export AWS_PROFILE=default # or whatever your aws profile is called
 (ansible) $ ansible-playbook 1_provision.yml
+```
+
+*NOTE* if you get an error about python modules, like boto and boto3, being missing, your system is using the wrong Python instance. Do this:
+
+```
+(ansible) $ sed -i "s+^localhost.*+localhost  ansible_connection=local ansible_python_interpreter=`which python3`+" inventory/hosts
+(ansible) $ ansible-playbook 1_provision.yml
+```
+
+And continue:
+
+```
 (ansible) $ ansible-playbook 2_load.yml 
 (ansible) $ ansible-playbook 2a_fix.yml 
 ```
@@ -59,14 +85,11 @@ $ source ansible/bin/activate
 Unfortunately, the required Python modules are not available from the official repositories, so we will need to install them into a Python virtualenv, using pip:
 
 ```
-$ sudo subscription-manager repos \
---enable rhel-7-server-ansible-2.8-rpms \
---enable rhel-7-server-optional-rpms \
---enable rhel-7-server-extras-rpms
-$ sudo yum install -y git python-virtualenv ansible
-$ virtualenv --system-site-packages ansible
+$ sudo yum install -y git python3 python3-pip python3-wheel
+$ python3 -m venv ansible
 $ source ansible/bin/activate
-(ansible) $ pip install boto boto3 awscli
+(ansible) $ pip install --upgrade pip
+(ansible) $ pip install ansible boto boto3 awscli
 (ansible) $ aws configure # fill out at least your AWS API keys, other variables are optional
 (ansible) $ mkdir src
 (ansible) $ cd src/
@@ -77,7 +100,20 @@ $ source ansible/bin/activate
 (ansible) $ ansible-galaxy collection install ansible.posix
 (ansible) $ ansible-galaxy collection install community.aws
 (ansible) $ ansible-galaxy install geerlingguy.swap
+(ansible) $ export AWS_PROFILE=default # or whatever your aws profile is called
 (ansible) $ ansible-playbook 1_provision.yml
+```
+
+*NOTE* if you get an error about python modules, like boto and boto3, being missing, your system is using the wrong Python instance. Do this:
+
+```
+(ansible) $ sed -i "s+^localhost.*+localhost  ansible_connection=local ansible_python_interpreter=`which python3`+" inventory/hosts
+(ansible) $ ansible-playbook 1_provision.yml
+```
+
+And continue:
+
+```
 (ansible) $ ansible-playbook 2_load.yml 
 (ansible) $ ansible-playbook 2a_fix.yml 
 ```
