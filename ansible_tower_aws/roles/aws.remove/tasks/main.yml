@@ -183,6 +183,7 @@
     record: "{{ item }}"
     type: "CNAME"
   register: recs
+  ignore_errors: true
   with_inventory_hostnames:
     - all:!localhost
 
