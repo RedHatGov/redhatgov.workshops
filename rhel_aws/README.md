@@ -166,9 +166,9 @@ Pre-requisites: Linux host with podman installed
 
 From Linux host (as regular non-root user)
 ```
-$ podman run -dt -v $(pwd):/src:Z quay.io/rhn_sa_bblasco/build_rhel8_workshop:test_20211110
+$ podman run -dt -v $(pwd):/src:Z quay.io/rhn_sa_bblasco/build_rhel8_workshop:latest
 $ podman ps -a
-$ podman exec -it <container name from previous command>
+$ podman exec -it <container name from previous command> /bin/bash
 ```
 
 Once inside the container (as root user)
