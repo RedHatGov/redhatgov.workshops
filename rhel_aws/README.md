@@ -184,8 +184,8 @@ Once inside the container (as root user)
 [root@3beb48b4e1cf /]# unbuffer ansible-playbook 2_load.yml -v | tee 2_load-$(date +%Y-%m-%d.%H%M).log 2>&1
 [root@3beb48b4e1cf /]# unbuffer ansible-playbook 2a_fix.yml -v | tee 2a_fix-$(date +%Y-%m-%d.%H%M).log 2>&1
 ```
-Note: In the instructions above the git repo is cloned into /root, despite mounting the /src directory
-This is because there is an issue with selinux labels when ansible-playbook is copying files from the root user's home directory into the git repo directory, preventing files from being written.
+Note: In the instructions above the git repo is cloned into /root, despite mounting the /src directory from the local machine.
+This is because there is an issue with SELinux labels when ansible-playbook is copying files from the root user's home directory into the git repo when the git repo is cloned into /src.  The issue preventing files from being written /src.
 More details on the issue, which is actually a Python issue, can be found here:
 https://github.com/containers/podman/issues/4963
 
