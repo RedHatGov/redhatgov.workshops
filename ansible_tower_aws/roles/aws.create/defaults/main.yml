@@ -22,9 +22,11 @@ regions:
       ami: "ami-059897226432ec347" # RHEL-6.10_HVM-20190524-x86_64-0-Hourly2-GP2
     rhel7:
 #      ami: "ami-0456c465f72bd0c95" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-      ami: "ami-6408521b" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+#      ami: "ami-6408521b" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+      ami: "ami-0342a0cc76497d65a" # RHEL-7.9_HVM-20211005-x86_64-0-Access2-GP2
     rhel8:
-      ami: "ami-02dadfb74f3ef24c7" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+#      ami: "ami-02dadfb74f3ef24c7" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
+      ami: "ami-06f1e6f8b3457ae7c" # RHEL-8.5.0_HVM-20211103-x86_64-0-Access2-GP2
     win2016:
       ami: "ami-0bf148826ef491d16" # Windows_Server-2016-English-Full-Base-2019.02.13
   us-east-2:
@@ -32,10 +34,34 @@ regions:
       ami: "ami-0fcbf553f091053d7" # RHEL-6.10_HVM-20190524-x86_64-0-Hourly2-GP2
     rhel7:
 #      ami: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
-      ami: "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+#      ami: "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+      ami: "ami-08b207be5fdce406f" # RHEL-7.9_HVM-20211005-x86_64-0-Access2-GP2
     rhel8:
 #      ami: "ami-0b2821bf4a7dba483" # RHEL-8.0_HVM-20190920-x86_64-0-Access2-GP2
-      ami: "ami-0a54aef4ef3b5f881" # RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2
+#      ami: "ami-0a54aef4ef3b5f881" # RHEL-8.2.0_HVM-20200423-x86_64-0-Hourly2-GP2
+      ami: "ami-01884d450e98ddd02" # RHEL-8.5.0_HVM-20211103-x86_64-0-Access2-GP2
+    win2016:
+      ami: "ami-08b4a0f6e106c1dba" # Windows_Server-2016-English-Full-Base-2019.02.13
+  us-west-1:
+    rhel6:
+      ami: "ami-0a309c64a2c5f54c6" # RHEL-6.10_HVM-20190923-x86_64-1-Access2-GP2
+    rhel7:
+#      ami: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+#      ami: "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+      ami: "ami-068418b7e8ab6a7e4" # RHEL-7.9_HVM-20211005-x86_64-0-Access2-GP2
+    rhel8:
+      ami: "ami-03c6df8bc04e84749" # RHEL-8.5.0_HVM-20211103-x86_64-0-Access2-GP2
+    win2016:
+      ami: "ami-08b4a0f6e106c1dba" # Windows_Server-2016-English-Full-Base-2019.02.13
+  us-west-2:
+    rhel6:
+      ami: "ami-0321f9f67f780fac3" # RHEL-6.10_HVM-20190923-x86_64-1-Access2-GP2
+    rhel7:
+#      ami: "ami-04268981d7c33264d" # RHEL-7.5_HVM-20180813-x86_64-0-Access2-GP2
+#      ami: "ami-864971e3" # RHEL-7.5_HVM_GA-JBEAP-7.1.2-20180629-x86_64-1-Access2-GP2
+      ami: "ami-068418b7e8ab6a7e4" # RHEL-7.9_HVM-20211005-x86_64-0-Access2-GP2
+    rhel8:
+      ami: "ami-075c0197520b50913" # RHEL-8.5.0_HVM-20211103-x86_64-0-Access2-GP2
     win2016:
       ami: "ami-08b4a0f6e106c1dba" # Windows_Server-2016-English-Full-Base-2019.02.13
   ap-southeast-2:

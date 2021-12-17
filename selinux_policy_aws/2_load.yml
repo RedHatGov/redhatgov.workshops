@@ -89,10 +89,26 @@
         path: /usr/share/selinux/devel/include/services/container.if
         state: absent
 
+    - name: stage real cert for tower
+      copy:
+        dest: "~ec2-user/cert.pem"
+        src: "{{ deploy_working_dir }}/{{ workshop_prefix }}.{{ domain_name }}_cert.pem"
+        owner: "ec2-user"
+        group: "ec2-user"
+        mode: "0644"
+
+    - name: stage real key for tower
+      copy:
+        dest: "~ec2-user/key.pem"
+        src: "{{ deploy_working_dir }}/{{ workshop_prefix }}.{{ domain_name }}_key.pem"
+        owner: "ec2-user"
+        group: "ec2-user"
+        mode: "0644"
+
     - name: install real certificate to web console
       copy:
         dest: "/etc/cockpit/ws-certs.d/acme.cert"
-        content: "{{ lookup('file', deploy_working_dir + '/cert.pem') }}\n{{ lookup('file', deploy_working_dir + '/key.pem') }}"
+        content: "{{ lookup('file', deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_cert.pem') }}\n{{ lookup('file', deploy_working_dir + '/' + workshop_prefix + '.' + domain_name + '_key.pem') }}"
         owner: "root"
         group: "cockpit-ws"
 
