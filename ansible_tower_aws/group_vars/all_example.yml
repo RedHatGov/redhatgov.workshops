@@ -7,9 +7,13 @@
 ###############################################################################
 
 # Ensure that the name does not include special characters such as underscores, etc.
-workshop_prefix:                  "rhel" # Workshop name - NO underscores!
+workshop_prefix:                  "tower" # Workshop name - NO underscores!
+workshop_phase:                   "prod" # Can be "dev", "test", or "prod"
+workshop_appCode:                 "????" # Waiting for code creation
 execution:                        "local" # when not running from Tower, define this variable
 graphical:                        "false" # when true, install a graphical desktop on the tower nodes
+jboss:                            false # when true, configure JBoss/Maven
+
 
 ###############################################################################
 # ANSIBLE ROLE KEY         |      VALUE
@@ -19,14 +23,16 @@ deploy_working_dir:               "{{ lookup('env','PWD') }}/.redhatgov"
 # aws                      |      AWS Route 53
 domain_name:                      ""
 # aws                      |      AWS Node Counts
+tower_rhel_count:                 "2"            # RHEL node(s)
 rhel_count:                       "2"            # RHEL node(s)
 win_count:                        "0"            # Windows node(s)
 region:                           "us-east-2"    # AWS Region, configures ec2.ini too
 #------------------------------------------------------------------------------
 # AMI details
-#rhel_ver:                         "rhel7"
-rhel_ver:                         "rhel8"
-win_ver:                          "win2016"
+# these values are substrings of AMI names
+#rhel_ver:                         "RHEL-7"
+rhel_ver:                         "RHEL-8"
+win_ver:                          "Windows_Server-2016"
 ebs_root_block_size:              50
 #------------------------------------------------------------------------------
 # instance_types
