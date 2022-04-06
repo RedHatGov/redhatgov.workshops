@@ -19,13 +19,13 @@
 # Block- Deploy ansible edge workshop
 - name: Deploy the ansible edge workshop
   block:
-    - name: Determine if Ansible Tower pod is online
+    - name: Determine if AAP2 controller pod is online
       community.kubernetes.k8s_info:
         api_version: v1
         kind: Pod
-        namespace: tower
+        namespace: ansible-automation-platform
         label_selectors:
-          - "app = ansible-tower"
+          - "app.kubernetes.io/name = controller"
         field_selectors:
           - status.phase=Running
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
@@ -44,21 +44,6 @@
         state: present
         definition: "{{ lookup('template', '{{ openshift_build_path }}/expose-registry.yml') }}"
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
-
-    - name: Determine if Ansible Tower pod is online
-      community.kubernetes.k8s_info:
-        api_version: v1
-        kind: Pod
-        namespace: tower
-        label_selectors:
-          - "app = ansible-tower"
-        field_selectors:
-          - status.phase=Running
-        api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
-      register: twr_pod
-      until: twr_pod.resources|length > 0
-      retries: 20
-      delay: 30
 
     # Wait for Ansible Tower to become active
     - wait_for:
