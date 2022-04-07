@@ -6,12 +6,12 @@
 
 - name: Find latest RHEL AMI
   shell:
-    cmd: aws ec2 describe-images --owners 309956199498 --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ rhel_ver }}*x86_64*Access2*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ && $1 !~ /.*GA.*/ {ami=$2} END{print ami}'
+    cmd: aws ec2 describe-images --owners 309956199498 --region "{{ region }}" --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ rhel_ver }}*x86_64*Access2*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ && $1 !~ /.*GA.*/ {ami=$2} END{print ami}'
   register: rhel_ami
 
 - name: Find latest Windows Server AMI
   shell:
-    cmd: aws ec2 describe-images --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ win_ver }}-English-Full-Base*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ {ami=$2} END{print ami}'
+    cmd: aws ec2 describe-images --region "{{ region }}" --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ win_ver }}-English-Full-Base*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ {ami=$2} END{print ami}'
   register: windows_ami
 
 - name: RHEL AMI
