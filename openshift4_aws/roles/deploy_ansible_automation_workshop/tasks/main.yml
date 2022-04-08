@@ -292,14 +292,14 @@
 
     - name: template values for giving access to tower project to users
       template:
-        src: "{{ role_path }}/templates/tower-rolebinding.yml.j2"
-        dest: "{{ openshift_build_path }}/user{{ item }}-tower-rolebinding.yml"
+        src: "{{ role_path }}/templates/aap2-rolebinding.yml.j2"
+        dest: "{{ openshift_build_path }}/user{{ item }}-aap2-rolebinding.yml"
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: apply tower project - user rolebindings
       community.kubernetes.k8s:
         state: present
-        definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-tower-rolebinding.yml') }}"
+        definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-aap2-rolebinding.yml') }}"
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
       with_sequence: count="{{ ansible_user_count }}"
 

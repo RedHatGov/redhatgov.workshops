@@ -74,3 +74,45 @@
   until: aap2c_pod.resources|length > 0
   retries: 10
   delay: 30
+
+- name: Wait for HTTP 200 or 401
+  uri:
+    url: "https://controller-ansible-automation-platform.apps.{{ openshift_cluster_fqdn }}/api/login"
+    status_code: 200,401
+    validate_certs: no
+  register: result
+  until: result is not failed
+  retries: 30
+  delay: 10
+  changed_when: false
+
+- name: Check for login screen
+  uri:
+    url: "https://controller-ansible-automation-platform.apps.{{ openshift_cluster_fqdn }}/api/login"
+    method: GET
+    return_content: yes
+  register: login
+  retries: 240
+  delay: 15
+  until: login | regex_search("Username:") != ""
+
+- name: Scale AAP2 controller to 0
+  k8s_scale: 
+    api_version: v1
+    kind: Deployment
+    name: controller
+    namespace: ansible-automation-platform
+    replicas: 0
+    wait: yes
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+- name: Scale AAP2 controller to 2
+  k8s_scale: 
+    api_version: v1
+    kind: Deployment
+    name: controller
+    namespace: ansible-automation-platform
+    replicas: 2
+    wait: yes
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
