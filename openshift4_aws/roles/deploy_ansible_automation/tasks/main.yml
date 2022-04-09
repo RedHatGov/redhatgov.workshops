@@ -91,6 +91,7 @@
     url: "https://controller-ansible-automation-platform.apps.{{ openshift_cluster_fqdn }}/api/login"
     method: GET
     return_content: yes
+    validate_certs: no
   register: login
   retries: 240
   delay: 15
