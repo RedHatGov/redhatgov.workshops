@@ -55,7 +55,7 @@
     - package:
         name: python3-pip
         state: latest
-      when: rhel_ver == 'rhel8'    
+      when: rhel_ver == 'RHEL-8'
 
 - name: Configure software on nodes
   become: yes
@@ -124,7 +124,7 @@
   gather_facts: no
   roles:
     - role: wetty
-      when: rhel_ver == 'rhel7'
+      when: rhel_ver == 'RHEL-7'
 
 - name: Configure web console (RHEL 8)
   become: yes
@@ -133,7 +133,7 @@
   gather_facts: no
   roles:
     - role: cockpit
-      when: rhel_ver == 'rhel8'
+      when: rhel_ver == 'RHEL-8'
 
 - name: Stage Maven POMs
   become: yes
