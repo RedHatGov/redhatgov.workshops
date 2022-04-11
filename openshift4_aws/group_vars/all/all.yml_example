@@ -5,7 +5,7 @@
 openshift_installer_type:               local
 
 # get installation files playbook variables
-openshift_version:                      4.7.6
+openshift_version:                      4.10.6
 openshift_installer_path:               "{{ ansible_env.PWD }}"
 openshift_build_path:                   "{{ ansible_env.PWD }}/build"
 openshift_odo_version:                  2.0.1
