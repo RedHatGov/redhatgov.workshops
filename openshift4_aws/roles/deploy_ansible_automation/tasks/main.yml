@@ -2,7 +2,7 @@
 # tasks file for deploy_ansible_automation
 
 - name: Create Ansible Automation Platform namespace
-  k8s:
+  kubernetes.core.k8s:
     name: ansible-automation-platform
     kind: Namespace
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
@@ -14,14 +14,14 @@
     dest: "{{ openshift_build_path }}/ansible-automation-platform-operator.yml"
 
 - name: install AAP2 operator
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/ansible-automation-platform-operator.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
     namespace: "ansible-automation-platform"
 
 - name: Verify AAP2 operator is present
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: ansible-automation-platform
@@ -36,7 +36,7 @@
   delay: 30
 
 - name: Set AAP2 admin secret
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       apiVersion: v1
@@ -54,14 +54,14 @@
     dest: "{{ openshift_build_path }}/createautomationcontroller.yml"
 
 - name: Ensure AAP2 Controller is present
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/createautomationcontroller.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
     namespace: "ansible-automation-platform"
 
 - name: Verify AAP2 Controller is running
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: ansible-automation-platform
@@ -98,7 +98,7 @@
   until: login | regex_search("Username:") != ""
 
 - name: Scale AAP2 controller to 0
-  k8s_scale: 
+  kubernetes.core.k8s_scale: 
     api_version: v1
     kind: Deployment
     name: controller
@@ -108,7 +108,7 @@
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
 
 - name: Scale AAP2 controller to 2
-  k8s_scale: 
+  kubernetes.core.k8s_scale: 
     api_version: v1
     kind: Deployment
     name: controller
