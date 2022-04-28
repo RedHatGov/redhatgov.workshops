@@ -20,7 +20,7 @@
 - name: Deploy the ansible edge workshop
   block:
     - name: Determine if Ansible Tower pod is online
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Pod
         namespace: tower
@@ -40,13 +40,13 @@
         dest: "{{ openshift_build_path }}/expose-registry.yml"
 
     - name: Apply registry route expose
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', '{{ openshift_build_path }}/expose-registry.yml') }}"
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
 
     - name: Determine if Ansible Tower pod is online
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Pod
         namespace: tower
@@ -221,7 +221,7 @@
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: Verify keycloak is present
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Pod
         namespace: codeready-workspaces
@@ -238,7 +238,7 @@
       tags: che
 
     - name: Retrieve Keycloak secret
-      community.kubernetes.k8s_info:
+      kubernetes.core.k8s_info:
         api: v1
         kind: Secret
         name: che-identity-secret
@@ -312,7 +312,7 @@
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: apply tower project - user rolebindings
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-tower-rolebinding.yml') }}"
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
@@ -325,14 +325,14 @@
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: apply codeready-workspaces project - user rolebindings
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-codeready-workspaces-rolebinding.yml') }}"
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: Ensure k8s namespace for user exists for edge build
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         name: "edge-{{ item }}"
         api_version: v1
         kind: Namespace
@@ -347,7 +347,7 @@
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: apply edge project - user rolebindings
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-edge-rolebinding.yml') }}"
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
@@ -360,7 +360,7 @@
       with_sequence: count="{{ ansible_user_count }}"
 
     - name: apply edge project serviceaccounts
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         state: present
         definition: "{{ lookup('template', '{{ openshift_build_path }}/user{{ item }}-edge-serviceaccount.yml') }}"
         api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"

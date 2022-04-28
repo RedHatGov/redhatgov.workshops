@@ -65,7 +65,7 @@
   when: ec2_key.key.private_key is defined
 
 - name: Create OpenShift ssh-key secret
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     src: "{{ openshift_build_path }}/sshkey.yaml"
   when: ec2_key.key.private_key is defined

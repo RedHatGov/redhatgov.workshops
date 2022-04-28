@@ -1,6 +1,6 @@
 ---
 - name: Create tower ServiceAccount for user Tower containergroup
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     kind: ServiceAccount
     state: present
     name: "containergroup-{{ item  }}"
@@ -13,7 +13,7 @@
     dest: "{{ openshift_build_path }}/tower-cg-pod-manager-{{ item }}.yml"
 
 - name: Apply pod-manager role to allow access to Tower containergroup
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/tower-cg-pod-manager-{{ item }}.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
@@ -24,13 +24,13 @@
     dest: "{{ openshift_build_path }}/tower-cg-rolebinding-{{ item }}.yml"
 
 - name: Apply pod-manager rolebinding to allow access to Tower containergroup
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/tower-cg-rolebinding-{{ item }}.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
 
 - name: Retrieve containergroup service account information
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: ServiceAccount
     name: "containergroup-{{ item }}"
@@ -50,7 +50,7 @@
     msg: "{{ token }}"
 
 - name: Retrieve containergroup secret
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api: v1
     kind: Secret
     name: "{{ token }}"
