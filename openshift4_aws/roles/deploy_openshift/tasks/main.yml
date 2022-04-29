@@ -1,4 +1,11 @@
 ---
+- debug:
+    var: "{{ item }}"
+  with_items:
+  - openshift_installer_type
+  - openshift_version
+  - openshift_odo_version
+  - keycloak_operator_version
 
 - name: Set default variables for automated build (facts)
   set_fact:
@@ -54,7 +61,7 @@
   when: openshift_installer_type != "automation"
 
 - name: generate cluster ssh key pair
-  openssh_keypair:
+  community.crypto.openssh_keypair:
     path: "{{ openshift_build_path }}/{{ openshift_cluster_name }}-key"
     size: 4096
     type: rsa
@@ -81,7 +88,7 @@
 - name: Block to try and copy off installation files to S3
   block:
     - name: Check to see if workshop already exists
-      aws_s3:
+      amazon.aws.aws_s3:
         bucket: "{{ s3_bucket }}"
         mode: list
         prefix: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/"
@@ -98,7 +105,7 @@
       when: s3output.s3_keys|length != 0
 
     - name: "Copy in encrypted vars from S3"
-      aws_s3:
+      amazon.aws.aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_secrets_prefix }}/{{ item }}"
         dest: "{{ openshift_build_path }}/{{ item }}"
@@ -108,7 +115,7 @@
       ignore_errors: yes
 
     - name: "Copy in sops config file"
-      aws_s3:
+      amazon.aws.aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_secrets_prefix }}/{{ item }}"
         dest: "{{ openshift_installer_path }}/{{ item }}"
@@ -139,7 +146,7 @@
 
   always:
     - name: Copying terraform state files to S3
-      aws_s3:
+      amazon.aws.aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
         src: "build/{{ item }}"
@@ -155,7 +162,7 @@
       ignore_errors: yes
 
     - name: Copy kubeconfig file to S3
-      aws_s3:
+      amazon.aws.aws_s3:
         bucket: "{{ s3_bucket }}"
         object: "{{ s3_prefix }}/{{ workshop_type }}/{{ openshift_cluster_name }}/{{ item }}"
         src: "{{ openshift_build_path }}/auth/{{ item }}"
