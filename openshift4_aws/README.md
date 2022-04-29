@@ -5,6 +5,53 @@ The ansible-ocp4-install-aws playbooks were developed to enable simple and rapid
 
 ## Build Notes
 
+### RHEL 8
+
+To set this up for deployment, you need to add Ansible Automation Platform:
+
+```
+$ sudo subscription-manager repos --enable ansible-automation-platform-2.1-for-rhel-8-x86_64-rpms
+$ sudo dnf install git 
+```
+
+Create an `ansible` virtual environment, and install the following Python modules:
+
+```
+$ python3 -m venv ~/ansible
+$ source ~/ansible/bin/activate
+$ pip install ansible ansible-navigator awscli boto3 kubernetes passlib requests
+
+Once this is done, clone the repo, and configure it for deployment:
+
+```
+$ git clone https://github.com/RedHatGov/redhatgov.workshops.git
+$ cd redhatgov.workshops/openshift4_aws/group_vars/all
+$ cp all.yml_example all.yml
+```
+
+Fill out the following variables (at a minimum):
+
+- openshift_cluster_admin_password
+- openshift_user_password
+- aws_region
+- openshift_cluster_name
+- openshift_cluster_base_domain
+
+Copy over your pull secret, as mentioned below, to the base directory (openshift4-aws):
+
+```
+$ cp /path/to/downloaded/pull-secret.txt /path/to/openshift4-aws/pull-secret
+```
+
+Make sure that you have defined your AWS credentials, either in environment variables, or in `~/.aws/credentials` so that communications can function with the cloud environment.
+
+You will need to install the following collections:
+
+- amazon.aws
+- community.crypto
+- community.general
+- community.sops
+
 ### Mac OS X
 
 #### ARM work-arounds
