@@ -1,0 +1,19 @@
+[local_target]
+localhost  ansible_connection=local  ansible_python_interpreter='/usr/bin/env python'
+
+[tower_rhel_nodes]
+
+[tower_rhel_nodes:vars]
+
+[rhel_nodes]
+
+[rhel_nodes:vars]
+
+[win_nodes]
+
+[win_nodes:vars]
+
+[all_nodes:children]
+tower_rhel_nodes
+rhel_nodes
+win_nodes

@@ -34,15 +34,15 @@ region:                           "us-east-2"
 #region:                           "eu-central-1"
 #------------------------------------------------------------------------------
 # AMI details
-#rhel_ver:                         "rhel7"
-rhel_ver:                         "rhel8"
-win_ver:                          "win2016"
+#rhel_ver:                         "RHEL-7"
+rhel_ver:                         "RHEL-8"
+win_ver:                          "Windows_Server-2016"
 ebs_root_block_size:              50
 #------------------------------------------------------------------------------
 # instance_types
-win_instance_type:                "t3.large"
-tower_instance_type:              "t3.large"
-rhel_instance_type:               "t3.small"
+win_instance_type:                "t3a.large"
+tower_instance_type:              "t3a.large"
+rhel_instance_type:               "t3a.small"
 #-------------------------------------------------------------------------------
 # subscription_manager     |      Red Hat Subscription via Cloud Access
 cloud_access:                     true
