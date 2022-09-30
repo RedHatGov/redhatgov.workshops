@@ -2,7 +2,7 @@
 # tasks file for service-mesh
 
 - name: create namespace
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('file', 'servicemesh-namespace.yml') }}"
 
@@ -13,7 +13,7 @@
   loop: "{{ servicemesh_operators }}"
 
 - name: install operators required for openshift service mesh
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/{{ item }}.yml') }}"
     namespace: "openshift-operators"
@@ -39,6 +39,6 @@
   # servicemesh_operator_status.stdout_lines is not empty.
 
 - name: install istio service mesh control plane
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('file', 'istio-installation.yml') }}"

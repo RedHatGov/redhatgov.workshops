@@ -5,7 +5,7 @@
   when: openshift_installer_type == "automation"
 
 - name: generate users.htpasswd file - create admin account entry
-  htpasswd:
+  community.general.htpasswd:
     create: yes
     path: "{{ openshift_build_path }}/users.htpasswd"
     name: "{{ openshift_cluster_admin_username }}"
@@ -13,7 +13,7 @@
     state: present
 
 - name: generate users.htpasswd file - create workshop user entries
-  htpasswd:
+  community.general.htpasswd:
     path: "{{ openshift_build_path }}/users.htpasswd"
     name: "user{{ item }}"
     password: "{{ openshift_user_password }}"

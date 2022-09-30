@@ -1,19 +1,120 @@
 ---
 # tasks file for deploy_ansible_automation
-- name: Determine if Ansible Tower has already been deployed
-  community.kubernetes.k8s_info:
-    kind: Pod
-    wait: no
-    namespace: tower
+
+- name: Create Ansible Automation Platform namespace
+  kubernetes.core.k8s:
+    name: ansible-automation-platform
+    kind: Namespace
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    state: present
+
+- name: template values for AAP2 operator
+  copy:
+    src: "{{ role_path }}/files/ansible-automation-platform-operator.yml"
+    dest: "{{ openshift_build_path }}/ansible-automation-platform-operator.yml"
+
+- name: install AAP2 operator
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/ansible-automation-platform-operator.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    namespace: "ansible-automation-platform"
+
+- name: Verify AAP2 operator is present
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: ansible-automation-platform
+    field_selectors:
+      - status.phase=Running
     label_selectors:
-      - "app = ansible-tower"
-  register: ansible_tower_pod
+      - "control-plane = controller-manager"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  register: aap2cm_pod
+  until: aap2cm_pod.resources|length > 0
+  retries: 10
+  delay: 30
 
-- name: Review results
-  set_fact:
-    ansible_tower_pod_result: "{{ ansible_tower_pod | json_query('resources[*]') | first | default('') }}"
+- name: Set AAP2 admin secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      data:
+        password: "{{ openshift_cluster_admin_password | b64encode}}"
+      kind: Secret
+      metadata:
+        name: controller-admin-password
+        namespace: ansible-automation-platform
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
 
-- name: Deploy Ansible Tower
-  include: deploy.yml
-  when: ansible_tower_pod_result == ''
+- name: Ensure AAP2 Controller template is present
+  template:
+    src: "createautomationcontroller.yml.j2"
+    dest: "{{ openshift_build_path }}/createautomationcontroller.yml"
+
+- name: Ensure AAP2 Controller is present
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', '{{ openshift_build_path }}/createautomationcontroller.yml') }}"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+    namespace: "ansible-automation-platform"
+
+- name: Verify AAP2 Controller is running
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: ansible-automation-platform
+    field_selectors:
+      - status.phase=Running
+    label_selectors:
+      - "app.kubernetes.io/name = controller"
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+  register: aap2c_pod
+  until: aap2c_pod.resources|length > 0
+  retries: 10
+  delay: 30
+
+- name: Wait for HTTP 200 or 401
+  uri:
+    url: "https://controller-ansible-automation-platform.apps.{{ openshift_cluster_fqdn }}/api/login"
+    status_code: 200,401
+    validate_certs: no
+  register: result
+  until: result is not failed
+  retries: 30
+  delay: 10
+  changed_when: false
+
+- name: Check for login screen
+  uri:
+    url: "https://controller-ansible-automation-platform.apps.{{ openshift_cluster_fqdn }}/api/login"
+    method: GET
+    return_content: yes
+    validate_certs: no
+  register: login
+  retries: 240
+  delay: 15
+  until: login | regex_search("Username:") != ""
+
+- name: Scale AAP2 controller to 0
+  kubernetes.core.k8s_scale: 
+    api_version: v1
+    kind: Deployment
+    name: controller
+    namespace: ansible-automation-platform
+    replicas: 0
+    wait: yes
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+
+- name: Scale AAP2 controller to 2
+  kubernetes.core.k8s_scale: 
+    api_version: v1
+    kind: Deployment
+    name: controller
+    namespace: ansible-automation-platform
+    replicas: 2
+    wait: yes
+    wait_timeout: 600
+    api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
+

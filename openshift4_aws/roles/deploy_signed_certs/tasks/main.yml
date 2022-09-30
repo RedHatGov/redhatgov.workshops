@@ -37,7 +37,7 @@
   when: not full_chain.stat.exists
 
 - name: Get default ingress controller
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: IngressController
     name: default
@@ -132,7 +132,7 @@
   when: not full_chain.stat.exists
 
 - name: Patch ingress to use new certificate
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       api_version: v1
@@ -146,7 +146,7 @@
   when: not full_chain.stat.exists
 
 - name: Patch api server to use new certificate
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition:
       api_version: config.openshift.io/v1

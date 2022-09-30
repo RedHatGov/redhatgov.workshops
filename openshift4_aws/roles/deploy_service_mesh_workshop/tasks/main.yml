@@ -5,7 +5,7 @@
   ignore_errors: True
 
 - name: configure istio service mesh rbac
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', 'istio-rbac.yaml.j2') }}"
 
@@ -19,13 +19,13 @@
   ignore_errors: True
 
 - name: create user ingress gateways
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', 'ingress-loadbalancer.yaml.j2') }}"
   with_sequence: start=1 end="{{ openshift_user_count }}"
 
 - name: install istio servicemesh member roll
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', 'istio-memberroll.yaml.j2') }}"
 
@@ -40,13 +40,13 @@
   command: "{{ openshift_build_path }}/oc rollout restart deployment kiali --namespace istio-system"
 
 - name: create istio user operatorgroups
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', 'istio_create_user_operatorgroup.yaml.j2') }}"
   with_sequence: start=1 end="{{ openshift_user_count }}"
 
 - name: install keycloak operator into each user's project
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', 'keycloak_user_install.yaml.j2') }}"
   with_sequence: start=1 end="{{ openshift_user_count }}"

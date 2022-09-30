@@ -51,7 +51,7 @@
     register: workspace_def
 
   - name: Create user ssh-key secret
-    community.kubernetes.k8s:
+    kubernetes.core.k8s:
       state: present
       src: "{{ openshift_build_path }}/sshkey-user{{ item }}.yaml"
 

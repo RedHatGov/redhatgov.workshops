@@ -12,28 +12,28 @@
     dest: "{{ openshift_build_path }}/codeready-workspaces-operator.yml"
 
 - name: Create codeready-workspaces namespace
-  k8s:
+  kubernetes.core.k8s:
     name: codeready-workspaces
     kind: Namespace
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
     state: present
 
 - name: install operatorgroup required for codeready-workspaces
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/codeready_operatorgroup.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
     namespace: "codeready-workspaces"
 
 - name: install operators required for codeready-workspaces
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/codeready-workspaces-operator.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
     namespace: "codeready-workspaces"
 
 - name: Verify CodeReady Workspaces Operator is present
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: codeready-workspaces
@@ -53,14 +53,14 @@
     dest: "{{ openshift_build_path }}/CheCluster.yml"
 
 - name: install CheCluster
-  k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/CheCluster.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
     namespace: "codeready-workspaces"
 
 - name: Verify CodeReady Pod is present
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: codeready-workspaces

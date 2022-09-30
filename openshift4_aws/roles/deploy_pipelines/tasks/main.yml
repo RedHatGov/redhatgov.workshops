@@ -7,7 +7,7 @@
     dest: "{{ openshift_build_path }}/openshift-pipelines-operator.yml"
 
 - name: install operators required for OpenShift Pipelines
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     state: present
     definition: "{{ lookup('template', '{{ openshift_build_path }}/openshift-pipelines-operator.yml') }}"
     api_key: "{{ k8s_auth_results.k8s_auth.api_key }}"
