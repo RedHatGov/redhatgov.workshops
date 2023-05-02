@@ -6,7 +6,7 @@
 
 - name: Find latest RHEL AMI
   shell:
-    cmd: aws ec2 describe-images --owners 309956199498 --region "{{ region }}" --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ rhel_ver }}*x86_64*Access2*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ && $1 !~ /.*GA.*/ {ami=$2} END{print ami}'
+    cmd: aws ec2 describe-images --owners 309956199498 --region "{{ region }}" --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ rhel_ver }}*x86_64*{{ 'Access2' if cloud_access == true else 'Hourly2' }}*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ && $1 !~ /.*GA.*/ {ami=$2} END{print ami}'
   register: rhel_ami
 
 - name: Find latest Windows Server AMI
@@ -16,11 +16,11 @@
 
 - name: RHEL AMI
   debug:
-    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami.stdout }}"
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
 
 - name: Windows AMI
   debug:
-    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ windows_ami.stdout }}"
+    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ windows_ami.stdout if auto_ami == true else regions[region][win_ver].ami }}"
 
 - name: deploy container security workshop
   block:
@@ -234,7 +234,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -259,7 +259,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     volumes: "{{ rhel_instance_vols }}"
     wait: true
@@ -285,7 +285,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ bastion_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -337,7 +337,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ tower_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     wait: true
     instance_tags:
@@ -357,7 +357,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-win-sg"
     region: "{{ region }}"
     instance_type: "{{ win_instance_type }}"
-    image: "{{ windows_ami.stdout }}"
+    image: "{{ windows_ami.stdout if auto_ami == true else regions[region][win_ver].ami }}"
     vpc_subnet_id: "{{ ec2_subnet.subnet.id }}"
     user_data: "{{ lookup('file', '{{ winrm_path }}') }}"
     wait: true

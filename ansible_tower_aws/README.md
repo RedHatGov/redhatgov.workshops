@@ -111,13 +111,12 @@ $ ansible-playbook 2_load.yml
   aws_access_key   : your Amazon AWS API key
   aws_secret_key   : your Amazon AWS secret key
   domain_name      : your DNS domain, likely "redhagov.io"
-  zone_id:         : the AWS Route 53 zone ID for your domain
   tower_rhel_count : the number of tower instances, usually 1 per student
   rhel_count       : the number of regular RHEL instances, usually 1 per student
   win_count        : the number of Windows 2016 instances, currently not used
   region:          : defaults to "us-east-2", set to any region
-  rhel_ami_id      : defaults to "us-east-2" AMIs, uncomment us-east-1, or add your preferred region, as desired.  There are both JBoss-enabled and plain RHEL instances avalable
-  win_ami_id       : similarly to "rhel_ami_id", uncomment to match your region choice
+  cloud_access     : defaults to "true", allows Cloud Access for accounts with this feature enabled.
+  auto_ami         : defaults to "true", automatically identify AMI in selected region.  when false, relies on AMIs defined in aws.{create,remove} roles.
   workshop_passwoed: pick a password for your students to login with
   rabbit_password  : pick a password for RabbitMQ in Tower, usually not needed
   local_user       : if you are using a Mac, uncomment the Mac-specific entry, and comment the RHEL/Fedora one

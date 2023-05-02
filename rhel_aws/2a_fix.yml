@@ -26,7 +26,7 @@
       - pcp
       - cockpit-pcp
       state: present
-    when: rhel_ver == 'rhel8'
+    when: rhel_ver == 'RHEL-8'
     tags:
       - cockpit-pcp
 
@@ -43,6 +43,6 @@
       name:
       - bash-completion
       state: present
-    when: rhel_ver == 'rhel8'
+    when: rhel_ver == 'RHEL-8'
     tags:
       - bash-completion

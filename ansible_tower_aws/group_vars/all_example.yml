@@ -34,6 +34,7 @@ region:                           "us-east-2"    # AWS Region, configures ec2.in
 rhel_ver:                         "RHEL-8"
 win_ver:                          "Windows_Server-2016"
 ebs_root_block_size:              50
+auto_ami:                         true           # automatically identify AMI in selected region
 #------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3a.large"

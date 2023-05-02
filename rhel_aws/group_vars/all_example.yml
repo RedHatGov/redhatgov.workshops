@@ -26,10 +26,12 @@ win_count:                        "0"            # Windows node(s)
 region:                           "us-east-2"    # AWS Region, configures ec2.ini too
 #------------------------------------------------------------------------------
 # AMI details
-#rhel_ver:                         "rhel7"
-rhel_ver:                         "rhel8"
-win_ver:                          "win2016"
+# these values are substrings of AMI names
+#rhel_ver:                         "RHEL-7"
+rhel_ver:                         "RHEL-8"
+win_ver:                          "Windows_Server-2016"
 ebs_root_block_size:              50
+auto_ami:                         true           # automatically identify AMI in selected region
 #------------------------------------------------------------------------------
 # instance_types
 win_instance_type:                "t3a.large"
