@@ -3,21 +3,21 @@
 
 - name: Find latest RHEL AMI
   shell:
-    cmd: aws ec2 describe-images --owners 309956199498 --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ rhel_ver }}*x86_64*Access2*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ && $1 !~ /.*GA.*/ {ami=$2} END{print ami}'
+    cmd: aws ec2 describe-images --owners 309956199498 --region "{{ region }}" --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ rhel_ver }}*x86_64*{{ 'Access2' if cloud_access == true else 'Hourly2' }}*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ && $1 !~ /.*GA.*/ {ami=$2} END{print ami}'
   register: rhel_ami
 
 - name: Find latest Windows Server AMI
   shell:
-    cmd: aws ec2 describe-images --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ win_ver }}-English-Full-Base*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ {ami=$2} END{print ami}'
+    cmd: aws ec2 describe-images --region "{{ region }}" --filters "Name=architecture,Values=x86_64" --filters "Name=name,Values={{ win_ver }}-English-Full-Base*" --query 'Images[*].[Name,ImageId]' --output text  | sort -V | awk '$1 !~ /.*BETA.*/ {ami=$2} END{print ami}'
   register: windows_ami
 
 - name: RHEL AMI
   debug:
-    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami.stdout }}"
+    msg: "Using AWS {{ region }} {{ rhel_ver }} AMI: {{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
 
 - name: Windows AMI
   debug:
-    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ windows_ami.stdout }}"
+    msg: "Using AWS {{ region }} {{ win_ver }} AMI: {{ windows_ami.stdout if auto_ami == true else regions[region][win_ver].ami }}"
 
 - debug:
     var: tower_instance_type
@@ -217,7 +217,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-win-sg"
     region: "{{ region }}"
     instance_type: "{{ win_instance_type }}"
-    image: "{{ windows_ami.stdout }}"
+    image: "{{ windows_ami.stdout if auto_ami == true else regions[region][win_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ win_instance_ids }}"
@@ -230,7 +230,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ tower_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ tower_rhel_instance_ids }}"
@@ -244,7 +244,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ admin_rhel_instance_ids }}"
@@ -257,7 +257,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ bastion_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ bastion_rhel_instance_ids }}"
@@ -270,7 +270,7 @@
     group: "{{ workshop_abbrev }}-{{ workshop_prefix }}-rhel-sg"
     region: "{{ region }}"
     instance_type: "{{ rhel_instance_type }}"
-    image: "{{ rhel_ami.stdout }}"
+    image: "{{ rhel_ami.stdout if auto_ami == true else regions[region][rhel_ver].ami }}"
     vpc_subnet_id: "{{ subnet_id }}"
     wait: true
     instance_ids: "{{ rhel_instance_ids }}"

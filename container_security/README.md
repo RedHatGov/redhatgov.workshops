@@ -155,14 +155,16 @@ $ ansible-playbook 1_provision.yml
   workshop_prefix  : defaults to "tower", set to the name of your workshop
   jboss            : defaults to "true", comment out to disable jboss
   graphical        : defaults to "true", change it to false if you don't want a graphical desktop for students to run Microsoft VS Code from
-  beta             : defaults to "false", change it to true if you want to use RHEL HTB releases. *required* for podman kube module in exercise 1, until RHEL 8.3 is released
-  domain_name      : your DNS domain, likely "redhatgov.io" or "rhnaps.io"
-  zone_id:         : the AWS Route 53 zone ID for your domain
+  aws_access_key   : your Amazon AWS API key
+  aws_secret_key   : your Amazon AWS secret key
+  domain_name      : your DNS domain, likely "redhagov.io"
   tower_rhel_count : the number of tower instances, usually 1 per student
   rhel_count       : the number of regular RHEL instances, usually 1 per student
   win_count        : the number of Windows 2016 instances, currently not used
   region:          : defaults to "us-east-2", set to any region
-  workshop_password: pick a password for your students to login with
+  cloud_access     : defaults to "true", allows Cloud Access for accounts with this feature enabled.
+  auto_ami         : defaults to "true", automatically identify AMI in selected region.  when false, relies on AMIs defined in aws.{create,remove} roles.
+  workshop_passwoed: pick a password for your students to login with
   rabbit_password  : pick a password for RabbitMQ in Tower, usually not needed
   local_user       : if you are using a Mac, uncomment the Mac-specific entry, and comment the RHEL/Fedora one
 ```
