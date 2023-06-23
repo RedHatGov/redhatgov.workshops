@@ -12,7 +12,7 @@
     dest: "{{ openshift_build_path }}/cli-timeout.yaml"
 
 - name: login to cluster
-  community.kubernetes.k8s_auth:
+  kubernetes.core.k8s_auth:
     state: present
     host: "https://api.{{ openshift_cluster_fqdn }}:6443"
     username: "{{ openshift_cluster_admin_username }}"

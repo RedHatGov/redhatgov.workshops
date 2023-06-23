@@ -1,7 +1,7 @@
 ---
 # tasks file for deploy_ansible_automation
 - name: Determine if Ansible Tower has already been deployed
-  community.kubernetes.k8s_info:
+  kubernetes.core.k8s_info:
     kind: Pod
     wait: no
     namespace: tower
